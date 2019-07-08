@@ -19,7 +19,7 @@
             android:name=".ControlActivity"
             android:theme="@style/Theme.AppCompat.Translucent" >
             <intent-filter>
-                <action android:name="com.e.cozifywidget.WIDGET_BUTTON" />
+                <action android:name="com.example.cozifywidget.WIDGET_BUTTON" />
             </intent-filter>
         </activity>
 
