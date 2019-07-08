@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="100dp"
+    android:layout_height="80dp"
+    android:orientation="vertical"
+    android:padding="@dimen/widget_margin">
+
+    <Button
+        android:id="@+id/control_button"
+        android:contentDescription="@string/app_name"
+        android:layout_width="100dp"
+        android:layout_height="80dp"
+        android:layout_gravity="center"
+        android:layout_margin="0dp"
+        android:textColor="#AFDEF5"
+        android:text="@string/appwidget_text"
+        style="@style/ButtonNormalTextWithIcon"/>
+
+</LinearLayout>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <TextView
+        android:id="@+id/control_device_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/control_device_status"/>
+
+    <Button
+        android:id="@+id/test_control_on_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Test ON" />
+
+    <Button
+        android:id="@+id/test_control_off_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Test OFF" />
+
+</LinearLayout>

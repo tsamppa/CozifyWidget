@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp">
+    <TextView
+        android:id="@+id/config_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/select_hub_and_device"/>
+
+    <Spinner
+        android:id="@+id/spinner_hubs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/btn_dropdown"
+        android:spinnerMode="dropdown"/>
+
+    <Spinner
+        android:id="@+id/spinner_devices"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/btn_dropdown"
+        android:spinnerMode="dropdown"/>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/device_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColorHint="@android:color/black">
+
+        <EditText
+            android:id="@+id/device_name_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textEmailAddress"
+            android:hint="@string/device_name"
+            />
+
+    </android.support.design.widget.TextInputLayout>
+
+    <Button
+        android:id="@+id/test_control_on_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Test ON" />
+
+    <Button
+        android:id="@+id/test_control_off_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Test OFF" />
+
+    <Button
+        android:id="@+id/create_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/create_button"
+        android:onClick="createWidget"/>
+
+</LinearLayout>

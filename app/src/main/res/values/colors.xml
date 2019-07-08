@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="icon_color_active_blue">#FF9090FF</color>
+    <color name="icon_color_armed">#EEFF9999</color>
+    <color name="icon_color_off_grey">#485455</color>
+    <color name="icon_color_warning_yellow">#A0A100</color>
+</resources>
