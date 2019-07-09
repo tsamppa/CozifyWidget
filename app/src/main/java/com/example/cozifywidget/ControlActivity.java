@@ -18,7 +18,7 @@ public class ControlActivity extends AppCompatActivity {
     private boolean mIsArmed = false;
     private boolean mIsOn = false;
     private boolean mIsControlling = false;
-    private boolean mIsReachable = false;
+    private boolean mIsReachable = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,14 +37,16 @@ public class ControlActivity extends AppCompatActivity {
         setResult(RESULT_CANCELED, resultValue);
 
         loadSavedSettings();
-        updateDeviceState();
 
         if (isArmed()) {
             if (toggelOnOff()) {
                 disarm();
                 setResult(RESULT_OK, resultValue);
+            } else {
+                updateDeviceState();
             }
         } else {
+            updateDeviceState();
             arm();
             setResult(RESULT_OK, resultValue);
         }
@@ -201,10 +203,13 @@ public class ControlActivity extends AppCompatActivity {
             @Override
             public void result(boolean success, String status, JSONObject resultJson) {
                 if (success) {
+                    mIsReachable = true;
                     CozifyDeviceOrSceneState state = new CozifyDeviceOrSceneState();
                     state.fromJson(resultJson);
                     mIsOn = state.isOn;
                     displayDeviceState();
+                } else {
+                    mIsReachable = false;
                 }
             }
         });
@@ -214,7 +219,7 @@ public class ControlActivity extends AppCompatActivity {
         startControl();
         String deviceId = PersistentStorage.getInstance().loadDeviceId(this, mAppWidgetId);
         if (deviceId == null) {
-            setStatusMessage("Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
+            endControl(false, "Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
             return false;
         }
         CozifyAPI.getInstance().getDeviceState(deviceId, new CozifyAPI.JsonCallback() {

@@ -5,7 +5,11 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.widget.RemoteViews;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Implementation of App Widget functionality.
@@ -22,6 +26,15 @@ public class CozifyAppWidget extends AppWidgetProvider {
         String device_name = PersistentStorage.getInstance().loadDeviceName(context, appWidgetId);
         if (device_name != null) {
             views.setCharSequence(R.id.control_button, "setText", device_name);
+        }
+        JSONObject settings = PersistentStorage.getInstance().loadSettingsJson(context, appWidgetId);
+        if (settings != null) {
+            try {
+                int resourceForState = ControlActivity.getDeviceResourceForState(true, settings.getBoolean("isOn"), false, false);
+                views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
+            } catch (JSONException e) {
+                Log.e("Widget", "Malformed persistent storage settings:"+e.getMessage());
+            }
         }
         views.setOnClickPendingIntent(R.id.control_button, pendingIntent);
         // Tell the AppWidgetManager to perform an update on the current app widget

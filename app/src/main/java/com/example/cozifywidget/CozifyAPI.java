@@ -65,6 +65,16 @@ public class CozifyAPI {
         });
     }
 
+    public void connectLocally() {
+        if (localBaseUrl != null && localBaseUrl.length() > 0) {
+            remoteConnection = false;
+        }
+    }
+
+    public void connectRemotely() {
+        remoteConnection = true;
+    }
+
     private void setHeaders() {
         if (hubKey != null && hubKey.length() > 0) {
             httpAPI.addHeader("X-Hub-Key", hubKey);

@@ -100,4 +100,15 @@ public class PersistentStorage {
         saveSettings(context, appWidgetId, json.toString());
     }
 
+    public JSONObject loadSettingsJson(Context context, int appWidgetId) {
+        String settings = loadSettings(context, appWidgetId);
+        if (settings != null && settings.length() > 0) {
+            try {
+                return new JSONObject(settings);
+            } catch (JSONException e) {
+                return null;
+            }
+        }
+        return null;
+    }
 }

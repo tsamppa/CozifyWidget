@@ -13,13 +13,15 @@
     <TextView
         android:id="@+id/login_status"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="Checking login.."/>
 
     <android.support.design.widget.TextInputLayout
         android:id="@+id/email_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColorHint="@android:color/black">
+        android:textColorHint="@android:color/black"
+        android:visibility="invisible">
 
         <EditText
             android:id="@+id/email_edit"
@@ -35,13 +37,15 @@
         android:id="@+id/login_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/login_button" />
+        android:text="@string/login_button"
+        android:visibility="invisible"/>
 
     <android.support.design.widget.TextInputLayout
         android:id="@+id/password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColorHint="@android:color/black">
+        android:textColorHint="@android:color/black"
+        android:visibility="invisible">
 
         <EditText
             android:id="@+id/appwidget_pw"

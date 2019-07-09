@@ -134,7 +134,6 @@ public class CozifyAppWidgetConfigure extends Activity {
                         PersistentStorage.getInstance().saveHubKey(context, selectedHubKey);
                         setAuthHeader();
                         getDevices();
-                        getScenes();
                     } catch (JSONException e) {
                         return;
                     }
@@ -199,8 +198,8 @@ public class CozifyAppWidgetConfigure extends Activity {
                 if (success) {
                     hubLanIp = result.substring(2, result.length()-2);
                     CozifyAPI.getInstance().setHubLanIp(hubLanIp);
+                    CozifyAPI.getInstance().connectLocally();
                     getDevices();
-                    getScenes();
                 } else {
                     textViewStatus.setText(message);
                 }
@@ -265,6 +264,10 @@ public class CozifyAppWidgetConfigure extends Activity {
                     views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
                     PersistentStorage.getInstance().saveSettings(context, appWidgetId,  state.isOn, false);
                     appWidgetManager.updateAppWidget(appWidgetId, views);
+                } else {
+                    RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.demo_app_widget);
+                    int resourceForState = ControlActivity.getDeviceResourceForState(false, false, false, false);
+                    views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
                 }
             }
         });
@@ -327,14 +330,14 @@ public class CozifyAppWidgetConfigure extends Activity {
 
                     Spinner items = findViewById(R.id.spinner_devices);
                     setSpinnerItems(items, devicesList);
-
-                    textViewStatus.setText("Select target device");
-                    enableTestButtons(true);
-                    enableSpinners(true);
+                    getScenes();
                 } else {
                     textViewStatus.setText("ERROR in requesting devices: "+status);
                     if (status.contains("408")) {
                         revertToLocalHubConnection();
+                    } else {
+                        CozifyAPI.getInstance().connectRemotely();
+                        enableSpinners(true);
                     }
                 }
             }
@@ -413,11 +416,18 @@ public class CozifyAppWidgetConfigure extends Activity {
 
                     Spinner items = findViewById(R.id.spinner_devices);
                     setSpinnerItems(items, devicesList);
-                    items.setEnabled(true);
                     textViewStatus.setText("Select target device or scene");
+                    enableTestButtons(true);
+                    enableSpinners(true);
 
                 } else {
                     textViewStatus.setText("ERROR when fetching scenes; " + status);
+                    if (status.contains("408")) {
+                        revertToLocalHubConnection();
+                    } else {
+                        CozifyAPI.getInstance().connectRemotely();
+                        enableSpinners(true);
+                    }
                 }
             }
         });

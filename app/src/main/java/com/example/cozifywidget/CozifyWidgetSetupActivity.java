@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONObject;
 
@@ -20,12 +21,13 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
             = "com.example.android.apis.appwidget.CozifyWidgetProvider";
     static final String PREF_PREFIX_KEY = "prefix_";
 
+    View pageView;
     TextView textViewStatus;
     EditText editTextEmail;
     TextInputLayout textInputLayoutEmail;
     EditText editTextPw;
     TextInputLayout textInputLayoutPw;
-    Button buttonCreate;
+    Button buttonLogin;
 
     String emailAddress;
     String cloudtoken;
@@ -34,16 +36,16 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_widget);
-        final Context context = CozifyWidgetSetupActivity.this;
-
         editTextEmail = findViewById(R.id.email_edit);
         editTextEmail.setText(emailAddress);
         textViewStatus = findViewById(R.id.login_status);
-        buttonCreate = findViewById(R.id.login_button);
+        buttonLogin = findViewById(R.id.login_button);
         textInputLayoutEmail = findViewById(R.id.email_layout);
 
         // Login automatically with saved credentials
-        checkAccess();
+        if (!checkAccess()) {
+            showEmailFields();
+        }
 
         editTextEmail.addTextChangedListener(new TextWatcher() {
             @Override
@@ -68,7 +70,7 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
             }
         });
         // Bind the action for the save button.
-        buttonCreate.setOnClickListener(mOnClickListenerLogin);
+        buttonLogin.setOnClickListener(mOnClickListenerLogin);
 
         // Find the Password  EditText
         editTextPw = findViewById(R.id.appwidget_pw);
@@ -99,6 +101,16 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
         listHubs();
     }
 
+    private void showEmailFields() {
+        textInputLayoutEmail.setVisibility(View.VISIBLE);
+        buttonLogin.setVisibility(View.VISIBLE);
+    }
+
+    private void showPasswordField() {
+        textInputLayoutPw.setVisibility(View.VISIBLE);
+    }
+
+
     private void listHubs() {
         CozifyAPI.getInstance().listHubs(new CozifyAPI.StringCallback() {
             @Override
@@ -122,7 +134,6 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
                     final Context context = CozifyWidgetSetupActivity.this;
                     PersistentStorage.getInstance().saveCloudToken(context, cloudtoken);
                     getHubKeys();
-                    textViewStatus.setText(message + ": token " + cloudtoken);
                 } else {
                     textViewStatus.setText(message);
                 }
@@ -136,17 +147,19 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
 
     private void getHubKeys() {
         textViewStatus.setText("Checking connection..");
-        buttonCreate.setEnabled(false);
+        buttonLogin.setEnabled(false);
         CozifyAPI.getInstance().getHubKeys(new CozifyAPI.JsonCallback() {
             @Override
             public void result(boolean success, String message, JSONObject jsonResult) {
-                buttonCreate.setEnabled(true);
+                buttonLogin.setEnabled(true);
                 if (success) {
-                    textViewStatus.setText(jsonResult.toString());
+                    final Context context = CozifyWidgetSetupActivity.this;
+                    Toast.makeText(context, "Connected to Cozify. You can now create widgets.", Toast.LENGTH_SHORT).show();
                     Intent resultValue = new Intent();
                     setResult(RESULT_OK, resultValue);
                     finish();
                 } else {
+                    pageView.setVisibility(View.VISIBLE);
                     textViewStatus.setText("Please check internet connection and try again");
                 }
             }
@@ -168,6 +181,7 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
                     @Override
                     public void result(boolean success, String message, String result) {
                         if (success) {
+                            showPasswordField();
                             textInputLayoutEmail.setErrorEnabled(false);
                             textInputLayoutPw.setEnabled(true);
                             editTextPw.setSelection(0);
@@ -186,16 +200,19 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
         }
     };
 
-    private void checkAccess() {
+    private boolean checkAccess() {
         final Context context = CozifyWidgetSetupActivity.this;
         emailAddress = PersistentStorage.getInstance().loadEmail(context, 0);
-        if (emailAddress == null || emailAddress.length() < 5) return;
+        if (emailAddress == null || emailAddress.length() < 5) {
+            return false;
+        }
         cloudtoken = PersistentStorage.getInstance().loadCloudToken(context);
-        if (cloudtoken == null || cloudtoken.length() < 5) return;
+        if (cloudtoken == null || cloudtoken.length() < 5) {
+            return false;
+        }
         setAuthHeader();
         getHubKeys();
+        return true;
     }
-    public void controlTarget(View w) {
-        return;
-    }
+
 }

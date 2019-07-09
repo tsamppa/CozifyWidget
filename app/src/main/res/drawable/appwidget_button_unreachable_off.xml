@@ -16,4 +16,8 @@
     <path
         android:pathData="M92 42L108 42L108 90L92 90L92 42Z"
         android:fillColor="@color/icon_color_off_grey" />
+    <path
+        android:pathData="M120 100C120 111.04 111.04 120 100 120C88.96 120 80 111.04 80 100C80 88.96 88.96 80 100 80C111.04 80 120 88.96 120 100Z"
+        android:fillColor="@color/icon_color_warning_yellow" />
+
 </vector>
