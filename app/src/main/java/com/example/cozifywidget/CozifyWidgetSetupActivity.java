@@ -21,6 +21,8 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
             = "com.example.android.apis.appwidget.CozifyWidgetProvider";
     static final String PREF_PREFIX_KEY = "prefix_";
 
+    private static CozifyAPI cozifyAPI = CozifyApiReal.getInstance();
+
     View pageView;
     TextView textViewStatus;
     EditText editTextEmail;
@@ -112,7 +114,7 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
 
 
     private void listHubs() {
-        CozifyAPI.getInstance().listHubs(new CozifyAPI.StringCallback() {
+        cozifyAPI.listHubs(new CozifyAPI.StringCallback() {
             @Override
             public void result(boolean success, String message, String result) {
                 if (success) {
@@ -125,7 +127,7 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
     }
 
     private void confirmPassword(String pw, String email_address) {
-        CozifyAPI.getInstance().confirmPassword(pw, email_address, new CozifyAPI.StringCallback() {
+        cozifyAPI.confirmPassword(pw, email_address, new CozifyAPI.StringCallback() {
             @Override
             public void result(boolean success, String message, String result) {
                 if (success) {
@@ -142,13 +144,13 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
     }
 
     private void setAuthHeader() {
-        CozifyAPI.getInstance().setCloudToken(cloudtoken);
+        cozifyAPI.setCloudToken(cloudtoken);
     }
 
     private void getHubKeys() {
         textViewStatus.setText("Checking connection..");
         buttonLogin.setEnabled(false);
-        CozifyAPI.getInstance().getHubKeys(new CozifyAPI.JsonCallback() {
+        cozifyAPI.getHubKeys(new CozifyAPI.JsonCallback() {
             @Override
             public void result(boolean success, String message, JSONObject jsonResult) {
                 buttonLogin.setEnabled(true);
@@ -177,7 +179,7 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
                 textInputLayoutEmail.setErrorEnabled(false);
                 // Login with email
                 emailAddress = email_address;
-                CozifyAPI.getInstance().requestLogin(emailAddress, new CozifyAPI.StringCallback() {
+                cozifyAPI.requestLogin(emailAddress, new CozifyAPI.StringCallback() {
                     @Override
                     public void result(boolean success, String message, String result) {
                         if (success) {

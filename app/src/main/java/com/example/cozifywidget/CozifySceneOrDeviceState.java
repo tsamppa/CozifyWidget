@@ -7,7 +7,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CozifyDeviceOrSceneState {
+public class CozifySceneOrDeviceState {
     public long timestamp = 0;
     public String type = "";
     public String id = "";
@@ -41,7 +41,7 @@ public class CozifyDeviceOrSceneState {
             e.printStackTrace();
         }
 
-    };
+    }
 
     public void fromPollData(JSONObject pollData, long timestamp) {
         try {
@@ -91,5 +91,17 @@ public class CozifyDeviceOrSceneState {
     }
     public boolean isScene() {
         return type.contains("SCENE");
+    }
+
+    public boolean similarToState(CozifySceneOrDeviceState other) {
+        if (other == null) return false;
+        return other.isOn == this.isOn;
+    }
+
+    public CozifyCommand getCommandTowardsDesiredState(CozifySceneOrDeviceState desiredState) {
+        if (desiredState == null) throw new NullPointerException("desiredState is null in method getCommandTowardsDesiredState(CozifySceneOrDeviceState desiredState)");
+        String commandString = desiredState.isOn ? "CMD_" + this.type + "_ON" : "CMD_" + this.type + "_OFF";
+        String path = this.type.contains("SCENE") ? "/scenes/command" : "/devices/command";
+        return new CozifyCommand(path, commandString);
     }
 }

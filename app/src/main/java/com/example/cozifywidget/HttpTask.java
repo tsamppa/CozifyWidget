@@ -44,12 +44,12 @@ public class HttpTask extends AsyncTask<com.example.cozifywidget.HttpRequest, St
         return response;
     }
 
-    private com.example.cozifywidget.HttpResponse  httpsRequest(URL url, com.example.cozifywidget.HttpRequest request) {
+    private com.example.cozifywidget.HttpResponse httpsRequest(URL url, com.example.cozifywidget.HttpRequest request) {
         com.example.cozifywidget.HttpResponse response = new com.example.cozifywidget.HttpResponse(-1, "N/A", request.getCallback());
         HttpsURLConnection urlConnectionHttps = null;
         try {
             urlConnectionHttps = (HttpsURLConnection) url.openConnection();
-            Log.v("HttpTask", request.getMethodString());
+            Log.v("HttpsTask", request.getMethodString() + " " + url.toString());
 
             urlConnectionHttps.setRequestMethod(request.getMethodString());
 
@@ -58,7 +58,7 @@ public class HttpTask extends AsyncTask<com.example.cozifywidget.HttpRequest, St
                     urlConnectionHttps.setRequestProperty(pair.getKey(), pair.getValue());
                 }
             }
-            urlConnectionHttps.setConnectTimeout(100000);
+            urlConnectionHttps.setConnectTimeout(10000);
             urlConnectionHttps.setReadTimeout(100000);
             if (request.getPostData() != null) {
                 urlConnectionHttps.setDoOutput(true);
@@ -75,8 +75,8 @@ public class HttpTask extends AsyncTask<com.example.cozifywidget.HttpRequest, St
             } else {
                 responseString = readStream(urlConnectionHttps.getErrorStream());
             }
-            Log.v("HttpTask", "Response code:" + responseCode);
-            Log.v("HttpTask", responseString);
+            Log.v("HttpsTask", "Response code:" + responseCode);
+            Log.v("HttpsTask", responseString);
             response = new com.example.cozifywidget.HttpResponse(responseCode, responseString, request.getCallback());
 
         } catch (Exception e) {
@@ -88,12 +88,12 @@ public class HttpTask extends AsyncTask<com.example.cozifywidget.HttpRequest, St
         return response;
     }
 
-    private com.example.cozifywidget.HttpResponse  httpRequest(URL url, com.example.cozifywidget.HttpRequest request) {
+    private com.example.cozifywidget.HttpResponse httpRequest(URL url, com.example.cozifywidget.HttpRequest request) {
         com.example.cozifywidget.HttpResponse response = new com.example.cozifywidget.HttpResponse(-1, "N/A", request.getCallback());
         HttpURLConnection urlConnectionHttp = null;
         try {
             urlConnectionHttp = (HttpURLConnection) url.openConnection();
-            Log.v("HttpTask", request.getMethodString());
+            Log.v("HttpTask", request.getMethodString() + " " + url.toString() + " " + request.getPostData());
 
             urlConnectionHttp.setRequestMethod(request.getMethodString());
 
@@ -102,7 +102,7 @@ public class HttpTask extends AsyncTask<com.example.cozifywidget.HttpRequest, St
                     urlConnectionHttp.setRequestProperty(pair.getKey(), pair.getValue());
                 }
             }
-            urlConnectionHttp.setConnectTimeout(100000);
+            urlConnectionHttp.setConnectTimeout(10000);
             urlConnectionHttp.setReadTimeout(100000);
             if (request.getPostData() != null) {
                 urlConnectionHttp.setDoOutput(true);

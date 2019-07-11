@@ -30,6 +30,8 @@ public class CozifyAppWidgetConfigure extends Activity {
     public static final String KEY_BUTTON_TEXT = "Control device";
     private int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
 
+    private static CozifyAPI cozifyAPI = CozifyApiReal.getInstance();
+
     String cloudtoken;
     EditText editTextDeviceName;
     TextInputLayout textInputLayoutDeviceName;
@@ -185,20 +187,20 @@ public class CozifyAppWidgetConfigure extends Activity {
 
 
     private void setAuthHeader() {
-        CozifyAPI.getInstance().setCloudToken(cloudtoken);
+        cozifyAPI.setCloudToken(cloudtoken);
         if (selectedHubKey != null) {
-            CozifyAPI.getInstance().setHubKey(selectedHubKey);
+            cozifyAPI.setHubKey(selectedHubKey);
         }
     }
 
     private void revertToLocalHubConnection() {
-        CozifyAPI.getInstance().listHubs(new CozifyAPI.StringCallback() {
+        cozifyAPI.listHubs(new CozifyAPI.StringCallback() {
             @Override
             public void result(boolean success, String message, String result) {
                 if (success) {
                     hubLanIp = result.substring(2, result.length()-2);
-                    CozifyAPI.getInstance().setHubLanIp(hubLanIp);
-                    CozifyAPI.getInstance().connectLocally();
+                    cozifyAPI.setHubLanIp(hubLanIp);
+                    cozifyAPI.connectLocally();
                     getDevices();
                 } else {
                     textViewStatus.setText(message);
@@ -253,11 +255,11 @@ public class CozifyAppWidgetConfigure extends Activity {
         if (deviceId == null) {
             return;
         }
-        CozifyAPI.getInstance().getDeviceState(deviceId, new CozifyAPI.JsonCallback() {
+        cozifyAPI.getDeviceState(deviceId, new CozifyAPI.CozifyCallback() {
             @Override
-            public void result(boolean success, String status, JSONObject resultJson) {
+            public void result(boolean success, String status, JSONObject resultJson, JSONObject requestJson) {
                 if (success) {
-                    CozifyDeviceOrSceneState state = new CozifyDeviceOrSceneState();
+                    CozifySceneOrDeviceState state = new CozifySceneOrDeviceState();
                     state.fromJson(resultJson);
                     RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.demo_app_widget);
                     int resourceForState = ControlActivity.getDeviceResourceForState(true, state.isOn, false, false);
@@ -277,7 +279,7 @@ public class CozifyAppWidgetConfigure extends Activity {
         public void onClick(View v) {
             if (selectedDeviceId.length() > 0) {
                 boolean isScene = selectedDeviceName.contains("Scene:");
-                CozifyAPI.getInstance().controlOnOff(selectedDeviceId, !isScene, true, new CozifyAPI.CozifyCallback(){
+                cozifyAPI.controlOnOff(selectedDeviceId, !isScene, true, new CozifyAPI.CozifyCallback(){
                     @Override
                     public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                         textViewStatus.setText("Test result:" + status);
@@ -293,7 +295,7 @@ public class CozifyAppWidgetConfigure extends Activity {
         public void onClick(View v) {
             if (selectedDeviceId.length() > 0) {
                 boolean isScene = selectedDeviceName.contains("Scene:");
-                CozifyAPI.getInstance().controlOnOff(selectedDeviceId, !isScene, false, new CozifyAPI.CozifyCallback(){
+                cozifyAPI.controlOnOff(selectedDeviceId, !isScene, false, new CozifyAPI.CozifyCallback(){
                     @Override
                     public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                         textViewStatus.setText("Test result:" + status);
@@ -317,7 +319,7 @@ public class CozifyAppWidgetConfigure extends Activity {
         enableSpinners(false);
         String[] capabilities = {"ON_OFF"};
         resetDevicesSpinner();
-        CozifyAPI.getInstance().getDevices(capabilities, new CozifyAPI.JsonCallback() {
+        cozifyAPI.getDevices(capabilities, new CozifyAPI.JsonCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson) {
                 if (success) {
@@ -336,7 +338,7 @@ public class CozifyAppWidgetConfigure extends Activity {
                     if (status.contains("408")) {
                         revertToLocalHubConnection();
                     } else {
-                        CozifyAPI.getInstance().connectRemotely();
+                        cozifyAPI.connectRemotely();
                         enableSpinners(true);
                     }
                 }
@@ -354,7 +356,7 @@ public class CozifyAppWidgetConfigure extends Activity {
 
     private void getHubKeys() {
         enableSpinners(false);
-        CozifyAPI.getInstance().getHubKeys(new CozifyAPI.JsonCallback() {
+        cozifyAPI.getHubKeys(new CozifyAPI.JsonCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson) {
                 if (success) {
@@ -397,7 +399,7 @@ public class CozifyAppWidgetConfigure extends Activity {
     }
 
     private void getScenes() {
-        CozifyAPI.getInstance().getScenes(new CozifyAPI.JsonCallback() {
+        cozifyAPI.getScenes(new CozifyAPI.JsonCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson) {
                 if (success) {
@@ -425,7 +427,7 @@ public class CozifyAppWidgetConfigure extends Activity {
                     if (status.contains("408")) {
                         revertToLocalHubConnection();
                     } else {
-                        CozifyAPI.getInstance().connectRemotely();
+                        cozifyAPI.connectRemotely();
                         enableSpinners(true);
                     }
                 }
