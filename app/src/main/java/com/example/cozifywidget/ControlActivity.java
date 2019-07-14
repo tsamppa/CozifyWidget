@@ -22,6 +22,8 @@ public class ControlActivity extends AppCompatActivity {
     private boolean mIsReachable = true;
     private static CozifyAPI cozifyAPI = CozifyApiReal.getInstance();
 
+    private CozifySceneOrDeviceStateManager stateMgr;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -123,6 +125,7 @@ public class ControlActivity extends AppCompatActivity {
         }
 
         if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+            ShowMessage("ERROR: appWidgetId not found in extra (INVALID_APPWIDGET_ID)");
             finish();
             return false;
         }
@@ -212,20 +215,26 @@ public class ControlActivity extends AppCompatActivity {
         }
     }
 
+    private void endControl(boolean success, String reason, String details) {
+        if (details != null)
+            Log.e("WidgetEndControl", details);
+        endControl(success, reason);
+    }
+
     private void updateDeviceState() {
         String deviceId = PersistentStorage.getInstance().loadDeviceId(this, mAppWidgetId);
         if (deviceId == null) {
             ShowMessage("Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
             return;
         }
-        cozifyAPI.getDeviceState(deviceId, new CozifyAPI.CozifyCallback() {
+
+        stateMgr.updateCurrentState(deviceId, new CozifyAPI.CozifyCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson, JSONObject requestJson) {
                 if (success) {
-                    mIsReachable = true;
-                    CozifySceneOrDeviceState state = new CozifySceneOrDeviceState();
-                    state.fromJson(resultJson);
+                    CozifySceneOrDeviceState state = stateMgr.getCurrentState();
                     mIsOn = state.isOn;
+                    mIsReachable = state.reachable;
                     displayDeviceState();
                 } else {
                     mIsReachable = false;
@@ -241,43 +250,28 @@ public class ControlActivity extends AppCompatActivity {
             endControl(false, "Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
             return false;
         }
-        cozifyAPI.getDeviceState(deviceId, new CozifyAPI.CozifyCallback() {
-            @Override
-            public void result(boolean success, String status, JSONObject resultJson, JSONObject requestJson) {
-                if (success) {
-                    CozifySceneOrDeviceState state = new CozifySceneOrDeviceState();
-                    state.fromJson(resultJson);
-                    mIsOn = state.isOn;
-                    controlOnOff(state.id, state.isDevice(), !mIsOn);
-                } else {
-                    endControl(false, status);
-                }
-            }
-        });
+        controlToggle(deviceId);
         return true;
     }
 
-    void controlOnOff(String id, boolean isDevice, boolean isOn) {
-        cozifyAPI.controlOnOff(id, isDevice, isOn, new CozifyAPI.CozifyCallback() {
+    void controlToggle(final String id) {
+        stateMgr = new CozifySceneOrDeviceStateManager();
+        stateMgr.toggleState(id, new CozifyAPI.CozifyCallback() {
             @Override
-            public void result(boolean success, String message, JSONObject result, JSONObject request) {
+            public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                 if (success) {
-                    try {
-                        String resultString = "OK";
-                        if (result != null) {
-                            mIsOn = result.getBoolean("isOn");
-                            resultString = resultString + result.toString();
-                        }
-                        mIsOn = cozifyAPI.parseCommandIsOn(request);
-                        saveSettings();
-                        String id = cozifyAPI.parseCommandTargetId(request);
-                        cozifyAPI.setDeviceCacheState(id, mIsOn);
-                        endControl(true, resultString);
-                    } catch (JSONException e) {
-                        endControl(false, "FAILED to parse device state JSON: " + e.getMessage() + " REQUEST: " + request.toString());
-                    }
+                    mIsOn = stateMgr.getCurrentState().isOn;
+                    mIsReachable = stateMgr.getCurrentState().reachable;
+                    endControl(true, status);
                 } else {
-                    endControl(false, message);
+                    mIsArmed = false;
+                    mIsReachable = false;
+                    String details = "Details:";
+                    if (jsonResponse != null)
+                        details += " jsonResponse: "+jsonResponse.toString();
+                    if (jsonRequest != null)
+                        details += " jsonRequest: "+jsonRequest.toString();
+                    endControl(false, status, details);
                 }
             }
         });

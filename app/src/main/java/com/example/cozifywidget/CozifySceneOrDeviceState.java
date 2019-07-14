@@ -100,8 +100,9 @@ public class CozifySceneOrDeviceState {
 
     public CozifyCommand getCommandTowardsDesiredState(CozifySceneOrDeviceState desiredState) {
         if (desiredState == null) throw new NullPointerException("desiredState is null in method getCommandTowardsDesiredState(CozifySceneOrDeviceState desiredState)");
-        String commandString = desiredState.isOn ? "CMD_" + this.type + "_ON" : "CMD_" + this.type + "_OFF";
-        String path = this.type.contains("SCENE") ? "/scenes/command" : "/devices/command";
+        String path = isScene() ? "/scenes/command" : "/devices/command";
+        String cmd = isScene() ? "CMD_SCENE" : "CMD_DEVICE";
+        String commandString = desiredState.isOn ? cmd + "_ON" : cmd + "_OFF";
         return new CozifyCommand(path, commandString);
     }
 }

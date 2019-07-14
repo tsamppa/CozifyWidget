@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class CozifyApiReal implements CozifyAPI {
+public class CozifyApiReal extends CozifyAPI {
 
         private JsonAPI httpAPI;
         private JsonAPI localHttpAPI;
@@ -155,9 +155,8 @@ public class CozifyApiReal implements CozifyAPI {
             }
             final JSONArray jsonArray = new JSONArray();
             jsonArray.put(dataJson);
-            String requestData = jsonArray.toString();
 
-            getHttpAPI().put(url, requestData, new JsonAPI.StringCallback() {
+            getHttpAPI().put(url, jsonArray, new JsonAPI.StringCallback() {
                         @Override
                         public void onResponse(int statusCode, String stringResult) {
                             if (statusCode == 200) {
@@ -319,20 +318,7 @@ public class CozifyApiReal implements CozifyAPI {
             deviceStates.put(id, deviceState);
         }
 
-        public void getDeviceState(final String device_id, final CozifyCallback cb) {
-            long diff = System.currentTimeMillis() - deviceStateTimestamp;
-            if (deviceStateTimestamp != 0 && diff < 10000) {
-                CozifySceneOrDeviceState deviceState = deviceStates.get(device_id);
-                if (deviceState != null) {
-                    try {
-                        JSONObject stateJSon = deviceState.toJson();
-                        cb.result(true, "Cache hit", stateJSon, null);
-                        return;
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
+        public void getSceneOrDeviceState(final String device_id, final CozifyCallback cb) {
             String url = completeUrl("/hub/poll?ts="+deviceStateTimestamp);
             final JSONObject request = new JSONObject();
             try {
@@ -381,7 +367,7 @@ public class CozifyApiReal implements CozifyAPI {
                                             cb.result(false, "ERROR: Could not find device state ", null, request);
                                         }
                                     }
-                                    trafficLog("getDeviceState", request.toString() + " : " + stateJSon.toString());
+                                    trafficLog("getSceneOrDeviceState", request.toString() + " : " + stateJSon.toString());
                                     cb.result(true, "OK " + statusCode, stateJSon, request);
                                 } catch (JSONException e) {
                                     e.printStackTrace();

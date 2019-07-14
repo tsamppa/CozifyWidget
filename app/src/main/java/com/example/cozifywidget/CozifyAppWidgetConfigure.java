@@ -231,7 +231,7 @@ public class CozifyAppWidgetConfigure extends Activity {
             intent.setAction(Long.toString(System.currentTimeMillis()));
             intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
             PendingIntent pendingIntent;
-            pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+            pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             RemoteViews views = new RemoteViews(this.getPackageName(), R.layout.demo_app_widget);
             views.setOnClickPendingIntent(R.id.control_button, pendingIntent);
             views.setCharSequence(R.id.control_button, "setText", selectedDeviceShortName);
@@ -255,7 +255,7 @@ public class CozifyAppWidgetConfigure extends Activity {
         if (deviceId == null) {
             return;
         }
-        cozifyAPI.getDeviceState(deviceId, new CozifyAPI.CozifyCallback() {
+        cozifyAPI.getSceneOrDeviceState(deviceId, new CozifyAPI.CozifyCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson, JSONObject requestJson) {
                 if (success) {

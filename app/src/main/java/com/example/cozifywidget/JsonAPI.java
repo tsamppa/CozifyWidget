@@ -1,5 +1,6 @@
 package com.example.cozifywidget;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -96,6 +97,16 @@ public class JsonAPI {
     }
 
     public void put(String url, JSONObject data, final StringCallback callback) {
+        com.example.cozifywidget.HttpRequest r = new com.example.cozifywidget.HttpRequest(com.example.cozifywidget.HttpRequest.Method.PUT, url);
+        headers.put("Content-Type","application/json");
+        headers.put("Accept","text/plain");
+        r.setHeaders(headers);
+        r.setCallback(callbackForStringCallback(callback));
+        r.setPostData(data.toString());
+        new com.example.cozifywidget.HttpTask().execute(r);
+    }
+
+    public void put(String url, JSONArray data, final StringCallback callback) {
         com.example.cozifywidget.HttpRequest r = new com.example.cozifywidget.HttpRequest(com.example.cozifywidget.HttpRequest.Method.PUT, url);
         headers.put("Content-Type","application/json");
         headers.put("Accept","text/plain");

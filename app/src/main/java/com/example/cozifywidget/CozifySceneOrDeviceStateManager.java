@@ -1,8 +1,12 @@
 package com.example.cozifywidget;
 
 import android.os.Handler;
+import android.support.annotation.IntDef;
 
 import org.json.JSONObject;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 public class CozifySceneOrDeviceStateManager implements Runnable {
     private CozifySceneOrDeviceState currentState = null;
@@ -11,41 +15,76 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
     private Long startTime = null;
     private CozifyAPI.CozifyCallback cbFinished = null;
 
-    private static final int INIT = 0;
-    private static final int RUNNING = 1;
-    private static final int COMPLETED = 2;
-    private static final int ABORTED = 3;
-    private static final int EXPIRED = 4;
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({CONTROL_PRCESS_STATE_INIT,
+            CONTROL_PRCESS_STATE_CONTROL_LOCAL,
+            CONTROL_PRCESS_STATE_CONTROL_REMOTE,
+            CONTROL_PRCESS_STATE_RETRY_LOCAL,
+            CONTROL_PRCESS_STATE_RETRY_REMOTE,
+            CONTROL_PRCESS_STATE_COMPLETED,
+            CONTROL_PRCESS_STATE_ABORTED,
+            CONTROL_PRCESS_STATE_EXPIRED,
+            CONTROL_PRCESS_STATE_UNREACHABLE,
+            CONTROL_PRCESS_STATE_FAILURE
+    })
+    public @interface ControlProcessState {}
+
+    private static final int CONTROL_PRCESS_STATE_INIT = 0;
+    private static final int CONTROL_PRCESS_STATE_CONTROL_LOCAL = 1;
+    private static final int CONTROL_PRCESS_STATE_CONTROL_REMOTE = 2;
+    private static final int CONTROL_PRCESS_STATE_RETRY_LOCAL = 3;
+    private static final int CONTROL_PRCESS_STATE_RETRY_REMOTE = 4;
+    private static final int CONTROL_PRCESS_STATE_COMPLETED = 5;
+    private static final int CONTROL_PRCESS_STATE_ABORTED = 6;
+    private static final int CONTROL_PRCESS_STATE_EXPIRED = 7;
+    private static final int CONTROL_PRCESS_STATE_UNREACHABLE = 8;
+    private static final int CONTROL_PRCESS_STATE_FAILURE = 9;
+
 
     private static final int retryDelay = 30 * 1000; // 30 secs
     private static final int maxRuntime = 10*60*1000; // 10 minutes
 
     private static CozifyAPI cozifyAPI = CozifyApiReal.getInstance();
 
-    private int state = INIT;
+    @ControlProcessState private int state = CONTROL_PRCESS_STATE_INIT;
 
-    CozifySceneOrDeviceStateManager(CozifySceneOrDeviceState desiredState, final CozifyAPI.CozifyCallback cbFinished) {
+    CozifySceneOrDeviceStateManager() {
         handler = new Handler();
-        this.desiredState = desiredState;
-        this.cbFinished = cbFinished;
     }
 
-    public void run() {
-        state = RUNNING;
-        if (startTime == null) {
-            startTime = System.currentTimeMillis();
-        }
-        try {
-            if (System.currentTimeMillis() - startTime > maxRuntime) {
-                state = EXPIRED;
-                handler.removeCallbacks(this);
-                reportResult();
-            } else if (sendCommand()) {
-                handler.removeCallbacks(this);
-                reportResult();
+    private boolean isFinalState(@ControlProcessState int state) {
+        switch (state) {
+            case CONTROL_PRCESS_STATE_INIT:
+            case CONTROL_PRCESS_STATE_CONTROL_LOCAL:
+            case CONTROL_PRCESS_STATE_CONTROL_REMOTE:
+            case CONTROL_PRCESS_STATE_RETRY_LOCAL:
+            case CONTROL_PRCESS_STATE_RETRY_REMOTE: {
+                return false;
+            }
+            case CONTROL_PRCESS_STATE_ABORTED:
+            case CONTROL_PRCESS_STATE_COMPLETED:
+            case CONTROL_PRCESS_STATE_EXPIRED:
+            case CONTROL_PRCESS_STATE_UNREACHABLE:
+            case CONTROL_PRCESS_STATE_FAILURE: {
+                return true;
             }
         }
-        catch (Exception e) {
+        throw new IllegalStateException("State machine broken");
+    }
+
+
+    public void run() {
+        try {
+            if (isFinalState(state)) {
+                return;
+            } else if (System.currentTimeMillis() - startTime > maxRuntime) {   // Has the time exired
+                state = CONTROL_PRCESS_STATE_EXPIRED;
+                handler.removeCallbacks(this);
+                reportResult();
+            } else {
+                checkCurrentStateAndSendCommand();
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -53,83 +92,169 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
     private void reportResult() {
         if (cbFinished != null) {
             switch (state) {
-                case INIT: {
+                case CONTROL_PRCESS_STATE_INIT: {
                     cbFinished.result(false, "INIT", null, null);
                     break;
                 }
-                case RUNNING: {
-                    cbFinished.result(false, "RUNNING", null, null);
+                case CONTROL_PRCESS_STATE_CONTROL_LOCAL: {
+                    cbFinished.result(false, "CONTROL_LOCAL", null, null);
                     break;
                 }
-                case ABORTED: {
+                case CONTROL_PRCESS_STATE_CONTROL_REMOTE: {
+                    cbFinished.result(false, "CONTROL_REMOTE", null, null);
+                    break;
+                }
+                case CONTROL_PRCESS_STATE_RETRY_LOCAL: {
+                    cbFinished.result(false, "RETRY_LOCAL", null, null);
+                    break;
+                }
+                case CONTROL_PRCESS_STATE_RETRY_REMOTE: {
+                    cbFinished.result(false, "RETRY_REMOTE", null, null);
+                    break;
+                }
+                case CONTROL_PRCESS_STATE_ABORTED: {
                     cbFinished.result(false, "ABORTED", null, null);
                     break;
                 }
-                case COMPLETED: {
+                case CONTROL_PRCESS_STATE_COMPLETED: {
                     cbFinished.result(true, "COMPLETED", null, null);
                     break;
                 }
-                case EXPIRED: {
+                case CONTROL_PRCESS_STATE_EXPIRED: {
                     cbFinished.result(false, "EXPIRED", null, null);
                     break;
                 }
+                case CONTROL_PRCESS_STATE_UNREACHABLE: {
+                    cbFinished.result(false, "UNREACHABLE", null, null);
+                    break;
+                }
             }
+        } else {
+            throw new NullPointerException("Logic error in StateManager");
         }
         cbFinished = null;
     }
 
     public void abort() {
-        state = ABORTED;
+        state = CONTROL_PRCESS_STATE_ABORTED;
         handler.removeCallbacks(this);
         reportResult();
     }
 
-    private boolean checkIfCompleted() {
+    private boolean reportIfFinalState() {
+        if (state == CONTROL_PRCESS_STATE_ABORTED)
+            return true;
+        if (state == CONTROL_PRCESS_STATE_EXPIRED)
+            return true;
+        if (!currentState.reachable) {
+            state = CONTROL_PRCESS_STATE_UNREACHABLE;
+            reportResult();
+            return true;
+        }
         boolean completed = desiredState.similarToState(currentState);
         if (completed) {
-            state = COMPLETED;
+            state = CONTROL_PRCESS_STATE_COMPLETED;
             reportResult();
+            return true;
         }
         return false;
     }
 
-    private void updateCurrentState(final boolean delayRetry) {
-        cozifyAPI.getDeviceState(desiredState.id, new CozifyAPI.CozifyCallback() {
+    public void updateCurrentState(String device_id, final CozifyAPI.CozifyCallback cb) {
+        cozifyAPI.getSceneOrDeviceState(device_id, new CozifyAPI.CozifyCallback() {
             public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                 if (success) {
                     currentState = new CozifySceneOrDeviceState();
                     currentState.fromJson(jsonResponse);
-                    if (checkIfCompleted()) return;
                 }
-                retry(delayRetry);
+                cb.result(success, status, jsonResponse, jsonRequest);
             }
         });
     }
 
-    private void retry(boolean delayRetry) {
-        if (delayRetry) {
-            handler.postDelayed(this, retryDelay);
-        } else {
-            run();
-        }
+
+    private void updateCurrentStateAndRetryWithDelay() {
+        cozifyAPI.getSceneOrDeviceState(desiredState.id, new CozifyAPI.CozifyCallback() {
+            public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
+                if (success) {
+                    currentState = new CozifySceneOrDeviceState();
+                    currentState.fromJson(jsonResponse);
+                    if (reportIfFinalState()) return;
+                }
+                retryControlAfterDelay();
+            }
+        });
+    }
+
+    private void retryControlAfterDelay() {
+        handler.postDelayed(this, retryDelay);
     }
 
     // Returns true if desired state reached
-    private boolean sendCommand() {
+    private void sendCommand() {
         // resend command
-        cozifyAPI.sendCommand(currentState.id, currentState.getCommandTowardsDesiredState(desiredState),
+        CozifyCommand command = currentState.getCommandTowardsDesiredState(desiredState);
+        cozifyAPI.sendCommand(currentState.id, command,
                 new CozifyAPI.CozifyCallback() {
                     @Override
                     public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
-                        updateCurrentState(true);
+                        // Check state after a bit of delay
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                updateCurrentStateAndRetryWithDelay();
+                            }
+                        }, 500 );
                     }
                 });
-        return false; // Not yet ready
     }
 
-    public void commence(CozifySceneOrDeviceState desiredState) {
-        this.desiredState = desiredState;
-        updateCurrentState(false);
+    private void checkCurrentStateAndSendCommand() {
+        cozifyAPI.getSceneOrDeviceState(currentState.id, new CozifyAPI.CozifyCallback() {
+            public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
+                if (success) {
+                    if (!currentState.reachable) {
+                        sendCommand();
+                    } else if (currentState.similarToState(desiredState)) {
+                        state = CONTROL_PRCESS_STATE_COMPLETED;
+                        reportResult();
+                    } else {
+                        sendCommand();
+                    }
+                } else {
+                    state = CONTROL_PRCESS_STATE_FAILURE;
+                    reportResult();
+                }
+            }
+        });
+
+    }
+
+    public void toggleState(String id, final CozifyAPI.CozifyCallback cbFinished) {
+        this.cbFinished = cbFinished;
+        if (startTime == null) {
+            startTime = System.currentTimeMillis();
+        }
+
+        cozifyAPI.getSceneOrDeviceState(id, new CozifyAPI.CozifyCallback() {
+            public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
+                if (success) {
+                    currentState = new CozifySceneOrDeviceState();
+                    currentState.fromJson(jsonResponse);
+                    desiredState = new CozifySceneOrDeviceState();
+                    desiredState.fromJson(jsonResponse);
+                    desiredState.isOn = !currentState.isOn;
+                    sendCommand();
+                } else {
+                    reportResult();
+                }
+            }
+        });
+    }
+
+
+    public CozifySceneOrDeviceState getCurrentState() {
+        return currentState;
     }
 
 }

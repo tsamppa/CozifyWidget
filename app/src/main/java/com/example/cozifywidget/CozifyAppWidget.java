@@ -21,7 +21,8 @@ public class CozifyAppWidget extends AppWidgetProvider {
 
         // Create an Intent to launch CozifyWidgetSetupActivity
         Intent intent = new Intent(context, ControlActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.demo_app_widget);
         String device_name = PersistentStorage.getInstance().loadDeviceName(context, appWidgetId);
         if (device_name != null) {
