@@ -1,4 +1,4 @@
-package com.example.cozifywidget;
+package com.cozify.cozifywidget;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,113 +34,113 @@ public class JsonAPI {
     public void get(String url, final JsonCallback callback) {
         if (callback == null)
             throw new NullPointerException();
-        com.example.cozifywidget.HttpRequest r = new com.example.cozifywidget.HttpRequest(com.example.cozifywidget.HttpRequest.Method.GET, url);
+        com.cozify.cozifywidget.HttpRequest r = new com.cozify.cozifywidget.HttpRequest(com.cozify.cozifywidget.HttpRequest.Method.GET, url);
         headers.put("Content-Type","text/plain");
         headers.put("Accept","application/json");
         r.setHeaders(headers);
         r.setCallback(callbackForJsonCallback(callback));
-        new com.example.cozifywidget.HttpTask().execute(r);
+        new com.cozify.cozifywidget.HttpTask().execute(r);
     }
 
     public void string_get(String url, final StringCallback callback) {
-        com.example.cozifywidget.HttpRequest r = new com.example.cozifywidget.HttpRequest(com.example.cozifywidget.HttpRequest.Method.GET, url);
+        com.cozify.cozifywidget.HttpRequest r = new com.cozify.cozifywidget.HttpRequest(com.cozify.cozifywidget.HttpRequest.Method.GET, url);
         headers.put("Content-Type","text/plain");
         headers.put("Accept","text/plain");
         r.setHeaders(headers);
         r.setCallback(callbackForStringCallback(callback));
-        new com.example.cozifywidget.HttpTask().execute(r);
+        new com.cozify.cozifywidget.HttpTask().execute(r);
     }
 
 
     public void post(String url, JSONObject postData, JsonCallback callback) {
         if (callback == null)
             throw new NullPointerException();
-        com.example.cozifywidget.HttpRequest r = new com.example.cozifywidget.HttpRequest(com.example.cozifywidget.HttpRequest.Method.POST, url);
+        com.cozify.cozifywidget.HttpRequest r = new com.cozify.cozifywidget.HttpRequest(com.cozify.cozifywidget.HttpRequest.Method.POST, url);
         headers.put("Content-Type","application/json");
         headers.put("Accept","application/json");
         r.setHeaders(headers);
         r.setCallback(callbackForJsonCallback(callback));
         r.setPostData(postData.toString());
-        new com.example.cozifywidget.HttpTask().execute(r);
+        new com.cozify.cozifywidget.HttpTask().execute(r);
     }
 
     public void post(String url, JSONObject postData, StringCallback callback) {
         if (callback == null)
             throw new NullPointerException();
-        com.example.cozifywidget.HttpRequest r = new com.example.cozifywidget.HttpRequest(com.example.cozifywidget.HttpRequest.Method.POST, url);
+        com.cozify.cozifywidget.HttpRequest r = new com.cozify.cozifywidget.HttpRequest(com.cozify.cozifywidget.HttpRequest.Method.POST, url);
         headers.put("Content-Type","application/json");
         headers.put("Accept", "text/plain");
         r.setHeaders(headers);
         r.setCallback(callbackForStringCallback(callback));
         r.setPostData(postData.toString());
-        new com.example.cozifywidget.HttpTask().execute(r);
+        new com.cozify.cozifywidget.HttpTask().execute(r);
     }
 
     public void post(String url, String postData, StringCallback callback) {
-        com.example.cozifywidget.HttpRequest r = new com.example.cozifywidget.HttpRequest(com.example.cozifywidget.HttpRequest.Method.POST, url);
+        com.cozify.cozifywidget.HttpRequest r = new com.cozify.cozifywidget.HttpRequest(com.cozify.cozifywidget.HttpRequest.Method.POST, url);
         headers.put("Content-Type", "text/plain");
         headers.put("Accept", "text/plain");
         r.setHeaders(headers);
         r.setCallback(callbackForStringCallback(callback));
         if (postData.length() > 0) r.setPostData(postData);
-        new com.example.cozifywidget.HttpTask().execute(r);
+        new com.cozify.cozifywidget.HttpTask().execute(r);
     }
 
     public void put(String url, JSONObject data, final JsonCallback callback) {
-        com.example.cozifywidget.HttpRequest r = new com.example.cozifywidget.HttpRequest(com.example.cozifywidget.HttpRequest.Method.PUT, url);
+        com.cozify.cozifywidget.HttpRequest r = new com.cozify.cozifywidget.HttpRequest(com.cozify.cozifywidget.HttpRequest.Method.PUT, url);
         headers.put("Content-Type","application/json");
         headers.put("Accept","application/json");
         r.setHeaders(headers);
         r.setCallback(callbackForJsonCallback(callback));
         r.setPostData(data.toString());
-        new com.example.cozifywidget.HttpTask().execute(r);
+        new com.cozify.cozifywidget.HttpTask().execute(r);
     }
 
     public void put(String url, JSONObject data, final StringCallback callback) {
-        com.example.cozifywidget.HttpRequest r = new com.example.cozifywidget.HttpRequest(com.example.cozifywidget.HttpRequest.Method.PUT, url);
+        com.cozify.cozifywidget.HttpRequest r = new com.cozify.cozifywidget.HttpRequest(com.cozify.cozifywidget.HttpRequest.Method.PUT, url);
         headers.put("Content-Type","application/json");
         headers.put("Accept","text/plain");
         r.setHeaders(headers);
         r.setCallback(callbackForStringCallback(callback));
         r.setPostData(data.toString());
-        new com.example.cozifywidget.HttpTask().execute(r);
+        new com.cozify.cozifywidget.HttpTask().execute(r);
     }
 
     public void put(String url, JSONArray data, final StringCallback callback) {
-        com.example.cozifywidget.HttpRequest r = new com.example.cozifywidget.HttpRequest(com.example.cozifywidget.HttpRequest.Method.PUT, url);
+        com.cozify.cozifywidget.HttpRequest r = new com.cozify.cozifywidget.HttpRequest(com.cozify.cozifywidget.HttpRequest.Method.PUT, url);
         headers.put("Content-Type","application/json");
         headers.put("Accept","text/plain");
         r.setHeaders(headers);
         r.setCallback(callbackForStringCallback(callback));
         r.setPostData(data.toString());
-        new com.example.cozifywidget.HttpTask().execute(r);
+        new com.cozify.cozifywidget.HttpTask().execute(r);
     }
 
     public void put(String url, String data, final StringCallback callback) {
-        com.example.cozifywidget.HttpRequest r = new com.example.cozifywidget.HttpRequest(com.example.cozifywidget.HttpRequest.Method.PUT, url);
+        com.cozify.cozifywidget.HttpRequest r = new com.cozify.cozifywidget.HttpRequest(com.cozify.cozifywidget.HttpRequest.Method.PUT, url);
         headers.put("Content-Type","text/plain");
         headers.put("Accept","text/plain");
         r.setHeaders(headers);
         r.setCallback(callbackForStringCallback(callback));
         r.setPostData(data);
-        new com.example.cozifywidget.HttpTask().execute(r);
+        new com.cozify.cozifywidget.HttpTask().execute(r);
     }
 
     public void put(String url, String data, final JsonCallback callback) {
-        com.example.cozifywidget.HttpRequest r = new com.example.cozifywidget.HttpRequest(com.example.cozifywidget.HttpRequest.Method.PUT, url);
+        com.cozify.cozifywidget.HttpRequest r = new com.cozify.cozifywidget.HttpRequest(com.cozify.cozifywidget.HttpRequest.Method.PUT, url);
         headers.put("Content-Type","application/json"); // TODO
         headers.put("Accept","application/json");
         r.setHeaders(headers);
         r.setCallback(callbackForJsonCallback(callback));
         r.setPostData(data);
-        new com.example.cozifywidget.HttpTask().execute(r);
+        new com.cozify.cozifywidget.HttpTask().execute(r);
     }
 
 
-    private com.example.cozifywidget.HttpRequest.RequestCallback callbackForJsonCallback(final JsonCallback jsonCallback) {
-        return new com.example.cozifywidget.HttpRequest.RequestCallback() {
+    private com.cozify.cozifywidget.HttpRequest.RequestCallback callbackForJsonCallback(final JsonCallback jsonCallback) {
+        return new com.cozify.cozifywidget.HttpRequest.RequestCallback() {
             @Override
-            public void onResponse(com.example.cozifywidget.HttpResponse r) {
+            public void onResponse(com.cozify.cozifywidget.HttpResponse r) {
                 JSONObject json = null;
                 try {
                     json = new JSONObject(r.getResponse());
@@ -157,10 +157,10 @@ public class JsonAPI {
         };
     }
 
-    private com.example.cozifywidget.HttpRequest.RequestCallback callbackForStringCallback(final StringCallback stringCallback) {
-        return new com.example.cozifywidget.HttpRequest.RequestCallback() {
+    private com.cozify.cozifywidget.HttpRequest.RequestCallback callbackForStringCallback(final StringCallback stringCallback) {
+        return new com.cozify.cozifywidget.HttpRequest.RequestCallback() {
             @Override
-            public void onResponse(com.example.cozifywidget.HttpResponse r) {
+            public void onResponse(com.cozify.cozifywidget.HttpResponse r) {
                 stringCallback.onResponse(r.getResponseCode(), r.getResponse());
             }
         };

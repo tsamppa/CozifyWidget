@@ -1,9 +1,10 @@
-package com.example.cozifywidget;
+package com.cozify.cozifywidget;
 
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -20,6 +21,7 @@ public class ControlActivity extends AppCompatActivity {
     private boolean mIsOn = false;
     private boolean mIsControlling = false;
     private boolean mIsReachable = true;
+    private String mDeviceId;
     private static CozifyAPI cozifyAPI = CozifyApiReal.getInstance();
 
     private CozifySceneOrDeviceStateManager stateMgr;
@@ -28,6 +30,8 @@ public class ControlActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initViews();
+
+        if (stateMgr == null) stateMgr = new CozifySceneOrDeviceStateManager();
 
         // Set the result to CANCELED.  This will cause the widget host to cancel
         // out of the widget placement if they press the back button.
@@ -48,7 +52,6 @@ public class ControlActivity extends AppCompatActivity {
 
         if (isArmed()) {
             if (toggelOnOff()) {
-                disarm();
                 setResult(RESULT_OK, resultValue);
             } else {
                 updateDeviceState();
@@ -79,8 +82,15 @@ public class ControlActivity extends AppCompatActivity {
     private void arm() {
         mIsArmed = true;
         saveSettings();
-        ShowMessage("Press again to control");
+        ShowMessage("Press again in 5 secs to control");
         displayDeviceState();
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (mIsArmed) disarm();
+            }
+        }, 5000);
     }
 
     private void disarm() {
@@ -101,15 +111,16 @@ public class ControlActivity extends AppCompatActivity {
         String hubKey = PersistentStorage.getInstance().loadHubKey(context);
         if (hubKey != null && hubKey.length() > 0)
             cozifyAPI.setHubKey(hubKey);
-        String statusJson = PersistentStorage.getInstance().loadSettings(context, mAppWidgetId);
-        if (statusJson != null && statusJson.length() > 0) {
-            try {
-                JSONObject json = new JSONObject(statusJson);
-                mIsArmed = json.getBoolean("armed");
-                mIsOn = json.getBoolean("isOn");
-            } catch (JSONException e) {
-                ShowMessage("FAILED to load settings: " + e.getMessage());
-            }
+        JSONObject settings = PersistentStorage.getInstance().loadSettingsJson(context, mAppWidgetId);
+        try {
+            mIsArmed = settings.getBoolean("armed");
+            mIsOn = settings.getBoolean("isOn");
+        } catch (JSONException e) {
+            ShowMessage("FAILED to load settings", e.getMessage());
+        }
+        mDeviceId = PersistentStorage.getInstance().loadDeviceId(this, mAppWidgetId);
+        if (mDeviceId == null) {
+            ShowMessage("Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
         }
     }
 
@@ -201,7 +212,7 @@ public class ControlActivity extends AppCompatActivity {
 
     private void startControl() {
         mIsControlling = true;
-        displayDeviceState();
+        disarm();
         ShowMessage("Sending control command..");
     }
 
@@ -211,7 +222,7 @@ public class ControlActivity extends AppCompatActivity {
         if (success) {
             ShowMessage("Control OK");
         } else {
-            ShowMessage("Control failed: " + reason);
+            ShowMessage("Control FAILED!", reason);
         }
     }
 
@@ -222,13 +233,12 @@ public class ControlActivity extends AppCompatActivity {
     }
 
     private void updateDeviceState() {
-        String deviceId = PersistentStorage.getInstance().loadDeviceId(this, mAppWidgetId);
-        if (deviceId == null) {
+        if (mDeviceId == null) {
             ShowMessage("Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
             return;
         }
 
-        stateMgr.updateCurrentState(deviceId, new CozifyAPI.CozifyCallback() {
+        stateMgr.updateCurrentState(mDeviceId, new CozifyAPI.CozifyCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson, JSONObject requestJson) {
                 if (success) {
@@ -245,18 +255,17 @@ public class ControlActivity extends AppCompatActivity {
 
     private boolean toggelOnOff() {
         startControl();
-        String deviceId = PersistentStorage.getInstance().loadDeviceId(this, mAppWidgetId);
-        if (deviceId == null) {
+        if (mDeviceId == null) {
             endControl(false, "Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
             return false;
         }
-        controlToggle(deviceId);
+        controlToggle();
         return true;
     }
 
-    void controlToggle(final String id) {
+    void controlToggle() {
         stateMgr = new CozifySceneOrDeviceStateManager();
-        stateMgr.toggleState(id, new CozifyAPI.CozifyCallback() {
+        stateMgr.toggleState(mDeviceId, new CozifyAPI.CozifyCallback() {
             @Override
             public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                 if (success) {
@@ -264,7 +273,6 @@ public class ControlActivity extends AppCompatActivity {
                     mIsReachable = stateMgr.getCurrentState().reachable;
                     endControl(true, status);
                 } else {
-                    mIsArmed = false;
                     mIsReachable = false;
                     String details = "Details:";
                     if (jsonResponse != null)

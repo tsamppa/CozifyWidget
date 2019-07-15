@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.cozifywidget">
+    package="com.cozify.cozifywidget">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -17,29 +17,29 @@
         android:usesCleartextTraffic="true">
 
         <activity
-            android:name=".ControlActivity"
+            android:name="com.cozify.cozifywidget.ControlActivity"
             android:theme="@style/Theme.AppCompat.Translucent" >
             <intent-filter>
-                <action android:name="com.example.cozifywidget.WIDGET_BUTTON" />
+                <action android:name="com.cozify.cozifywidget.WIDGET_BUTTON" />
             </intent-filter>
         </activity>
 
         <activity
-            android:name=".CozifyWidgetSetupActivity">
+            android:name="com.cozify.cozifywidget.CozifyWidgetSetupActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name=".CozifyAppWidgetConfigure"
+        <activity android:name="com.cozify.cozifywidget.CozifyAppWidgetConfigure"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
 
-        <receiver android:name=".CozifyAppWidget">
+        <receiver android:name="com.cozify.cozifywidget.CozifyAppWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>

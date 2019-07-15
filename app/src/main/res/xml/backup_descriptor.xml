@@ -4,5 +4,5 @@
     <!-- Exclude the shared preferences file that contains the GCM registrationId -->
     <exclude
         domain="sharedpref"
-        path="com.example.android.apis.appwidget.CozifyWidgetProvider.xml" />
+        path="com.cozify.android.apis.appwidget.CozifyWidgetProvider.xml" />
 </full-backup-content>

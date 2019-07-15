@@ -1,4 +1,4 @@
-package com.example.cozifywidget;
+package com.cozify.cozifywidget;
 
 import android.content.Context;
 import android.content.Intent;
@@ -18,7 +18,7 @@ import org.json.JSONObject;
 public class CozifyWidgetSetupActivity extends AppCompatActivity {
     static final String TAG = "CozifyWidgetConfigure";
     static final String PREFS_NAME
-            = "com.example.android.apis.appwidget.CozifyWidgetProvider";
+            = "com.cozify.android.apis.appwidget.CozifyWidgetProvider";
     static final String PREF_PREFIX_KEY = "prefix_";
 
     private static CozifyAPI cozifyAPI = CozifyApiReal.getInstance();
@@ -204,7 +204,7 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
 
     private boolean checkAccess() {
         final Context context = CozifyWidgetSetupActivity.this;
-        emailAddress = PersistentStorage.getInstance().loadEmail(context, 0);
+        emailAddress = PersistentStorage.getInstance().loadEmail(context);
         if (emailAddress == null || emailAddress.length() < 5) {
             return false;
         }

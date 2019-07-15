@@ -1,4 +1,4 @@
-package com.example.cozifywidget;
+package com.cozify.cozifywidget;
 
 import android.os.Handler;
 import android.support.annotation.IntDef;

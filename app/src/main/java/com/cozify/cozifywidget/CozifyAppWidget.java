@@ -1,4 +1,4 @@
-package com.example.cozifywidget;
+package com.cozify.cozifywidget;
 
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;

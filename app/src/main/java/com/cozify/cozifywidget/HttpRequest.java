@@ -1,11 +1,11 @@
-package com.example.cozifywidget;
+package com.cozify.cozifywidget;
 
 import java.util.HashMap;
 
 public class HttpRequest {
 
     public interface RequestCallback {
-        void onResponse(com.example.cozifywidget.HttpResponse r);
+        void onResponse(com.cozify.cozifywidget.HttpResponse r);
     }
 
     public enum Method {

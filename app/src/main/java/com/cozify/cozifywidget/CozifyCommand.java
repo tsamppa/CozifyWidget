@@ -1,4 +1,4 @@
-package com.example.cozifywidget;
+package com.cozify.cozifywidget;
 
 public class CozifyCommand {
     public String path;

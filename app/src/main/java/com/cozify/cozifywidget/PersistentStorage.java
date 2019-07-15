@@ -1,4 +1,4 @@
-package com.example.cozifywidget;
+package com.cozify.cozifywidget;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -9,7 +9,7 @@ import org.json.JSONObject;
 public class PersistentStorage {
 
     static final String PREFS_NAME
-            = "com.example.android.apis.appwidget.CozifyWidgetProvider";
+            = "com.cozify.android.apis.appwidget.CozifyWidgetProvider";
     static final String PREF_PREFIX_KEY = "prefix_";
 
     private static PersistentStorage ourInstance = new PersistentStorage();
@@ -27,7 +27,7 @@ public class PersistentStorage {
         prefs.apply();
     }
 
-    public String loadEmail(Context context, int appWidgetId) {
+    public String loadEmail(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
         return prefs.getString(PREF_PREFIX_KEY + "email", null);
     }

@@ -1,4 +1,4 @@
-package com.example.cozifywidget;
+package com.cozify.cozifywidget;
 
 import org.json.JSONException;
 import org.json.JSONObject;

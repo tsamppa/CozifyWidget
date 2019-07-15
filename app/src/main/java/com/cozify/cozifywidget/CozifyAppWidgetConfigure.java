@@ -1,4 +1,4 @@
-package com.example.cozifywidget;
+package com.cozify.cozifywidget;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class CozifyAppWidgetConfigure extends Activity {
-    public static final String SHARED_PRES = "com.example.android.apis.appwidget.CozifyWidgetProvider";
+    public static final String SHARED_PRES = "com.cozify.android.apis.appwidget.CozifyWidgetProvider";
     public static final String KEY_BUTTON_TEXT = "Control device";
     private int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
 

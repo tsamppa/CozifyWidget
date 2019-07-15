@@ -1,4 +1,4 @@
-package com.example.cozifywidget;
+package com.cozify.cozifywidget;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -15,17 +15,17 @@ import java.util.HashMap;
 import javax.net.ssl.HttpsURLConnection;
 
 
-public class HttpTask extends AsyncTask<com.example.cozifywidget.HttpRequest, String, com.example.cozifywidget.HttpResponse> {
+public class HttpTask extends AsyncTask<com.cozify.cozifywidget.HttpRequest, String, com.cozify.cozifywidget.HttpResponse> {
 
     @Override
-    protected com.example.cozifywidget.HttpResponse doInBackground(com.example.cozifywidget.HttpRequest... params) {
+    protected com.cozify.cozifywidget.HttpResponse doInBackground(com.cozify.cozifywidget.HttpRequest... params) {
         URL url;
-        com.example.cozifywidget.HttpRequest request = params[0];
+        com.cozify.cozifywidget.HttpRequest request = params[0];
         if (request == null) {
             Log.e("HttpTask", "BAD HttpRequest null");
             throw new NullPointerException();
         }
-        com.example.cozifywidget.HttpResponse response = new com.example.cozifywidget.HttpResponse(-1, "N/A", request.getCallback());
+        com.cozify.cozifywidget.HttpResponse response = new com.cozify.cozifywidget.HttpResponse(-1, "N/A", request.getCallback());
         try {
             if (request.getURL() == null || request.getMethod() == null || request.getCallback() == null) {
                 Log.e("HttpTask", "BAD HttpRequest");
@@ -44,8 +44,8 @@ public class HttpTask extends AsyncTask<com.example.cozifywidget.HttpRequest, St
         return response;
     }
 
-    private com.example.cozifywidget.HttpResponse httpsRequest(URL url, com.example.cozifywidget.HttpRequest request) {
-        com.example.cozifywidget.HttpResponse response = new com.example.cozifywidget.HttpResponse(-1, "N/A", request.getCallback());
+    private com.cozify.cozifywidget.HttpResponse httpsRequest(URL url, com.cozify.cozifywidget.HttpRequest request) {
+        com.cozify.cozifywidget.HttpResponse response = new com.cozify.cozifywidget.HttpResponse(-1, "N/A", request.getCallback());
         HttpsURLConnection urlConnectionHttps = null;
         try {
             urlConnectionHttps = (HttpsURLConnection) url.openConnection();
@@ -77,7 +77,7 @@ public class HttpTask extends AsyncTask<com.example.cozifywidget.HttpRequest, St
             }
             Log.v("HttpsTask", "Response code:" + responseCode);
             Log.v("HttpsTask", responseString);
-            response = new com.example.cozifywidget.HttpResponse(responseCode, responseString, request.getCallback());
+            response = new com.cozify.cozifywidget.HttpResponse(responseCode, responseString, request.getCallback());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -88,8 +88,8 @@ public class HttpTask extends AsyncTask<com.example.cozifywidget.HttpRequest, St
         return response;
     }
 
-    private com.example.cozifywidget.HttpResponse httpRequest(URL url, com.example.cozifywidget.HttpRequest request) {
-        com.example.cozifywidget.HttpResponse response = new com.example.cozifywidget.HttpResponse(-1, "N/A", request.getCallback());
+    private com.cozify.cozifywidget.HttpResponse httpRequest(URL url, com.cozify.cozifywidget.HttpRequest request) {
+        com.cozify.cozifywidget.HttpResponse response = new com.cozify.cozifywidget.HttpResponse(-1, "N/A", request.getCallback());
         HttpURLConnection urlConnectionHttp = null;
         try {
             urlConnectionHttp = (HttpURLConnection) url.openConnection();
@@ -122,7 +122,7 @@ public class HttpTask extends AsyncTask<com.example.cozifywidget.HttpRequest, St
             }
             Log.v("HttpTask", "Response code:" + responseCode);
             Log.v("HttpTask", responseString);
-            response = new com.example.cozifywidget.HttpResponse(responseCode, responseString, request.getCallback());
+            response = new com.cozify.cozifywidget.HttpResponse(responseCode, responseString, request.getCallback());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -159,7 +159,7 @@ public class HttpTask extends AsyncTask<com.example.cozifywidget.HttpRequest, St
     }
 
     @Override
-    protected void onPostExecute(com.example.cozifywidget.HttpResponse response) {
+    protected void onPostExecute(com.cozify.cozifywidget.HttpResponse response) {
         super.onPostExecute(response);
         HttpRequest.RequestCallback callback = response.getCallback();
         if (callback != null) {
