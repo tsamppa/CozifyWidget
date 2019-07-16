@@ -82,6 +82,11 @@ public class CozifyApiReal extends CozifyAPI {
             remoteConnection = true;
         }
 
+        public void toggleConnectType() {
+            if (remoteConnection) connectLocally();
+            else connectRemotely();
+        }
+
         private void setHeaders() {
             if (hubKey != null && hubKey.length() > 0) {
                 httpAPI.addHeader("X-Hub-Key", hubKey);
@@ -319,7 +324,7 @@ public class CozifyApiReal extends CozifyAPI {
         }
 
         public void getSceneOrDeviceState(final String device_id, final CozifyCallback cb) {
-            String url = completeUrl("/hub/poll?ts="+deviceStateTimestamp);
+            final String url = completeUrl("/hub/poll?ts="+deviceStateTimestamp);
             final JSONObject request = new JSONObject();
             try {
                 request.put("url", url);
@@ -330,54 +335,73 @@ public class CozifyApiReal extends CozifyAPI {
                         @Override
                         public void onResponse(int statusCode, JSONObject result) {
                             if (statusCode == 200) {
-                                try {
-                                    JSONObject stateJSon = null;
-                                    long timestamp = result.getLong("timestamp");
-                                    deviceStateTimestamp = timestamp;
-                                    JSONArray polls = result.getJSONArray("polls");
-                                    for (int i = 0; i < polls.length(); i++) {
-                                        JSONObject p = polls.getJSONObject(i);
-                                        String type = p.getString("type");
-                                        JSONObject targets = null;
-                                        if (type.equals("DEVICE_DELTA")) {
-                                            targets = p.getJSONObject("devices");
-                                        }
-                                        if (type.equals("SCENE_DELTA")) {
-                                            targets = p.getJSONObject("scenes");
-                                        }
-                                        if (targets != null) {
-                                            Iterator<?> ds = targets.keys();
-                                            while (ds.hasNext()) {
-                                                String k3 = (String) ds.next();
-                                                JSONObject target = targets.getJSONObject(k3);
-                                                CozifySceneOrDeviceState state = new CozifySceneOrDeviceState();
-                                                state.fromPollData(target, timestamp);
-                                                deviceStates.put(state.id, state);
-                                                if (device_id.equals(state.id)) {
-                                                    stateJSon = state.toJson();
+                                parsePoll(request, device_id, statusCode, result, cb);
+                            } else {
+                                // Retry once after switching connection type
+                                toggleConnectType();
+                                getHttpAPI().get(url, new JsonAPI.JsonCallback() {
+                                            @Override
+                                            public void onResponse(int statusCode, JSONObject result) {
+                                                if (statusCode == 200) {
+                                                    parsePoll(request, device_id, statusCode, result, cb);
+                                                } else {
+                                                    cb.result(false, "Status code " + statusCode, null, request);
                                                 }
                                             }
                                         }
-                                    }
-                                    if (stateJSon == null) {
-                                        CozifySceneOrDeviceState deviceState = deviceStates.get(device_id);
-                                        if (deviceState != null) {
-                                            stateJSon = deviceState.toJson();
-                                        } else {
-                                            cb.result(false, "ERROR: Could not find device state ", null, request);
-                                        }
-                                    }
-                                    trafficLog("getSceneOrDeviceState", request.toString() + " : " + stateJSon.toString());
-                                    cb.result(true, "OK " + statusCode, stateJSon, request);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                    cb.result(false, "Exception:" + e.getMessage(), null, request);
-                                }
-                            } else {
-                                cb.result(false, "Status code " + statusCode, null, request);
+                                );
                             }
                         }
                     }
             );
+        }
+
+        private void parsePoll(final JSONObject request, final String device_id, int statusCode, JSONObject result, final CozifyCallback cb) {
+            try {
+                JSONObject stateJSon = null;
+                long timestamp = result.getLong("timestamp");
+                deviceStateTimestamp = timestamp;
+                JSONArray polls = result.getJSONArray("polls");
+                for (int i = 0; i < polls.length(); i++) {
+                    JSONObject p = polls.getJSONObject(i);
+                    String type = p.getString("type");
+                    JSONObject targets = null;
+                    if (type.equals("DEVICE_DELTA")) {
+                        targets = p.getJSONObject("devices");
+                    }
+                    if (type.equals("SCENE_DELTA")) {
+                        targets = p.getJSONObject("scenes");
+                    }
+                    if (targets != null) {
+                        Iterator<?> ds = targets.keys();
+                        while (ds.hasNext()) {
+                            String k3 = (String) ds.next();
+                            JSONObject target = targets.getJSONObject(k3);
+                            CozifySceneOrDeviceState state = new CozifySceneOrDeviceState();
+                            state.fromPollData(target, timestamp);
+                            deviceStates.put(state.id, state);
+                            if (device_id.equals(state.id)) {
+                                stateJSon = state.toJson();
+                            }
+                        }
+                    }
+                }
+                if (stateJSon == null) {
+                    CozifySceneOrDeviceState deviceState = deviceStates.get(device_id);
+                    if (deviceState != null) {
+                        stateJSon = deviceState.toJson();
+                    } else {
+                        cb.result(false, "ERROR: Could not find device state ", null, request);
+                    }
+                }
+                if (stateJSon != null)
+                    trafficLog("getSceneOrDeviceState", request.toString() + " : " + stateJSon.toString());
+                else
+                    trafficLog("getSceneOrDeviceState", request.toString());
+                cb.result(true, "OK " + statusCode, stateJSon, request);
+            } catch (JSONException e) {
+                e.printStackTrace();
+                cb.result(false, "Exception:" + e.getMessage(), null, request);
+            }
         }
     }

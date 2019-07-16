@@ -5,11 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,6 +24,8 @@ public class ControlActivity extends AppCompatActivity {
     private boolean mIsReachable = true;
     private String mDeviceId;
     private static CozifyAPI cozifyAPI = CozifyApiReal.getInstance();
+    private static Handler handler = new Handler();
+    private static Runnable delayedDisarm = null;
 
     private CozifySceneOrDeviceStateManager stateMgr;
 
@@ -84,16 +87,20 @@ public class ControlActivity extends AppCompatActivity {
         saveSettings();
         ShowMessage("Press again in 5 secs to control");
         displayDeviceState();
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
+        delayedDisarm = new Runnable() {
             @Override
             public void run() {
                 if (mIsArmed) disarm();
             }
-        }, 5000);
+        };
+        handler.postDelayed(delayedDisarm, 5000);
     }
 
     private void disarm() {
+        if (delayedDisarm != null) {
+            handler.removeCallbacks(delayedDisarm);
+            delayedDisarm = null;
+        }
         mIsArmed = false;
         saveSettings();
         displayDeviceState();
@@ -197,6 +204,7 @@ public class ControlActivity extends AppCompatActivity {
                 resourceForState = R.drawable.appwidget_button_unreachable_off;
             }
         }
+        Log.e("ResourceFile", "" + resourceForState);
         return resourceForState;
     }
 
@@ -271,6 +279,7 @@ public class ControlActivity extends AppCompatActivity {
                 if (success) {
                     mIsOn = stateMgr.getCurrentState().isOn;
                     mIsReachable = stateMgr.getCurrentState().reachable;
+                    saveSettings();
                     endControl(true, status);
                 } else {
                     mIsReachable = false;

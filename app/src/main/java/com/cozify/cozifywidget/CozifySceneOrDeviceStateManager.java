@@ -1,7 +1,7 @@
 package com.cozify.cozifywidget;
 
 import android.os.Handler;
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 import org.json.JSONObject;
 
