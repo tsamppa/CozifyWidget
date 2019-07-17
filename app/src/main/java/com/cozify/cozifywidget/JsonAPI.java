@@ -128,7 +128,7 @@ public class JsonAPI {
 
     public void put(String url, String data, final JsonCallback callback) {
         com.cozify.cozifywidget.HttpRequest r = new com.cozify.cozifywidget.HttpRequest(com.cozify.cozifywidget.HttpRequest.Method.PUT, url);
-        headers.put("Content-Type","application/json"); // TODO
+        headers.put("Content-Type","application/json");
         headers.put("Accept","application/json");
         r.setHeaders(headers);
         r.setCallback(callbackForJsonCallback(callback));

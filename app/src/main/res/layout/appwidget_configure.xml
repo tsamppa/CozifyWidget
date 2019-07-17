@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="8dp">
+
     <TextView
         android:id="@+id/config_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/select_hub_and_device"/>
+        android:text="@string/select_hub_and_device"
+        android:textSize="20sp" />
 
     <Spinner
         android:id="@+id/spinner_hubs"
@@ -37,7 +38,7 @@
             android:layout_height="wrap_content"
             android:inputType="textEmailAddress"
             android:hint="@string/device_name"
-            />
+            android:importantForAutofill="no" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -45,13 +46,13 @@
         android:id="@+id/test_control_on_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Test ON" />
+        android:text="@string/test_on" />
 
     <Button
         android:id="@+id/test_control_off_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Test OFF" />
+        android:text="@string/test_off" />
 
     <Button
         android:id="@+id/create_button"

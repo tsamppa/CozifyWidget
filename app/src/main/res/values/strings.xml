@@ -3,15 +3,18 @@
     <string name="appwidget_text">Scene or Device</string>
     <string name="add_widget">Cozify Control</string>
     <string name="password_from_email">Password from email</string>
-    <string name="ah_pw_email">Password from email</string>
+    <string name="ah_pw_email">Give password from email</string>
     <string name="login_email">someone@email.com</string>
-    <string name="login_button">Send password to email</string>
+    <string name="login_button">Send a password to email above</string>
     <string name="get_devices">Get devices</string>
-    <string name="login_first">Login first to list devices</string>
-    <string name="device_name">Label shown on button (optional)</string>
-    <string name="create_button">Create Widget</string>
-    <string name="intro_text">Cozify widget for quick control of a Scene or Device. Login by entering the one-time password sent to given email address. Then create a widget and define the device to control.</string>
+    <string name="login_first">Login first to list Scenes and Devices</string>
+    <string name="device_name">Shorter label shown on button (optional)</string>
+    <string name="create_button">Create the Widget</string>
+    <string name="intro_text">This is Cozify Widget for quick control of a Scene or Device directly from the home screen. You need to have a Cozify Smart Home Hub device. Login by entering the one-time password sent to given email address. Then you can create a widget buttons for controlling Scenes and Devices.</string>
     <string name="control_device_status">Status</string>
-    <string name="select_hub_and_device">Select hub and target scene or device</string>
+    <string name="select_hub_and_device">Select Hub and Target scene or Device</string>
     <string name="controlling_device">Controlling device..</string>
+    <string name="login_status">Checking login..</string>
+    <string name="test_on">Test ON now</string>
+    <string name="test_off">Test OFF now</string>
 </resources>

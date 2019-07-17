@@ -204,7 +204,6 @@ public class ControlActivity extends AppCompatActivity {
                 resourceForState = R.drawable.appwidget_button_unreachable_off;
             }
         }
-        Log.e("ResourceFile", "" + resourceForState);
         return resourceForState;
     }
 
