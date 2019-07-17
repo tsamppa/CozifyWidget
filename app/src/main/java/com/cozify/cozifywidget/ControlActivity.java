@@ -23,9 +23,9 @@ public class ControlActivity extends AppCompatActivity {
     private boolean mIsControlling = false;
     private boolean mIsReachable = true;
     private String mDeviceId;
-    private static CozifyAPI cozifyAPI = CozifyApiReal.getInstance();
-    private static Handler handler = new Handler();
-    private static Runnable delayedDisarm = null;
+    private CozifyAPI cozifyAPI = CozifyApiReal.getInstance();
+    private Handler handler = new Handler();
+    private Runnable delayedDisarm = null;
 
     private CozifySceneOrDeviceStateManager stateMgr;
 

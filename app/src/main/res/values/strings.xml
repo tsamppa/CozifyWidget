@@ -10,11 +10,12 @@
     <string name="login_first">Login first to list Scenes and Devices</string>
     <string name="device_name">Shorter label shown on button (optional)</string>
     <string name="create_button">Create the Widget</string>
-    <string name="intro_text">This is Cozify Widget for quick control of a Scene or Device directly from the home screen. You need to have a Cozify Smart Home Hub device. Login by entering the one-time password sent to given email address. Then you can create a widget buttons for controlling Scenes and Devices.</string>
+    <string name="intro_text">This is Cozify Widget for quick control of a Scene or Device directly from the home screen. You need to have a Cozify Smart Home Hub device. Login by entering the email address of your Cozify account to receive a one-time password to the given email address. Then you can create a widget buttons for controlling Scenes and Devices.</string>
     <string name="control_device_status">Status</string>
     <string name="select_hub_and_device">Select Hub and Target scene or Device</string>
     <string name="controlling_device">Controlling device..</string>
     <string name="login_status">Checking login..</string>
     <string name="test_on">Test ON now</string>
     <string name="test_off">Test OFF now</string>
+    <string name="email_address">Email address</string>
 </resources>

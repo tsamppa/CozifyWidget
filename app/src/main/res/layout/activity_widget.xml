@@ -36,6 +36,7 @@
             android:layout_margin="10dp"
             android:autofillHints="Email"
             android:hint="@string/login_email"
+            android:contentDescription="@string/email_address"
             android:inputType="textEmailAddress" />
 
     </com.google.android.material.textfield.TextInputLayout>
