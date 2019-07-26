@@ -319,6 +319,10 @@ public class CozifyApiReal extends CozifyAPI {
 
         public void setDeviceCacheState(String id, boolean isOn) {
             CozifySceneOrDeviceState deviceState = deviceStates.get(id);
+            if (deviceState == null) {
+                deviceState = new CozifySceneOrDeviceState();
+                deviceState.id = id;
+            }
             deviceState.isOn = isOn;
             deviceStates.put(id, deviceState);
         }

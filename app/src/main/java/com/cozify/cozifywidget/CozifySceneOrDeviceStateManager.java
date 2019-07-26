@@ -128,6 +128,10 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
                     cbFinished.result(false, "UNREACHABLE", null, null);
                     break;
                 }
+                case CONTROL_PRCESS_STATE_FAILURE: {
+                    cbFinished.result(false, "FAILURE", null, null);
+                    break;
+                }
             }
         } else {
             throw new NullPointerException("Logic error in StateManager");

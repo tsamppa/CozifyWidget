@@ -54,10 +54,6 @@ public class PersistentStorageTest {
     }
 
     @Test
-    public void saveSettings() {
-    }
-
-    @Test
     public void saveSettingsJson() {
         Context appContext = InstrumentationRegistry.getTargetContext();
         PersistentStorage.getInstance().saveSettings(appContext,1, true, false);

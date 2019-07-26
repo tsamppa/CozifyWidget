@@ -140,7 +140,7 @@ public class HttpTask extends AsyncTask<com.cozify.cozifywidget.HttpRequest, Str
         StringBuffer response = new StringBuffer();
         try {
             reader = new BufferedReader(new InputStreamReader(in));
-            String line = "";
+            String line;
             while ((line = reader.readLine()) != null) {
                 response.append(line);
             }

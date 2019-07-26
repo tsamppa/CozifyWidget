@@ -3,8 +3,6 @@ package com.cozify.cozifywidget;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import com.google.android.material.textfield.TextInputLayout;
-import androidx.appcompat.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -12,6 +10,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.textfield.TextInputLayout;
 
 import org.json.JSONObject;
 
@@ -23,7 +25,6 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
 
     private static CozifyAPI cozifyAPI = CozifyApiReal.getInstance();
 
-    View pageView;
     TextView textViewStatus;
     EditText editTextEmail;
     TextInputLayout textInputLayoutEmail;
@@ -161,7 +162,6 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
                     setResult(RESULT_OK, resultValue);
                     finish();
                 } else {
-                    pageView.setVisibility(View.VISIBLE);
                     textViewStatus.setText("Please check internet connection and try again");
                 }
             }

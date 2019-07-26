@@ -6,7 +6,6 @@ import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import com.google.android.material.textfield.TextInputLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
@@ -19,9 +18,12 @@ import android.widget.RemoteViews;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.google.android.material.textfield.TextInputLayout;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -286,7 +288,7 @@ public class CozifyAppWidgetConfigure extends Activity {
                     }
                 });
             } else {
-                textViewStatus.setText("Select target device first");
+                textViewStatus.setText(getString(R.string.tip_select_device_first));
             }
         }
     };
@@ -302,7 +304,7 @@ public class CozifyAppWidgetConfigure extends Activity {
                     }
                 });
             } else {
-                textViewStatus.setText("Select target device first");
+                textViewStatus.setText(getString(R.string.tip_select_device_first));
             }
         }
     };
@@ -380,7 +382,7 @@ public class CozifyAppWidgetConfigure extends Activity {
                     Spinner items = findViewById(R.id.spinner_hubs);
                     setSpinnerItems(items, hubs);
                     resetDevicesSpinner();
-                    textViewStatus.setText("Select device");
+                    textViewStatus.setText(getString(R.string.tip_select_device_first));
                     enableSpinners(true);
 
                 } else {
@@ -418,7 +420,7 @@ public class CozifyAppWidgetConfigure extends Activity {
 
                     Spinner items = findViewById(R.id.spinner_devices);
                     setSpinnerItems(items, devicesList);
-                    textViewStatus.setText("Select target device or scene");
+                    textViewStatus.setText(getString(R.string.tip_select_device_first));
                     enableTestButtons(true);
                     enableSpinners(true);
 
@@ -448,17 +450,17 @@ public class CozifyAppWidgetConfigure extends Activity {
     }
 
     public String getDecodedJwt(String jwt) {
-        String result0 = "";
-        String result1 = "";
-        String result2 = "";
+        String result0;
+        String result1;
+        String result2;
         String[] parts = jwt.split("[.]");
         try {
             byte[] decodedBytes0 = Base64.decode(parts[0], Base64.URL_SAFE);
-            result0 =  new String(decodedBytes0, "UTF-8");
+            result0 =  new String(decodedBytes0, StandardCharsets.UTF_8);
             byte[] decodedBytes1 = Base64.decode(parts[1], Base64.URL_SAFE);
-            result1 =  new String(decodedBytes1, "UTF-8");
+            result1 =  new String(decodedBytes1, StandardCharsets.UTF_8);
             byte[] decodedBytes2 = Base64.decode(parts[2], Base64.URL_SAFE);
-            result2 =  new String(decodedBytes2, "UTF-8");
+            result2 =  new String(decodedBytes2, StandardCharsets.UTF_8);
         } catch(Exception e) {
             throw new RuntimeException("Couldnt decode jwt", e);
         }
