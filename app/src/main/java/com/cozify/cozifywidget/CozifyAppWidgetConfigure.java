@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -17,6 +18,7 @@ import android.widget.EditText;
 import android.widget.RemoteViews;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -77,6 +79,7 @@ public class CozifyAppWidgetConfigure extends Activity {
         setResult(RESULT_CANCELED, resultValue);
 
         if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+            ShowErrorMessage("Invalid Widget ID", "mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID");
             finish();
         }
 
@@ -88,7 +91,7 @@ public class CozifyAppWidgetConfigure extends Activity {
         cloudtoken =  PersistentStorage.getInstance().loadCloudToken(context);
         if (cloudtoken != null) {
             setAuthHeader();
-            String tokeinfo = getDecodedJwt(cloudtoken);
+            String tokeninfo = getDecodedJwt(cloudtoken);
         }
         // Find the Device Name EditText
         editTextDeviceName = findViewById(R.id.device_name_edit);
@@ -227,6 +230,7 @@ public class CozifyAppWidgetConfigure extends Activity {
             // Save device ID for control
             PersistentStorage.getInstance().saveDeviceId(context, mAppWidgetId, selectedDeviceId);
             PersistentStorage.getInstance().saveDeviceName(context, mAppWidgetId, selectedDeviceShortName);
+            PersistentStorage.getInstance().saveSettings(context, mAppWidgetId, false, false, false, false, true);
 
             // Make sure we pass back the original appWidgetId
             Intent intent = new Intent(this, ControlActivity.class);
@@ -237,19 +241,34 @@ public class CozifyAppWidgetConfigure extends Activity {
             RemoteViews views = new RemoteViews(this.getPackageName(), R.layout.demo_app_widget);
             views.setOnClickPendingIntent(R.id.control_button, pendingIntent);
             views.setCharSequence(R.id.control_button, "setText", selectedDeviceShortName);
-            updateDeviceState(context, appWidgetManager, mAppWidgetId);
-
             appWidgetManager.updateAppWidget(mAppWidgetId, views);
 
             Intent resultValue = new Intent();
             resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
             setResult(RESULT_OK, resultValue);
+            ShowMessage("Widget "+mAppWidgetId+" created for controlling "+selectedDeviceShortName);
+            updateDeviceState(context, appWidgetManager, mAppWidgetId);
             finish();
         } else {
-            textInputLayoutDeviceName.setErrorEnabled(true);
-            textInputLayoutDeviceName.setError("Please enter short device name");
+            String error = "Please enter short device name";
+            ShowErrorMessage(error, "selectedDeviceId.length() <= 0: "+selectedDeviceId.length());
+            if (textInputLayoutDeviceName != null) {
+                textInputLayoutDeviceName.setErrorEnabled(true);
+                textInputLayoutDeviceName.setError(error);
+            }
         }
     }
+
+    private void ShowMessage(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        Log.i("Widget:"+mAppWidgetId, message);
+    }
+
+    private void ShowErrorMessage(String errorMessage, String details) {
+        ShowMessage(errorMessage);
+        Log.e("Widget: "+mAppWidgetId+" ERROR details:", details);
+    }
+
 
     private void updateDeviceState(final Context context, final AppWidgetManager appWidgetManager,
                                    final int appWidgetId) {
@@ -266,7 +285,7 @@ public class CozifyAppWidgetConfigure extends Activity {
                     RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.demo_app_widget);
                     int resourceForState = ControlActivity.getDeviceResourceForState(true, state.isOn, false, false);
                     views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
-                    PersistentStorage.getInstance().saveSettings(context, appWidgetId,  state.isOn, false);
+                    PersistentStorage.getInstance().saveSettings(context, appWidgetId,  state.isOn, false, false, false, true);
                     appWidgetManager.updateAppWidget(appWidgetId, views);
                 } else {
                     RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.demo_app_widget);

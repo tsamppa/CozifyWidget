@@ -22,11 +22,14 @@ public class CozifyAppWidget extends AppWidgetProvider {
         // Create an Intent to launch CozifyWidgetSetupActivity
         Intent intent = new Intent(context, ControlActivity.class);
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, appWidgetId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.demo_app_widget);
         String device_name = PersistentStorage.getInstance().loadDeviceName(context, appWidgetId);
         if (device_name != null) {
             views.setCharSequence(R.id.control_button, "setText", device_name);
+        } else {
+            views.setCharSequence(R.id.control_button, "setText", "NA: "+appWidgetId);
+            Log.e("Widget:"+appWidgetId, "ERROR: Device name not found from Persistent Storage!");
         }
         JSONObject settings = PersistentStorage.getInstance().loadSettingsJson(context, appWidgetId);
         if (settings != null) {
@@ -34,8 +37,10 @@ public class CozifyAppWidget extends AppWidgetProvider {
                 int resourceForState = ControlActivity.getDeviceResourceForState(true, settings.getBoolean("isOn"), false, false);
                 views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
             } catch (JSONException e) {
-                Log.e("Widget", "Malformed persistent storage settings:"+e.getMessage());
+                Log.e("Widget:"+appWidgetId, "Malformed persistent storage settings:"+e.getMessage());
             }
+        } else {
+            Log.e("Widget:"+appWidgetId, "Empty settings in persistent storage. Newly created Widget perhaps?");
         }
         views.setOnClickPendingIntent(R.id.control_button, pendingIntent);
         // Tell the AppWidgetManager to perform an update on the current app widget
@@ -46,10 +51,12 @@ public class CozifyAppWidget extends AppWidgetProvider {
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         // There may be multiple widgets active, so update all of them
         for (int appWidgetId : appWidgetIds) {
+            Log.i("Widget:"+appWidgetId, "Updating widget in AppWidgetProvider.");
             updateAppWidget(context, appWidgetManager, appWidgetId);
         }
     }
 
+    @Override
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
     }

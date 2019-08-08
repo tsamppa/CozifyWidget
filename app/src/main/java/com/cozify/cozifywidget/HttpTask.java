@@ -17,6 +17,8 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class HttpTask extends AsyncTask<com.cozify.cozifywidget.HttpRequest, String, com.cozify.cozifywidget.HttpResponse> {
 
+    private boolean logRequests = false;
+
     @Override
     protected com.cozify.cozifywidget.HttpResponse doInBackground(com.cozify.cozifywidget.HttpRequest... params) {
         URL url;
@@ -49,7 +51,7 @@ public class HttpTask extends AsyncTask<com.cozify.cozifywidget.HttpRequest, Str
         HttpsURLConnection urlConnectionHttps = null;
         try {
             urlConnectionHttps = (HttpsURLConnection) url.openConnection();
-            Log.v("HttpsTask", request.getMethodString() + " " + url.toString());
+            if (logRequests) Log.i("HttpsTask", request.getMethodString() + " " + url.toString());
 
             urlConnectionHttps.setRequestMethod(request.getMethodString());
 
@@ -75,8 +77,8 @@ public class HttpTask extends AsyncTask<com.cozify.cozifywidget.HttpRequest, Str
             } else {
                 responseString = readStream(urlConnectionHttps.getErrorStream());
             }
-            Log.v("HttpsTask", "Response code:" + responseCode);
-            Log.v("HttpsTask", responseString);
+            if (logRequests) Log.i("HttpsTask", "Response code:" + responseCode);
+            if (logRequests) Log.i("HttpsTask", responseString);
             response = new com.cozify.cozifywidget.HttpResponse(responseCode, responseString, request.getCallback());
 
         } catch (Exception e) {
@@ -93,8 +95,8 @@ public class HttpTask extends AsyncTask<com.cozify.cozifywidget.HttpRequest, Str
         HttpURLConnection urlConnectionHttp = null;
         try {
             urlConnectionHttp = (HttpURLConnection) url.openConnection();
-            Log.v("HttpTask", request.getMethodString() + " " + url.toString());
-            Log.v("HttpTaskDetails", request.getHeaders().toString() + " " + request.getPostData());
+            if (logRequests) Log.i("HttpTask", request.getMethodString() + " " + url.toString());
+            if (logRequests) Log.i("HttpTaskDetails", request.getHeaders().toString() + " " + request.getPostData());
 
             urlConnectionHttp.setRequestMethod(request.getMethodString());
 
@@ -120,8 +122,8 @@ public class HttpTask extends AsyncTask<com.cozify.cozifywidget.HttpRequest, Str
             } else {
                 responseString = readStream(urlConnectionHttp.getErrorStream());
             }
-            Log.v("HttpTask", "Response code:" + responseCode);
-            Log.v("HttpTask", responseString);
+            if (logRequests) Log.i("HttpTask", "Response code:" + responseCode);
+            if (logRequests) Log.i("HttpTask", responseString);
             response = new com.cozify.cozifywidget.HttpResponse(responseCode, responseString, request.getCallback());
 
         } catch (Exception e) {

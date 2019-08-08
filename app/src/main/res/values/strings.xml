@@ -2,7 +2,7 @@
     <string name="app_name">Cozify Scene and Device Control</string>
     <string name="appwidget_text">Scene or Device</string>
     <string name="add_widget">Cozify Control</string>
-    <string name="password_from_email">Password from email</string>
+    <string name="password_from_email">Give password from email</string>
     <string name="ah_pw_email">Give password from email</string>
     <string name="login_email">someone@email.com</string>
     <string name="login_button">Send a password to email above</string>

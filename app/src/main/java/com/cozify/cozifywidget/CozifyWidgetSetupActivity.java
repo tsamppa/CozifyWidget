@@ -46,7 +46,12 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
         textInputLayoutEmail = findViewById(R.id.email_layout);
 
         // Login automatically with saved credentials
-        if (!checkAccess()) {
+        if (checkAccess()) {
+            Toast.makeText(this, "Connected to Cozify with saved credentials.", Toast.LENGTH_SHORT).show();
+            Intent resultValue = new Intent();
+            setResult(RESULT_OK, resultValue);
+            finish();
+        } else {
             showEmailFields();
         }
 

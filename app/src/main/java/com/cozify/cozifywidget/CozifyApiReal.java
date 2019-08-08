@@ -1,7 +1,5 @@
 package com.cozify.cozifywidget;
 
-import android.util.Log;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,7 +36,7 @@ public class CozifyApiReal extends CozifyAPI {
         }
 
         private void trafficLog(String method, String data) {
-            Log.i(method, data);
+            //Log.i(method, data);
         }
 
         public void setHubLanIp(String hubLanIp) {

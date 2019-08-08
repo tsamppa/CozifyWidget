@@ -14,6 +14,8 @@ public class PersistentStorage {
 
     private static PersistentStorage ourInstance = new PersistentStorage();
     public static PersistentStorage getInstance() {
+        if (ourInstance == null)
+            ourInstance = new PersistentStorage();
         return ourInstance;
     }
 
@@ -21,10 +23,10 @@ public class PersistentStorage {
 
     }
 
-    public void saveEmail(Context context, String email) {
+    public boolean saveEmail(Context context, String email) {
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
         prefs.putString(PREF_PREFIX_KEY + "email", email);
-        prefs.apply();
+        return prefs.commit();
     }
 
     public String loadEmail(Context context) {
@@ -32,10 +34,10 @@ public class PersistentStorage {
         return prefs.getString(PREF_PREFIX_KEY + "email", null);
     }
 
-    public void saveCloudToken(Context context, String cloudtoken) {
+    public boolean saveCloudToken(Context context, String cloudtoken) {
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
         prefs.putString(PREF_PREFIX_KEY + "cloudtoken", cloudtoken);
-        prefs.apply();
+        return prefs.commit();
     }
 
     public String loadCloudToken(Context context) {
@@ -43,10 +45,10 @@ public class PersistentStorage {
         return prefs.getString(PREF_PREFIX_KEY + "cloudtoken", null);
     }
 
-    public void saveHubKey(Context context, String cloudtoken) {
+    public boolean saveHubKey(Context context, String cloudtoken) {
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
         prefs.putString(PREF_PREFIX_KEY + "hubKey", cloudtoken);
-        prefs.apply();
+        return prefs.commit();
     }
 
     public String loadHubKey(Context context) {
@@ -54,10 +56,10 @@ public class PersistentStorage {
         return prefs.getString(PREF_PREFIX_KEY + "hubKey", null);
     }
 
-    public void saveDeviceId(Context context, int appWidgetId, String deviceId) {
+    public boolean saveDeviceId(Context context, int appWidgetId, String deviceId) {
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
         prefs.putString(PREF_PREFIX_KEY + "deviceId_" + appWidgetId, deviceId);
-        prefs.apply();
+        return prefs.commit();
     }
 
     public String loadDeviceId(Context context, int appWidgetId) {
@@ -65,10 +67,10 @@ public class PersistentStorage {
         return prefs.getString(PREF_PREFIX_KEY + "deviceId_" + appWidgetId, null);
     }
 
-    public void saveDeviceName(Context context, int appWidgetId, String deviceName) {
+    public boolean saveDeviceName(Context context, int appWidgetId, String deviceName) {
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
         prefs.putString(PREF_PREFIX_KEY + "deviceName_" + appWidgetId, deviceName);
-        prefs.apply();
+        return prefs.commit();
     }
 
     public String loadDeviceName(Context context, int appWidgetId) {
@@ -77,10 +79,10 @@ public class PersistentStorage {
         return deviceName;
     }
 
-    private void saveSettings(Context context, int appWidgetId, String settings) {
+    private boolean saveSettings(Context context, int appWidgetId, String settings) {
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
         prefs.putString(PREF_PREFIX_KEY + "settings_" + appWidgetId, settings);
-        prefs.apply();
+        return prefs.commit();
     }
 
     public String loadSettings(Context context, int appWidgetId) {
@@ -89,15 +91,18 @@ public class PersistentStorage {
         return settings;
     }
 
-    public void saveSettings(Context context, int appWidgetId, boolean isOn, boolean isArmed) {
+    public boolean saveSettings(Context context, int appWidgetId, boolean isOn, boolean isArmed, boolean isArming, boolean isControlling, boolean isReachable) {
         JSONObject json = new JSONObject();
         try {
             json.put("armed", isArmed);
             json.put("isOn", isOn);
+            json.put("reachable", isReachable);
+            json.put("controlling", isControlling);
+            json.put("arming", isArming);
         } catch (JSONException e) {
-            return;
+            return false;
         }
-        saveSettings(context, appWidgetId, json.toString());
+        return saveSettings(context, appWidgetId, json.toString());
     }
 
     public JSONObject loadSettingsJson(Context context, int appWidgetId) {
