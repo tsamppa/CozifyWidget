@@ -13,6 +13,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
     private CozifySceneOrDeviceState desiredState;
     private Handler handler;
     private Long startTime = null;
+    private Long lastUpdateTimestamp;
     private CozifyAPI.CozifyCallback cbFinished = null;
 
     @Retention(RetentionPolicy.SOURCE)
@@ -168,8 +169,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
         cozifyAPI.getSceneOrDeviceState(device_id, new CozifyAPI.CozifyCallback() {
             public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                 if (success) {
-                    currentState = new CozifySceneOrDeviceState();
-                    currentState.fromJson(jsonResponse);
+                    setCurrentStateFromJsonResponse(jsonResponse);
                 }
                 cb.result(success, status, jsonResponse, jsonRequest);
             }
@@ -181,8 +181,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
         cozifyAPI.getSceneOrDeviceState(desiredState.id, new CozifyAPI.CozifyCallback() {
             public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                 if (success) {
-                    currentState = new CozifySceneOrDeviceState();
-                    currentState.fromJson(jsonResponse);
+                    setCurrentStateFromJsonResponse(jsonResponse);
                     if (reportIfFinalState()) return;
                 }
                 retryControlAfterDelay();
@@ -243,8 +242,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
         cozifyAPI.getSceneOrDeviceState(id, new CozifyAPI.CozifyCallback() {
             public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                 if (success) {
-                    currentState = new CozifySceneOrDeviceState();
-                    currentState.fromJson(jsonResponse);
+                    setCurrentStateFromJsonResponse(jsonResponse);
                     desiredState = new CozifySceneOrDeviceState();
                     desiredState.fromJson(jsonResponse);
                     desiredState.isOn = !currentState.isOn;
@@ -259,6 +257,27 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
 
     public CozifySceneOrDeviceState getCurrentState() {
         return currentState;
+    }
+
+    public void setCurrentState(CozifySceneOrDeviceState state) {
+        if (currentState == null) {
+            currentState = state;
+        } else if (state.timestamp > currentState.timestamp) {
+            currentState = state;
+        }
+    }
+
+    private void setCurrentStateFromJsonResponse(JSONObject stateJson) {
+        currentState = new CozifySceneOrDeviceState();
+        currentState.fromJson(stateJson);
+    }
+
+    public String getMeasurementString() {
+        String measurement = null;
+        if (currentState != null && currentState.hasMeasurement()) {
+            measurement = currentState.getMeasurementsString();
+        }
+        return measurement;
     }
 
 }

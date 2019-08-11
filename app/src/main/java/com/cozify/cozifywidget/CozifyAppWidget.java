@@ -22,8 +22,10 @@ public class CozifyAppWidget extends AppWidgetProvider {
         // Create an Intent to launch CozifyWidgetSetupActivity
         Intent intent = new Intent(context, ControlActivity.class);
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, appWidgetId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Log.d("PENDING DEBUG","PendingIntent at updateAppWidget: "+appWidgetId);
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.demo_app_widget);
+        views.setOnClickPendingIntent(R.id.control_button, pendingIntent);
         String device_name = PersistentStorage.getInstance().loadDeviceName(context, appWidgetId);
         if (device_name != null) {
             views.setCharSequence(R.id.control_button, "setText", device_name);
@@ -42,7 +44,6 @@ public class CozifyAppWidget extends AppWidgetProvider {
         } else {
             Log.e("Widget:"+appWidgetId, "Empty settings in persistent storage. Newly created Widget perhaps?");
         }
-        views.setOnClickPendingIntent(R.id.control_button, pendingIntent);
         // Tell the AppWidgetManager to perform an update on the current app widget
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }

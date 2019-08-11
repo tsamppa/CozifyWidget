@@ -100,6 +100,7 @@ public class PersistentStorage {
             json.put("controlling", isControlling);
             json.put("arming", isArming);
         } catch (JSONException e) {
+            e.printStackTrace();
             return false;
         }
         return saveSettings(context, appWidgetId, json.toString());
@@ -111,9 +112,33 @@ public class PersistentStorage {
             try {
                 return new JSONObject(settings);
             } catch (JSONException e) {
+                e.printStackTrace();
                 return null;
             }
         }
         return null;
+    }
+
+    public CozifySceneOrDeviceState loadState(Context context, int appWidgetId) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+        String stateStr = prefs.getString(PREF_PREFIX_KEY + "state_" + appWidgetId, null);
+        CozifySceneOrDeviceState state = new CozifySceneOrDeviceState();
+        if (state.fromJsonStr(stateStr)) {
+            return state;
+        }
+        return null;
+    }
+
+    public boolean saveState(Context context, int appWidgetId, CozifySceneOrDeviceState state) {
+        if (state == null) return false;
+        SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
+        try {
+            String strState = state.toJson().toString();
+            prefs.putString(PREF_PREFIX_KEY + "state_" + appWidgetId, strState);
+            return prefs.commit();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

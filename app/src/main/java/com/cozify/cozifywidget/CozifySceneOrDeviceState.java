@@ -1,5 +1,7 @@
 package com.cozify.cozifywidget;
 
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CozifySceneOrDeviceState {
+    public boolean initialized = false;
     public long timestamp = 0;
     public String type = "";
     public String id = "";
@@ -15,58 +18,98 @@ public class CozifySceneOrDeviceState {
     public String model = "";
     public String name = "";
     public String room = "";
+    public double temperature = 0;
+    public double humidity = 0;
     public boolean reachable = true;
     public boolean isOn = false;
     public List<String> capabilities = new ArrayList<String>();
 
-    public void fromJson(JSONObject source) {
+    public boolean fromJson(JSONObject source) {
         try {
             this.id = source.getString("id");
             this.timestamp = source.getLong("timestamp");
             this.type = source.getString("type");
             this.name = source.getString("name");
             this.isOn = source.getBoolean("isOn");
-            if (type.contains("DEVICE")) {
-                this.manufacturer = source.getString("manufacturer");
-                this.model = source.getString("model");
-                this.room = source.getString("room");
-                this.reachable = source.getBoolean("reachable");
-                JSONArray cs = source.getJSONArray("capabilities");
+            if (source.has("capabilities")) {
+                JSONArray cs = new JSONArray(source.getString("capabilities"));
                 for (int i = 0; i < cs.length(); i++) {
                     String c = cs.getString(i);
                     capabilities.add(c);
                 }
             }
+            if (capabilities.contains("DEVICE")) {
+                this.manufacturer = source.getString("manufacturer");
+                this.model = source.getString("model");
+                this.room = source.getString("room");
+                this.reachable = source.getBoolean("reachable");
+            }
+            if (capabilities.contains("TEMPERATURE")) {
+                this.temperature = source.getDouble("temperature");
+            }
+            initialized = true;
+            return true;
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        return false;
+    }
 
+    public boolean fromJsonStr(String source) {
+        if (source != null) {
+            try {
+                JSONObject json = new JSONObject(source);
+                return fromJson(json);
+            } catch (JSONException e) {
+                Log.e("Cozify Widget Error", "Parsing state failed from json string:" +source);
+                e.printStackTrace();
+            }
+        }
+        return false;
     }
 
     public void fromPollData(JSONObject pollData, long timestamp) {
+
         try {
             type = pollData.getString("type");
             this.timestamp = timestamp;
             this.id = pollData.getString("id");
             this.name = pollData.getString("name");
-            if (isDevice()) {
+            if (pollData.has("capabilities")) {
                 JSONObject caps = pollData.getJSONObject("capabilities");
                 JSONArray cs = caps.getJSONArray("values");
                 for (int i = 0; i < cs.length(); i++) {
                     String c = cs.getString(i);
                     capabilities.add(c);
                 }
-                if (capabilities.contains("ON_OFF")) {
-                    this.isOn = pollData.getJSONObject("state").getBoolean("isOn");
+                if (pollData.has("state")) {
+                    if (capabilities.contains("ON_OFF")) {
+                        this.isOn = pollData.getJSONObject("state").getBoolean("isOn");
+                    }
+                    if (capabilities.contains("TEMPERATURE")) {
+                        temperature = pollData.getJSONObject("state").getDouble("temperature");
+                    }
+                    if (capabilities.contains("HUMIDITY")) {
+                        humidity = pollData.getJSONObject("state").getDouble("humidity");
+                    }
                 }
+            }
+            if (pollData.has("room")) {
                 this.room = pollData.getString("room");
+            }
+            if (pollData.has("manufacturer")) {
                 this.manufacturer = pollData.getString("manufacturer");
+            }
+            if (pollData.has("model")) {
                 this.model = pollData.getString("model");
+            }
+            if (pollData.has("reachable")) {
                 this.reachable = pollData.getJSONObject("state").getBoolean("reachable");
             }
             if (isScene()) {
                 this.isOn = pollData.getBoolean("isOn");
             }
+            initialized = true;
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -83,14 +126,21 @@ public class CozifySceneOrDeviceState {
         jsonObject.put("room", this.room);
         jsonObject.put("reachable", this.reachable);
         jsonObject.put("isOn", this.isOn);
+        jsonObject.put("temperature", this.temperature);
         jsonObject.put("capabilities", this.capabilities.toString());
         return jsonObject;
     }
     public boolean isDevice() {
-        return !type.contains("SCENE");
+        return capabilities.contains("DEVICE");
     }
     public boolean isScene() {
         return type.contains("SCENE");
+    }
+    public boolean hasMeasurement() {
+       return capabilities.contains("TEMPERATURE") || capabilities.contains("HUMIDITY");
+    }
+    public boolean isOnOff() {
+        return capabilities.contains("ON_OFF");
     }
 
     public boolean similarToState(CozifySceneOrDeviceState other) {
@@ -104,5 +154,16 @@ public class CozifySceneOrDeviceState {
         String cmd = isScene() ? "CMD_SCENE" : "CMD_DEVICE";
         String commandString = desiredState.isOn ? cmd + "_ON" : cmd + "_OFF";
         return new CozifyCommand(path, commandString);
+    }
+
+    public String getMeasurementsString() {
+        String measurement = null;
+        if (capabilities.contains("TEMPERATURE")) {
+            measurement = String.format("%.1f C", temperature);
+        }
+        if (capabilities.contains("HUMIDITY")) {
+            measurement += "\n" + String.format("%.0f %%", humidity);
+        }
+        return measurement;
     }
 }

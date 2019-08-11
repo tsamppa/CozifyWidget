@@ -238,6 +238,7 @@ public class CozifyAppWidgetConfigure extends Activity {
             intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
             PendingIntent pendingIntent;
             pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            Log.d("PENDING DEBUG","PendingIntent at createWidget: "+mAppWidgetId);
             RemoteViews views = new RemoteViews(this.getPackageName(), R.layout.demo_app_widget);
             views.setOnClickPendingIntent(R.id.control_button, pendingIntent);
             views.setCharSequence(R.id.control_button, "setText", selectedDeviceShortName);
@@ -338,7 +339,7 @@ public class CozifyAppWidgetConfigure extends Activity {
     private void getDevices() {
         textViewStatus.setText("Wait while fetching list of devices..");
         enableSpinners(false);
-        String[] capabilities = {"ON_OFF"};
+        String[] capabilities = {"ON_OFF", "TEMPERATURE", "HUMIDITY"};
         resetDevicesSpinner();
         cozifyAPI.getDevices(capabilities, new CozifyAPI.JsonCallback() {
             @Override

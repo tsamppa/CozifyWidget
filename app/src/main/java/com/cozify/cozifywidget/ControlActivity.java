@@ -53,23 +53,55 @@ public class ControlActivity extends AppCompatActivity {
         resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
         setResult(RESULT_CANCELED, resultValue);
 
-        loadSavedSettings();
+        if (!loadSavedSettings(true)) {
+            updateDeviceState();
+        } else {
+            if (handleClick()) {
+                setResult(RESULT_OK, resultValue);
+            }
+        }
+        finish();
+    }
 
+    private boolean handleToggleClick() {
         if (mIsControlling || mIsArming) {
-            setResult(RESULT_OK, resultValue);
+            return true;
         } else {
             if (isArmed()) {
                 if (toggelOnOff()) {
-                    setResult(RESULT_OK, resultValue);
+                    return true;
                 } else {
                     updateDeviceState();
                 }
             } else {
                 updateDeviceStateAndArm();
-                setResult(RESULT_OK, resultValue);
+                return true;
             }
         }
-        finish();
+        return false;
+    }
+
+    private boolean handleMeasurementUpdate() {
+        updateDeviceState();
+        return true;
+    }
+
+    private boolean handleClick() {
+        CozifySceneOrDeviceState state = stateMgr.getCurrentState();
+        if (state != null) {
+            if (!state.initialized) {
+                updateDeviceState();
+            }
+            if (state.isOnOff()) {
+                return handleToggleClick();
+            }
+            if (state.hasMeasurement()) {
+                return handleMeasurementUpdate();
+            }
+        } else {
+            updateDeviceState();
+        }
+        return false;
     }
 
     private void setIsOn(boolean isOn, String saysWho) {
@@ -125,14 +157,17 @@ public class ControlActivity extends AppCompatActivity {
 
     private void saveSettings() {
         if (!PersistentStorage.getInstance().saveSettings(this, mAppWidgetId, mIsOn, mIsArmed, mIsArming, mIsControlling, mIsReachable)) {
-           ShowErrorMessage("Saving settings failed", "SharedPreferences returned failure in commit().");
+           ShowErrorMessage("Saving settings failed", "SharedPreferences returned failure in commit() for setting.");
+        }
+        if (!PersistentStorage.getInstance().saveState(this, mAppWidgetId, stateMgr.getCurrentState())) {
+            ShowErrorMessage("Saving settings failed", "SharedPreferences returned failure in commit() for state.");
         }
     }
 
-    private void loadSavedSettings() {
+    private boolean loadSavedSettings(boolean loadStateToo) {
         if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
             ShowMessage("INVALID_APPWIDGET_ID : Loading settings failed!");
-            return;
+            return false;
         }
         final Context context = ControlActivity.this;
         String cloudToken = PersistentStorage.getInstance().loadCloudToken(context);
@@ -142,23 +177,39 @@ public class ControlActivity extends AppCompatActivity {
         if (hubKey != null && hubKey.length() > 0)
             cozifyAPI.setHubKey(hubKey);
         JSONObject settings = PersistentStorage.getInstance().loadSettingsJson(context, mAppWidgetId);
-        if (settings != null) {
-            try {
-                mIsArmed = settings.getBoolean("armed");
-                setIsOn(settings.getBoolean("isOn"), "loadSavedSettings()");
-                mIsControlling = settings.getBoolean("controlling");
-                mIsReachable = settings.getBoolean("reachable");
-                mIsArming  = settings.getBoolean("arming");
-            } catch (JSONException e) {
-                ShowErrorMessage("FAILED to load settings", e.getMessage());
-            }
-        } else {
+        if (settings == null) {
             ShowErrorMessage("FAILED to load settings", "PersistentStorage returned null.");
+            return false;
         }
+        try {
+            mIsArmed = settings.getBoolean("armed");
+            setIsOn(settings.getBoolean("isOn"), "loadSavedSettings()");
+            mIsControlling = settings.getBoolean("controlling");
+            mIsReachable = settings.getBoolean("reachable");
+            mIsArming  = settings.getBoolean("arming");
+        } catch (JSONException e) {
+            ShowErrorMessage("FAILED to load settings", e.getMessage());
+        }
+
         mDeviceId = PersistentStorage.getInstance().loadDeviceId(this, mAppWidgetId);
         if (mDeviceId == null) {
-            ShowMessage("Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
+            ShowErrorMessage("Configuration issue","Stored device ID not found (null). Please remove and recreate the device widget");
+            return false;
         }
+        if (loadStateToo) {
+            CozifySceneOrDeviceState state = PersistentStorage.getInstance().loadState(this, mAppWidgetId);
+            if (state == null) {
+                return false;
+            }
+            if (state.initialized) {
+                if (state.id.equals(mDeviceId)) {
+                    stateMgr.setCurrentState(state);
+                } else {
+                    ShowErrorMessage("FAILED to load settings", "Mismatching deviceId in saved state!");
+                }
+            }
+        }
+        return true;
     }
 
     private boolean initWidgetId() {
@@ -244,6 +295,17 @@ public class ControlActivity extends AppCompatActivity {
 
         int resourceForState = getDeviceResourceForState(mIsReachable, mIsOn, mIsArmed, mIsControlling);
         views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
+
+        String measurement = stateMgr.getMeasurementString();
+        if (measurement != null) {
+            final Context context = ControlActivity.this;
+            String device_name = PersistentStorage.getInstance().loadDeviceName(context, mAppWidgetId);
+            if (device_name != null) {
+                String label = measurement + "\n" + device_name;
+                views.setCharSequence(R.id.control_button, "setText", label);
+            }
+        }
+
         appWidgetManager.updateAppWidget(mAppWidgetId, views);
     }
 
@@ -281,7 +343,7 @@ public class ControlActivity extends AppCompatActivity {
             @Override
             public void result(boolean success, String status, JSONObject resultJson, JSONObject requestJson) {
                 if (success) {
-                    loadSavedSettings();
+                    loadSavedSettings(false);
                     lastStateUpdate = System.currentTimeMillis();
                     CozifySceneOrDeviceState state = stateMgr.getCurrentState();
                     setIsOn(state.isOn, "updateDeviceState()");
@@ -307,7 +369,7 @@ public class ControlActivity extends AppCompatActivity {
             @Override
             public void result(boolean success, String status, JSONObject resultJson, JSONObject requestJson) {
                 if (success) {
-                    loadSavedSettings();
+                    loadSavedSettings(false);
                     lastStateUpdate = System.currentTimeMillis();
                     CozifySceneOrDeviceState state = stateMgr.getCurrentState();
                     setIsOn(state.isOn, "updateDeviceState()");
