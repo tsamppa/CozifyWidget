@@ -82,6 +82,7 @@ public class ControlActivity extends AppCompatActivity {
     }
 
     private boolean handleMeasurementUpdate() {
+        displayDeviceState();
         updateDeviceState();
         return true;
     }
@@ -139,6 +140,7 @@ public class ControlActivity extends AppCompatActivity {
                     if (!mIsControlling) {
                         updateDeviceState();
                     }
+                    displayDeviceState();
                 }
             }
         };
@@ -279,6 +281,14 @@ public class ControlActivity extends AppCompatActivity {
             } else {
                 // Controlling unreachable towards On
                 resourceForState = R.drawable.appwidget_button_armed_unreachable_off;
+            }
+        } else if (isArming) {
+            // Arming unreachable
+            if (isOn) {
+                resourceForState = R.drawable.appwidget_button_arming_unreachable_on;
+            } else {
+                // Controlling unreachable towards On
+                resourceForState = R.drawable.appwidget_button_arming_unreachable_off;
             }
         } else {
             // Unreachable

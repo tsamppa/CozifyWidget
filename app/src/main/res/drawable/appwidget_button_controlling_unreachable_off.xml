@@ -4,6 +4,10 @@
     android:width="200dp"
     android:height="200dp">
     <path
+        android:pathData="M0 0 L200 200"
+        android:strokeWidth="20"
+        android:strokeColor="@color/icon_color_warning_yellow" />
+    <path
         android:pathData="M175 100C175 141.39 141.39 175 100 175C58.61 175 25 141.39 25 100C25 58.61 58.61 25 100 25C141.39 25 175 58.61 175 100Z"
         android:fillColor="@color/icon_color_off_grey" />
     <path
@@ -16,8 +20,5 @@
     <path
         android:pathData="M92 42L108 42L108 90L92 90L92 42Z"
         android:fillColor="@color/icon_color_active_blue" />
-    <path
-        android:pathData="M120 100C120 111.04 111.04 120 100 120C88.96 120 80 111.04 80 100C80 88.96 88.96 80 100 80C111.04 80 120 88.96 120 100Z"
-        android:fillColor="@color/icon_color_warning_yellow" />
 
 </vector>
