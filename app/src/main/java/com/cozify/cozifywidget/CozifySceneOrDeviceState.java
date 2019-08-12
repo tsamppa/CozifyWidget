@@ -47,6 +47,9 @@ public class CozifySceneOrDeviceState {
             if (capabilities.contains("TEMPERATURE")) {
                 this.temperature = source.getDouble("temperature");
             }
+            if (capabilities.contains("HUMIDITY")) {
+                this.humidity = source.getDouble("humidity");
+            }
             initialized = true;
             return true;
         } catch (JSONException e) {
@@ -127,6 +130,7 @@ public class CozifySceneOrDeviceState {
         jsonObject.put("reachable", this.reachable);
         jsonObject.put("isOn", this.isOn);
         jsonObject.put("temperature", this.temperature);
+        jsonObject.put("humidity", this.humidity);
         jsonObject.put("capabilities", this.capabilities.toString());
         return jsonObject;
     }

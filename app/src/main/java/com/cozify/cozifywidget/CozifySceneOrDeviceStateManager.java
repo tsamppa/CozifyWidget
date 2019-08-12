@@ -268,8 +268,11 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
     }
 
     private void setCurrentStateFromJsonResponse(JSONObject stateJson) {
-        currentState = new CozifySceneOrDeviceState();
-        currentState.fromJson(stateJson);
+        if (stateJson != null) {
+            CozifySceneOrDeviceState state = new CozifySceneOrDeviceState();
+            state.fromJson(stateJson);
+            setCurrentState(state);
+        }
     }
 
     public String getMeasurementString() {

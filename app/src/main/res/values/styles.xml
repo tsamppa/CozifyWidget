@@ -12,10 +12,13 @@
         <item name="android:textColor" >@color/icon_color_light_grey</item>
         <item name="android:textSize" >14sp</item>
         <item name="android:textStyle" >bold</item>
+        <item name="android:lineSpacingMultiplier">0.9</item>
         <item name="android:background" >@drawable/appwidget_dark_bg_clickable</item>
         <item name="android:focusable" >true</item>
         <item name="android:clickable" >true</item>
         <item name="android:selectable" >true</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:gravity">center|top</item>
     </style>
 
     <style name="ButtonNormalTextWithIcon" parent="ButtonNormalText">
