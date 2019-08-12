@@ -240,7 +240,7 @@ public class ControlActivity extends AppCompatActivity {
             textViewStatus.setText(statusMessage);
     }
 
-    static public int getDeviceResourceForState(boolean isReachable, boolean isOn, boolean isArmed, boolean isControlling) {
+    static public int getDeviceResourceForState(boolean isReachable, boolean isOn, boolean isArmed, boolean isArming, boolean isControlling) {
         int resourceForState = isOn ? R.drawable.appwidget_button_clickable_on : R.drawable.appwidget_button_clickable_off;
         if (isReachable) {
             if (isOn) {
@@ -250,6 +250,8 @@ public class ControlActivity extends AppCompatActivity {
                 } else if (isArmed) {
                     // Armed towards Off
                     resourceForState = R.drawable.appwidget_button_armed_on;
+                } else if (isArming) {
+                    resourceForState = R.drawable.appwidget_button_arming_on;
                 }
             } else {
                 if (isControlling) {
@@ -258,6 +260,8 @@ public class ControlActivity extends AppCompatActivity {
                 } else if (isArmed) {
                     // Armed towards On
                     resourceForState = R.drawable.appwidget_button_armed_off;
+                } else if (isArming) {
+                    resourceForState = R.drawable.appwidget_button_arming_off;
                 }
             }
         } else if (isControlling) {
@@ -293,7 +297,7 @@ public class ControlActivity extends AppCompatActivity {
         RemoteViews views = new RemoteViews(this.getPackageName(), R.layout.demo_app_widget);
         views.setBoolean(R.id.control_button, "setEnabled", !mIsControlling);
 
-        int resourceForState = getDeviceResourceForState(mIsReachable, mIsOn, mIsArmed, mIsControlling);
+        int resourceForState = getDeviceResourceForState(mIsReachable, mIsOn, mIsArmed, mIsArming, mIsControlling);
         views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
 
         String measurement = stateMgr.getMeasurementString();
@@ -365,6 +369,7 @@ public class ControlActivity extends AppCompatActivity {
             return;
         }
         mIsArming = true;
+        displayDeviceState();
         stateMgr.updateCurrentState(mDeviceId, new CozifyAPI.CozifyCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson, JSONObject requestJson) {

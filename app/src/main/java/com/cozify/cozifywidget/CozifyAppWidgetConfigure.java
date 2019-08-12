@@ -284,13 +284,13 @@ public class CozifyAppWidgetConfigure extends Activity {
                     CozifySceneOrDeviceState state = new CozifySceneOrDeviceState();
                     state.fromJson(resultJson);
                     RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.demo_app_widget);
-                    int resourceForState = ControlActivity.getDeviceResourceForState(true, state.isOn, false, false);
+                    int resourceForState = ControlActivity.getDeviceResourceForState(true, state.isOn, false, false, false);
                     views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
                     PersistentStorage.getInstance().saveSettings(context, appWidgetId,  state.isOn, false, false, false, true);
                     appWidgetManager.updateAppWidget(appWidgetId, views);
                 } else {
                     RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.demo_app_widget);
-                    int resourceForState = ControlActivity.getDeviceResourceForState(false, false, false, false);
+                    int resourceForState = ControlActivity.getDeviceResourceForState(false, false, false, false, false);
                     views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
                 }
             }
