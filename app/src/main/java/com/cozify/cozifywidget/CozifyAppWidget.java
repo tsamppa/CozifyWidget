@@ -22,7 +22,7 @@ public class CozifyAppWidget extends AppWidgetProvider {
         // Create an Intent to launch CozifyWidgetSetupActivity
         Intent intent = new Intent(context, ControlActivity.class);
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, appWidgetId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         Log.d("PENDING DEBUG","PendingIntent at updateAppWidget: "+appWidgetId);
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.demo_app_widget);
         views.setOnClickPendingIntent(R.id.control_button, pendingIntent);
