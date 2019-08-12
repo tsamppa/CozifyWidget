@@ -144,7 +144,7 @@ public class CozifySceneOrDeviceState {
        return capabilities.contains("TEMPERATURE") || capabilities.contains("HUMIDITY");
     }
     public boolean isOnOff() {
-        return capabilities.contains("ON_OFF");
+        return capabilities.contains("ON_OFF") || isScene();
     }
 
     public boolean similarToState(CozifySceneOrDeviceState other) {
