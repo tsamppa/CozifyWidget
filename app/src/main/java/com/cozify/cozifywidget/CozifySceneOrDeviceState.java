@@ -21,6 +21,7 @@ public class CozifySceneOrDeviceState {
     public String room = "";
     public double temperature = 0;
     public double humidity = 0;
+    public double co2 = 0;
     public boolean reachable = true;
     public boolean isOn = false;
     public List<String> capabilities = new ArrayList<String>();
@@ -49,6 +50,9 @@ public class CozifySceneOrDeviceState {
             }
             if (capabilities.contains("HUMIDITY")) {
                 this.humidity = source.getDouble("humidity");
+            }
+            if (capabilities.contains("CO2")) {
+                this.co2 = source.getDouble("co2");
             }
             if (source.has("reachable")) {
                 this.reachable = source.getBoolean("reachable");
@@ -103,6 +107,9 @@ public class CozifySceneOrDeviceState {
                 if (capabilities.contains("HUMIDITY")) {
                     humidity = pollData.getJSONObject("state").getDouble("humidity");
                 }
+                if (capabilities.contains("CO2")) {
+                    co2 = pollData.getJSONObject("state").getDouble("co2Ppm");
+                }
             }
             if (pollData.has("room")) {
                 this.room = pollData.getString("room");
@@ -135,6 +142,7 @@ public class CozifySceneOrDeviceState {
         jsonObject.put("isOn", this.isOn);
         jsonObject.put("temperature", this.temperature);
         jsonObject.put("humidity", this.humidity);
+        jsonObject.put("co2", this.co2);
         jsonObject.put("capabilities", this.capabilities.toString());
         return jsonObject;
     }
@@ -166,11 +174,20 @@ public class CozifySceneOrDeviceState {
 
     public String getMeasurementsString() {
         String measurement = null;
-        if (capabilities.contains("TEMPERATURE")) {
-            measurement = String.format(Locale.ENGLISH, "%.1f C", temperature);
+        if (capabilities.contains("CO2")) {
+            measurement = String.format(Locale.ENGLISH, "%.0f", co2);
         }
         if (capabilities.contains("HUMIDITY")) {
+            if (measurement != null) {
+                measurement += "\n";
+            }
             measurement += "\n" + String.format(Locale.ENGLISH, "%.0f %%", humidity);
+        }
+        if (capabilities.contains("TEMPERATURE")) {
+            if (measurement != null) {
+                measurement += "\n";
+            }
+            measurement += String.format(Locale.ENGLISH, "%.1f C", temperature);
         }
         return measurement;
     }
