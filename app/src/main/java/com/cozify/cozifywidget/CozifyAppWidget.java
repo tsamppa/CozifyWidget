@@ -36,7 +36,7 @@ public class CozifyAppWidget extends AppWidgetProvider {
         JSONObject settings = PersistentStorage.getInstance().loadSettingsJson(context, appWidgetId);
         if (settings != null) {
             try {
-                int resourceForState = ControlActivity.getDeviceResourceForState(true, settings.getBoolean("isOn"), false, false, false);
+                int resourceForState = ControlActivity.getDeviceResourceForState(true, settings.getBoolean("isOn"), false, false, false, false, false);
                 views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
             } catch (JSONException e) {
                 Log.e("Widget:"+appWidgetId, "Malformed persistent storage settings:"+e.getMessage());

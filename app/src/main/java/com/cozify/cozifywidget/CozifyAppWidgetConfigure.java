@@ -95,7 +95,6 @@ public class CozifyAppWidgetConfigure extends Activity {
             e.printStackTrace();
         }
 
-        textViewStatus = findViewById(R.id.config_status);
         if (pInfo != null) {
             TextView textViewVersion = findViewById(R.id.version);
             textViewVersion.setText(String.format(Locale.ENGLISH,"Cozify Widgets Version %s (%d)", pInfo.versionName, pInfo.versionCode));
@@ -194,6 +193,15 @@ public class CozifyAppWidgetConfigure extends Activity {
         findViewById(R.id.test_control_off_button).setEnabled(enabled);
     }
 
+    void setStatus(String statusMessage) {
+        if (textViewStatus == null) {
+            textViewStatus = findViewById(R.id.config_status);
+        }
+        if (textViewStatus != null) {
+            textViewStatus.setText(statusMessage);
+        }
+    }
+
     String getDeviceIdForName(String deviceName) {
         String id = "";
         try {
@@ -222,7 +230,7 @@ public class CozifyAppWidgetConfigure extends Activity {
                     cozifyAPI.connectLocally();
                     getDevices();
                 } else {
-                    textViewStatus.setText(message);
+                    setStatus(message);
                 }
             }
         });
@@ -298,13 +306,13 @@ public class CozifyAppWidgetConfigure extends Activity {
                     CozifySceneOrDeviceState state = new CozifySceneOrDeviceState();
                     state.fromJson(resultJson);
                     RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.demo_app_widget);
-                    int resourceForState = ControlActivity.getDeviceResourceForState(true, state.isOn, false, false, false);
+                    int resourceForState = ControlActivity.getDeviceResourceForState(true, state.isOn, false, false, false, false, false);
                     views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
                     PersistentStorage.getInstance().saveSettings(context, appWidgetId,  state.isOn, false, false, false, true);
                     appWidgetManager.updateAppWidget(appWidgetId, views);
                 } else {
                     RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.demo_app_widget);
-                    int resourceForState = ControlActivity.getDeviceResourceForState(false, false, false, false, false);
+                    int resourceForState = ControlActivity.getDeviceResourceForState(false, false, false, false, false, false, false);
                     views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
                 }
             }
@@ -318,11 +326,11 @@ public class CozifyAppWidgetConfigure extends Activity {
                 cozifyAPI.controlOnOff(selectedDeviceId, !isScene, true, new CozifyAPI.CozifyCallback(){
                     @Override
                     public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
-                        textViewStatus.setText("Test result:" + status);
+                        setStatus("Test result:" + status);
                     }
                 });
             } else {
-                textViewStatus.setText(getString(R.string.tip_select_device_first));
+                setStatus(getString(R.string.tip_select_device_first));
             }
         }
     };
@@ -334,11 +342,11 @@ public class CozifyAppWidgetConfigure extends Activity {
                 cozifyAPI.controlOnOff(selectedDeviceId, !isScene, false, new CozifyAPI.CozifyCallback(){
                     @Override
                     public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
-                        textViewStatus.setText("Test result:" + status);
+                        setStatus("Test result:" + status);
                     }
                 });
             } else {
-                textViewStatus.setText(getString(R.string.tip_select_device_first));
+                setStatus(getString(R.string.tip_select_device_first));
             }
         }
     };
@@ -351,7 +359,7 @@ public class CozifyAppWidgetConfigure extends Activity {
     }
 
     private void getDevices() {
-        textViewStatus.setText("Wait while fetching list of devices..");
+        setStatus("Wait while fetching list of devices..");
         enableSpinners(false);
         String[] capabilities = {"ON_OFF", "TEMPERATURE", "HUMIDITY"};
         resetDevicesSpinner();
@@ -370,7 +378,7 @@ public class CozifyAppWidgetConfigure extends Activity {
                     setSpinnerItems(items, devicesList);
                     getScenes();
                 } else {
-                    textViewStatus.setText("ERROR in requesting devices: "+status);
+                    setStatus("ERROR in requesting devices: "+status);
                     if (status.contains("408")) {
                         revertToLocalHubConnection();
                     } else {
@@ -416,11 +424,11 @@ public class CozifyAppWidgetConfigure extends Activity {
                     Spinner items = findViewById(R.id.spinner_hubs);
                     setSpinnerItems(items, hubs);
                     resetDevicesSpinner();
-                    textViewStatus.setText(getString(R.string.tip_select_device_first));
+                    setStatus(getString(R.string.tip_select_device_first));
                     enableSpinners(true);
 
                 } else {
-                    textViewStatus.setText("Connecting to Cozify cloud failed: " + status);
+                    setStatus("Connecting to Cozify cloud failed: " + status);
                 }
             }
         });
@@ -454,12 +462,12 @@ public class CozifyAppWidgetConfigure extends Activity {
 
                     Spinner items = findViewById(R.id.spinner_devices);
                     setSpinnerItems(items, devicesList);
-                    textViewStatus.setText(getString(R.string.tip_select_device_first));
+                    setStatus(getString(R.string.tip_select_device_first));
                     enableTestButtons(true);
                     enableSpinners(true);
 
                 } else {
-                    textViewStatus.setText("ERROR when fetching scenes; " + status);
+                    setStatus("ERROR when fetching scenes; " + status);
                     if (status.contains("408")) {
                         revertToLocalHubConnection();
                     } else {

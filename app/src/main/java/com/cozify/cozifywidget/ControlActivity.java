@@ -19,6 +19,7 @@ public class ControlActivity extends AppCompatActivity {
     private int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     private TextView textViewStatus;
     private long lastStateUpdate = 0;
+    private boolean mUpdating = false;
     private boolean mIsArming = false;
     private boolean mIsArmed = false;
     private boolean mIsOn = false;
@@ -82,7 +83,6 @@ public class ControlActivity extends AppCompatActivity {
     }
 
     private boolean handleMeasurementUpdate() {
-        displayDeviceState();
         updateDeviceState();
         return true;
     }
@@ -242,7 +242,7 @@ public class ControlActivity extends AppCompatActivity {
             textViewStatus.setText(statusMessage);
     }
 
-    static public int getDeviceResourceForState(boolean isReachable, boolean isOn, boolean isArmed, boolean isArming, boolean isControlling) {
+    static public int getDeviceResourceForState(boolean isReachable, boolean isOn, boolean isArmed, boolean isArming, boolean isControlling, boolean isSensor, boolean isUpdating) {
         int resourceForState = isOn ? R.drawable.appwidget_button_clickable_on : R.drawable.appwidget_button_clickable_off;
         if (isReachable) {
             if (isOn) {
@@ -254,6 +254,12 @@ public class ControlActivity extends AppCompatActivity {
                     resourceForState = R.drawable.appwidget_button_armed_on;
                 } else if (isArming) {
                     resourceForState = R.drawable.appwidget_button_arming_on;
+                } else if (isSensor) {
+                    if (isUpdating) {
+                        resourceForState = R.drawable.appwidget_sensor_updating;
+                    } else {
+                        resourceForState = R.drawable.appwidget_sensor_clickable;
+                    }
                 }
             } else {
                 if (isControlling) {
@@ -264,6 +270,12 @@ public class ControlActivity extends AppCompatActivity {
                     resourceForState = R.drawable.appwidget_button_armed_off;
                 } else if (isArming) {
                     resourceForState = R.drawable.appwidget_button_arming_off;
+                } else if (isSensor) {
+                    if (isUpdating) {
+                        resourceForState = R.drawable.appwidget_sensor_updating;
+                    } else {
+                        resourceForState = R.drawable.appwidget_sensor_clickable;
+                    }
                 }
             }
         } else if (isControlling) {
@@ -290,6 +302,12 @@ public class ControlActivity extends AppCompatActivity {
                 // Controlling unreachable towards On
                 resourceForState = R.drawable.appwidget_button_arming_unreachable_off;
             }
+        } else if (isSensor) {
+            if (isUpdating) {
+                resourceForState = R.drawable.appwidget_sensor_updating_unreachable;
+            } else {
+                resourceForState = R.drawable.appwidget_sensor_clickable_unreachable;
+            }
         } else {
             // Unreachable
             if (isOn) {
@@ -307,10 +325,12 @@ public class ControlActivity extends AppCompatActivity {
         RemoteViews views = new RemoteViews(this.getPackageName(), R.layout.demo_app_widget);
         views.setBoolean(R.id.control_button, "setEnabled", !mIsControlling);
 
-        int resourceForState = getDeviceResourceForState(mIsReachable, mIsOn, mIsArmed, mIsArming, mIsControlling);
+        String measurement = stateMgr.getMeasurementString();
+        boolean isSensor = measurement != null;
+
+        int resourceForState = getDeviceResourceForState(mIsReachable, mIsOn, mIsArmed, mIsArming, mIsControlling, isSensor, mUpdating);
         views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
 
-        String measurement = stateMgr.getMeasurementString();
         if (measurement != null) {
             final Context context = ControlActivity.this;
             String device_name = PersistentStorage.getInstance().loadDeviceName(context, mAppWidgetId);
@@ -348,6 +368,9 @@ public class ControlActivity extends AppCompatActivity {
     }
 
     private void updateDeviceState() {
+        if (mUpdating) return;
+        mUpdating = true;
+        displayDeviceState();
         if (mDeviceId == null) {
             ShowMessage("Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
             return;
@@ -356,19 +379,18 @@ public class ControlActivity extends AppCompatActivity {
         stateMgr.updateCurrentState(mDeviceId, new CozifyAPI.CozifyCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson, JSONObject requestJson) {
+                mUpdating = false;
                 if (success) {
                     loadSavedSettings(false);
                     lastStateUpdate = System.currentTimeMillis();
                     CozifySceneOrDeviceState state = stateMgr.getCurrentState();
                     setIsOn(state.isOn, "updateDeviceState()");
                     mIsReachable = state.reachable;
-                    saveSettings();
-                    displayDeviceState();
                 } else {
                     mIsReachable = false;
-                    saveSettings();
-                    displayDeviceState();
                 }
+                saveSettings();
+                displayDeviceState();
             }
         });
     }
