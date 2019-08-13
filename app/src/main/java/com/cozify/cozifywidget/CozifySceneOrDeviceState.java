@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class CozifySceneOrDeviceState {
     public boolean initialized = false;
@@ -163,10 +164,10 @@ public class CozifySceneOrDeviceState {
     public String getMeasurementsString() {
         String measurement = null;
         if (capabilities.contains("TEMPERATURE")) {
-            measurement = String.format("%.1f C", temperature);
+            measurement = String.format(Locale.ENGLISH, "%.1f C", temperature);
         }
         if (capabilities.contains("HUMIDITY")) {
-            measurement += "\n" + String.format("%.0f %%", humidity);
+            measurement += "\n" + String.format(Locale.ENGLISH, "%.0f %%", humidity);
         }
         return measurement;
     }

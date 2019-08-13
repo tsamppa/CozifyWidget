@@ -6,6 +6,12 @@
     android:padding="8dp">
 
     <TextView
+        android:id="@+id/version"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="12sp" />
+    <TextView
         android:id="@+id/config_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

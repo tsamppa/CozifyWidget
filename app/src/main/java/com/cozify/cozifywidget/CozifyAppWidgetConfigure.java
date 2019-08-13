@@ -5,6 +5,8 @@ import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -28,6 +30,7 @@ import org.json.JSONObject;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Locale;
 
 public class CozifyAppWidgetConfigure extends Activity {
     public static final String SHARED_PRES = "com.cozify.android.apis.appwidget.CozifyWidgetProvider";
@@ -85,7 +88,18 @@ public class CozifyAppWidgetConfigure extends Activity {
 
         devicesList = new ArrayList<>();
 
+        PackageInfo pInfo = null;
+        try {
+            pInfo = context.getPackageManager().getPackageInfo(getPackageName(), 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
         textViewStatus = findViewById(R.id.config_status);
+        if (pInfo != null) {
+            TextView textViewVersion = findViewById(R.id.version);
+            textViewVersion.setText(String.format(Locale.ENGLISH,"Cozify Widgets Version %s (%d)", pInfo.versionName, pInfo.versionCode));
+        }
         buttonCreate = findViewById(R.id.create_button);
         buttonCreate.setEnabled(false);
         cloudtoken =  PersistentStorage.getInstance().loadCloudToken(context);
