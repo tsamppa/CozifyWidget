@@ -361,7 +361,7 @@ public class CozifyAppWidgetConfigure extends Activity {
     private void getDevices() {
         setStatus("Wait while fetching list of devices..");
         enableSpinners(false);
-        String[] capabilities = {"ON_OFF", "TEMPERATURE", "HUMIDITY"};
+        String[] capabilities = {"ON_OFF", "TEMPERATURE", "HUMIDITY", "CO2"};
         resetDevicesSpinner();
         cozifyAPI.getDevices(capabilities, new CozifyAPI.JsonCallback() {
             @Override
