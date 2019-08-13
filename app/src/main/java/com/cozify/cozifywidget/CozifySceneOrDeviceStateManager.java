@@ -13,7 +13,6 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
     private CozifySceneOrDeviceState desiredState;
     private Handler handler;
     private Long startTime = null;
-    private Long lastUpdateTimestamp;
     private CozifyAPI.CozifyCallback cbFinished = null;
 
     @Retention(RetentionPolicy.SOURCE)
@@ -78,7 +77,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
         try {
             if (isFinalState(state)) {
                 return;
-            } else if (System.currentTimeMillis() - startTime > maxRuntime) {   // Has the time exired
+            } else if (System.currentTimeMillis() - startTime > maxRuntime) {   // Has the time expired
                 state = CONTROL_PRCESS_STATE_EXPIRED;
                 handler.removeCallbacks(this);
                 reportResult();
@@ -176,8 +175,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
         });
     }
 
-
-    private void updateCurrentStateAndRetryWithDelay() {
+    private void updateCurrentStateAndRetryControlAfterDelay() {
         cozifyAPI.getSceneOrDeviceState(desiredState.id, new CozifyAPI.CozifyCallback() {
             public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                 if (success) {
@@ -205,7 +203,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
                         handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                updateCurrentStateAndRetryWithDelay();
+                                updateCurrentStateAndRetryControlAfterDelay();
                             }
                         }, 500 );
                     }

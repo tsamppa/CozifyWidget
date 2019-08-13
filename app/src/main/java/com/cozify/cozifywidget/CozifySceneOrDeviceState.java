@@ -43,13 +43,15 @@ public class CozifySceneOrDeviceState {
                 this.manufacturer = source.getString("manufacturer");
                 this.model = source.getString("model");
                 this.room = source.getString("room");
-                this.reachable = source.getBoolean("reachable");
             }
             if (capabilities.contains("TEMPERATURE")) {
                 this.temperature = source.getDouble("temperature");
             }
             if (capabilities.contains("HUMIDITY")) {
                 this.humidity = source.getDouble("humidity");
+            }
+            if (source.has("reachable")) {
+                this.reachable = source.getBoolean("reachable");
             }
             initialized = true;
             return true;
@@ -86,16 +88,20 @@ public class CozifySceneOrDeviceState {
                     String c = cs.getString(i);
                     capabilities.add(c);
                 }
-                if (pollData.has("state")) {
-                    if (capabilities.contains("ON_OFF")) {
-                        this.isOn = pollData.getJSONObject("state").getBoolean("isOn");
-                    }
-                    if (capabilities.contains("TEMPERATURE")) {
-                        temperature = pollData.getJSONObject("state").getDouble("temperature");
-                    }
-                    if (capabilities.contains("HUMIDITY")) {
-                        humidity = pollData.getJSONObject("state").getDouble("humidity");
-                    }
+            }
+            if (pollData.has("state")) {
+                if (pollData.getJSONObject("state").has("reachable")) {
+                    this.reachable = pollData.getJSONObject("state").getBoolean("reachable");
+                }
+
+                if (capabilities.contains("ON_OFF")) {
+                    this.isOn = pollData.getJSONObject("state").getBoolean("isOn");
+                }
+                if (capabilities.contains("TEMPERATURE")) {
+                    temperature = pollData.getJSONObject("state").getDouble("temperature");
+                }
+                if (capabilities.contains("HUMIDITY")) {
+                    humidity = pollData.getJSONObject("state").getDouble("humidity");
                 }
             }
             if (pollData.has("room")) {
@@ -106,9 +112,6 @@ public class CozifySceneOrDeviceState {
             }
             if (pollData.has("model")) {
                 this.model = pollData.getString("model");
-            }
-            if (pollData.has("reachable")) {
-                this.reachable = pollData.getJSONObject("state").getBoolean("reachable");
             }
             if (isScene()) {
                 this.isOn = pollData.getBoolean("isOn");
