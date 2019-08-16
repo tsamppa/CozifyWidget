@@ -24,7 +24,6 @@ public class ControlActivity extends AppCompatActivity {
     private boolean mIsArmed = false;
     private boolean mIsControlling = false;
     private String mDeviceId;
-    private CozifyApiReal cozifyAPI = new CozifyApiReal();
     private Handler handler = new Handler();
     private Runnable delayedDisarm = null;
 
@@ -171,12 +170,10 @@ public class ControlActivity extends AppCompatActivity {
         final Context context = ControlActivity.this;
         String cloudToken = PersistentStorage.getInstance().loadCloudToken(context);
         if (cloudToken != null && cloudToken.length() > 0) {
-            cozifyAPI.setCloudToken(cloudToken);
             stateMgr.setCloudToken(cloudToken);
         }
         String hubKey = PersistentStorage.getInstance().loadHubKey(context, mAppWidgetId);
         if (hubKey != null && hubKey.length() > 0) {
-            cozifyAPI.setHubKey(hubKey);
             stateMgr.setHubKey(hubKey);
         }
         JSONObject settings = PersistentStorage.getInstance().loadSettingsJson(context, mAppWidgetId);
