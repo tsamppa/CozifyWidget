@@ -4,7 +4,10 @@
     package="com.cozify.cozifywidget">
 
     <uses-permission android:name="android.permission.INTERNET" />
-
+    <supports-screens android:smallScreens="true"
+        android:normalScreens="true"
+        android:largeScreens="true"
+        android:xlargeScreens="true"/>
     <application
         android:allowBackup="true"
         android:fullBackupContent="@xml/backup_descriptor"

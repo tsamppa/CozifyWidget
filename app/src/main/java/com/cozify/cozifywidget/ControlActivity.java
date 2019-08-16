@@ -22,11 +22,9 @@ public class ControlActivity extends AppCompatActivity {
     private boolean mUpdating = false;
     private boolean mIsArming = false;
     private boolean mIsArmed = false;
-    private boolean mIsOn = false;
     private boolean mIsControlling = false;
-    private boolean mIsReachable = true;
     private String mDeviceId;
-    private CozifyAPI cozifyAPI = CozifyApiReal.getInstance();
+    private CozifyApiReal cozifyAPI = new CozifyApiReal();
     private Handler handler = new Handler();
     private Runnable delayedDisarm = null;
 
@@ -35,8 +33,6 @@ public class ControlActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (stateMgr == null) stateMgr = new CozifySceneOrDeviceStateManager();
 
         // Set the result to CANCELED.  This will cause the widget host to cancel
         // out of the widget placement if they press the back button.
@@ -48,6 +44,9 @@ public class ControlActivity extends AppCompatActivity {
             ShowMessage("WidgetId not found. Reinstall this widget.");
             finish();
             return;
+        }
+        if (stateMgr == null) {
+            stateMgr = new CozifySceneOrDeviceStateManager(this, mAppWidgetId);
         }
 
         Intent resultValue = new Intent();
@@ -65,11 +64,11 @@ public class ControlActivity extends AppCompatActivity {
     }
 
     private boolean handleToggleClick() {
-        if (mIsControlling || mIsArming) {
+        if (mIsControlling || mIsArming || mUpdating) {
             return true;
         } else {
             if (isArmed()) {
-                if (toggelOnOff()) {
+                if (toggleOnOff()) {
                     return true;
                 } else {
                     updateDeviceState();
@@ -105,11 +104,6 @@ public class ControlActivity extends AppCompatActivity {
         return false;
     }
 
-    private void setIsOn(boolean isOn, String saysWho) {
-        mIsOn = isOn;
-        //Log.d("ICON STATE", " " + (isOn ? "ON" : "OFF") + " by " + saysWho);
-    }
-
     private void ShowMessage(String message) {
         setStatusMessage(message);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
@@ -129,7 +123,7 @@ public class ControlActivity extends AppCompatActivity {
         mIsArmed = true;
         mIsArming = false;
         saveSettings();
-        ShowMessage("Press again in 5s to control " + (mIsOn?"OFF":"ON"));
+        ShowMessage("Press again in 5s to control " + (stateMgr.isOn() ? "OFF" : "ON"));
         displayDeviceState();
         delayedDisarm = new Runnable() {
             @Override
@@ -158,11 +152,14 @@ public class ControlActivity extends AppCompatActivity {
     }
 
     private void saveSettings() {
-        if (!PersistentStorage.getInstance().saveSettings(this, mAppWidgetId, mIsOn, mIsArmed, mIsArming, mIsControlling, mIsReachable)) {
+        if (!PersistentStorage.getInstance().saveSettings(this, mAppWidgetId, stateMgr.isOn(), mIsArmed, mIsArming, mIsControlling, stateMgr.isReachable())) {
            ShowErrorMessage("Saving settings failed", "SharedPreferences returned failure in commit() for setting.");
         }
-        if (!PersistentStorage.getInstance().saveState(this, mAppWidgetId, stateMgr.getCurrentState())) {
-            ShowErrorMessage("Saving settings failed", "SharedPreferences returned failure in commit() for state.");
+        CozifySceneOrDeviceState state = stateMgr.getCurrentState();
+        if (state != null) {
+            if (!PersistentStorage.getInstance().saveState(this, mAppWidgetId, state)) {
+                ShowErrorMessage("Saving settings failed", "SharedPreferences returned failure in commit() for state.");
+            }
         }
     }
 
@@ -173,11 +170,15 @@ public class ControlActivity extends AppCompatActivity {
         }
         final Context context = ControlActivity.this;
         String cloudToken = PersistentStorage.getInstance().loadCloudToken(context);
-        if (cloudToken != null && cloudToken.length() > 0)
+        if (cloudToken != null && cloudToken.length() > 0) {
             cozifyAPI.setCloudToken(cloudToken);
-        String hubKey = PersistentStorage.getInstance().loadHubKey(context);
-        if (hubKey != null && hubKey.length() > 0)
+            stateMgr.setCloudToken(cloudToken);
+        }
+        String hubKey = PersistentStorage.getInstance().loadHubKey(context, mAppWidgetId);
+        if (hubKey != null && hubKey.length() > 0) {
             cozifyAPI.setHubKey(hubKey);
+            stateMgr.setHubKey(hubKey);
+        }
         JSONObject settings = PersistentStorage.getInstance().loadSettingsJson(context, mAppWidgetId);
         if (settings == null) {
             ShowErrorMessage("FAILED to load settings", "PersistentStorage returned null.");
@@ -185,9 +186,10 @@ public class ControlActivity extends AppCompatActivity {
         }
         try {
             mIsArmed = settings.getBoolean("armed");
-            setIsOn(settings.getBoolean("isOn"), "loadSavedSettings()");
             mIsControlling = settings.getBoolean("controlling");
-            mIsReachable = settings.getBoolean("reachable");
+            if (mIsControlling) {
+                mIsControlling = !stateMgr.isReady();
+            }
             mIsArming  = settings.getBoolean("arming");
         } catch (JSONException e) {
             ShowErrorMessage("FAILED to load settings", e.getMessage());
@@ -328,7 +330,7 @@ public class ControlActivity extends AppCompatActivity {
         String measurement = stateMgr.getMeasurementString();
         boolean isSensor = measurement != null;
 
-        int resourceForState = getDeviceResourceForState(mIsReachable, mIsOn, mIsArmed, mIsArming, mIsControlling, isSensor, mUpdating);
+        int resourceForState = getDeviceResourceForState(stateMgr.isReachable(), stateMgr.isOn(), mIsArmed, mIsArming, mIsControlling, isSensor, mUpdating);
         views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
 
         if (measurement != null) {
@@ -376,7 +378,7 @@ public class ControlActivity extends AppCompatActivity {
             return;
         }
 
-        stateMgr.updateCurrentState(mDeviceId, new CozifyAPI.CozifyCallback() {
+        stateMgr.updateCurrentState(mDeviceId, new CozifyApiReal.CozifyCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson, JSONObject requestJson) {
                 mUpdating = false;
@@ -384,10 +386,11 @@ public class ControlActivity extends AppCompatActivity {
                     loadSavedSettings(false);
                     lastStateUpdate = System.currentTimeMillis();
                     CozifySceneOrDeviceState state = stateMgr.getCurrentState();
-                    setIsOn(state.isOn, "updateDeviceState()");
-                    mIsReachable = state.reachable;
+                    if (state == null) {
+                        return;
+                    }
                 } else {
-                    mIsReachable = false;
+                    stateMgr.setReachable(false);
                 }
                 saveSettings();
                 displayDeviceState();
@@ -402,18 +405,16 @@ public class ControlActivity extends AppCompatActivity {
         }
         mIsArming = true;
         displayDeviceState();
-        stateMgr.updateCurrentState(mDeviceId, new CozifyAPI.CozifyCallback() {
+        stateMgr.updateCurrentState(mDeviceId, new CozifyApiReal.CozifyCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson, JSONObject requestJson) {
                 if (success) {
                     loadSavedSettings(false);
                     lastStateUpdate = System.currentTimeMillis();
                     CozifySceneOrDeviceState state = stateMgr.getCurrentState();
-                    setIsOn(state.isOn, "updateDeviceState()");
-                    mIsReachable = state.reachable;
                     arm();
                 } else {
-                    mIsReachable = false;
+                    stateMgr.setReachable(false);
                     mIsArming = false;
                     saveSettings();
                     displayDeviceState();
@@ -423,7 +424,7 @@ public class ControlActivity extends AppCompatActivity {
     }
 
 
-    private boolean toggelOnOff() {
+    private boolean toggleOnOff() {
         startControl();
         if (mDeviceId == null) {
             endControl(false, "Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
@@ -434,17 +435,14 @@ public class ControlActivity extends AppCompatActivity {
     }
 
     void controlToggle() {
-        stateMgr = new CozifySceneOrDeviceStateManager();
-        stateMgr.toggleState(mDeviceId, new CozifyAPI.CozifyCallback() {
+        stateMgr.toggleState(mDeviceId, new CozifyApiReal.CozifyCallback() {
             @Override
             public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                 if (success) {
-                    setIsOn(stateMgr.getCurrentState().isOn, "controlToggle()");
-                    mIsReachable = stateMgr.getCurrentState().reachable;
                     saveSettings();
                     endControl(true, status);
                 } else {
-                    mIsReachable = false;
+                    stateMgr.setReachable(false);
                     String details = "Details:";
                     if (jsonResponse != null)
                         details += " jsonResponse: "+jsonResponse.toString();

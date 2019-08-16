@@ -37,7 +37,7 @@ public class CozifyAppWidgetConfigure extends Activity {
     public static final String KEY_BUTTON_TEXT = "Control device";
     private int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
 
-    private static CozifyAPI cozifyAPI = CozifyApiReal.getInstance();
+    private static CozifyApiReal cozifyAPI = new CozifyApiReal();
 
     String cloudtoken;
     EditText editTextDeviceName;
@@ -151,7 +151,6 @@ public class CozifyAppWidgetConfigure extends Activity {
                     selectedHubName = selectedItem.toString();
                     try {
                         selectedHubKey = hubNamesJson.getString(selectedHubName);
-                        PersistentStorage.getInstance().saveHubKey(context, selectedHubKey);
                         setAuthHeader();
                         getDevices();
                     } catch (JSONException e) {
@@ -221,7 +220,7 @@ public class CozifyAppWidgetConfigure extends Activity {
     }
 
     private void revertToLocalHubConnection() {
-        cozifyAPI.listHubs(new CozifyAPI.StringCallback() {
+        cozifyAPI.listHubs(new CozifyApiReal.StringCallback() {
             @Override
             public void result(boolean success, String message, String result) {
                 if (success) {
@@ -250,6 +249,7 @@ public class CozifyAppWidgetConfigure extends Activity {
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
 
             // Save device ID for control
+            PersistentStorage.getInstance().saveHubKey(context, mAppWidgetId, selectedHubKey);
             PersistentStorage.getInstance().saveDeviceId(context, mAppWidgetId, selectedDeviceId);
             PersistentStorage.getInstance().saveDeviceName(context, mAppWidgetId, selectedDeviceShortName);
             PersistentStorage.getInstance().saveSettings(context, mAppWidgetId, false, false, false, false, true);
@@ -264,6 +264,7 @@ public class CozifyAppWidgetConfigure extends Activity {
             RemoteViews views = new RemoteViews(this.getPackageName(), R.layout.demo_app_widget);
             views.setOnClickPendingIntent(R.id.control_button, pendingIntent);
             views.setCharSequence(R.id.control_button, "setText", selectedDeviceShortName);
+//            ComponentName provider = new ComponentName(context, CozifyAppWidget.class);
             appWidgetManager.updateAppWidget(mAppWidgetId, views);
 
             Intent resultValue = new Intent();
@@ -299,7 +300,7 @@ public class CozifyAppWidgetConfigure extends Activity {
         if (deviceId == null) {
             return;
         }
-        cozifyAPI.getSceneOrDeviceState(deviceId, new CozifyAPI.CozifyCallback() {
+        cozifyAPI.getSceneOrDeviceState(deviceId, new CozifyApiReal.CozifyCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson, JSONObject requestJson) {
                 if (success) {
@@ -323,7 +324,7 @@ public class CozifyAppWidgetConfigure extends Activity {
         public void onClick(View v) {
             if (selectedDeviceId.length() > 0) {
                 boolean isScene = selectedDeviceName.contains("Scene:");
-                cozifyAPI.controlOnOff(selectedDeviceId, !isScene, true, new CozifyAPI.CozifyCallback(){
+                cozifyAPI.controlOnOff(selectedDeviceId, !isScene, true, new CozifyApiReal.CozifyCallback(){
                     @Override
                     public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                         setStatus("Test result:" + status);
@@ -339,7 +340,7 @@ public class CozifyAppWidgetConfigure extends Activity {
         public void onClick(View v) {
             if (selectedDeviceId.length() > 0) {
                 boolean isScene = selectedDeviceName.contains("Scene:");
-                cozifyAPI.controlOnOff(selectedDeviceId, !isScene, false, new CozifyAPI.CozifyCallback(){
+                cozifyAPI.controlOnOff(selectedDeviceId, !isScene, false, new CozifyApiReal.CozifyCallback(){
                     @Override
                     public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                         setStatus("Test result:" + status);
@@ -363,7 +364,7 @@ public class CozifyAppWidgetConfigure extends Activity {
         enableSpinners(false);
         String[] capabilities = {"ON_OFF", "TEMPERATURE", "HUMIDITY", "CO2"};
         resetDevicesSpinner();
-        cozifyAPI.getDevices(capabilities, new CozifyAPI.JsonCallback() {
+        cozifyAPI.getDevices(capabilities, new CozifyApiReal.JsonCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson) {
                 if (success) {
@@ -400,7 +401,7 @@ public class CozifyAppWidgetConfigure extends Activity {
 
     private void getHubKeys() {
         enableSpinners(false);
-        cozifyAPI.getHubKeys(new CozifyAPI.JsonCallback() {
+        cozifyAPI.getHubKeys(new CozifyApiReal.JsonCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson) {
                 if (success) {
@@ -443,7 +444,7 @@ public class CozifyAppWidgetConfigure extends Activity {
     }
 
     private void getScenes() {
-        cozifyAPI.getScenes(new CozifyAPI.JsonCallback() {
+        cozifyAPI.getScenes(new CozifyApiReal.JsonCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson) {
                 if (success) {

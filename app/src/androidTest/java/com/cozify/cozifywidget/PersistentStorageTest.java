@@ -31,8 +31,8 @@ public class PersistentStorageTest {
     @Test
     public void saveHubKey() {
         Context appContext = InstrumentationRegistry.getTargetContext();
-        PersistentStorage.getInstance().saveHubKey(appContext, "2");
-        assertEquals(PersistentStorage.getInstance().loadHubKey(appContext), "2");
+        PersistentStorage.getInstance().saveHubKey(appContext, 2, "2");
+        assertEquals(PersistentStorage.getInstance().loadHubKey(appContext, 2), "2");
     }
 
     @Test

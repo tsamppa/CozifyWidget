@@ -1,5 +1,6 @@
 package com.cozify.cozifywidget;
 
+import android.content.Context;
 import android.os.Handler;
 import androidx.annotation.IntDef;
 
@@ -13,7 +14,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
     private CozifySceneOrDeviceState desiredState;
     private Handler handler;
     private Long startTime = null;
-    private CozifyAPI.CozifyCallback cbFinished = null;
+    private CozifyApiReal.CozifyCallback cbFinished = null;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({CONTROL_PRCESS_STATE_INIT,
@@ -43,13 +44,31 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
 
     private static final int retryDelay = 30 * 1000; // 30 secs
     private static final int maxRuntime = 10*60*1000; // 10 minutes
+    private int mAppWidgetId;
+    private Context mContext;
 
-    private static CozifyAPI cozifyAPI = CozifyApiReal.getInstance();
+    private CozifyApiReal cozifyAPI = new CozifyApiReal();
 
     @ControlProcessState private int state = CONTROL_PRCESS_STATE_INIT;
 
-    CozifySceneOrDeviceStateManager() {
+    CozifySceneOrDeviceStateManager(Context context, int appWidgetId) {
         handler = new Handler();
+        mAppWidgetId = appWidgetId;
+        mContext = context;
+    }
+
+    public void setCloudToken(String cloudToken) {
+        cozifyAPI.setCloudToken(cloudToken);
+    }
+
+    public void setHubKey(String hubKey) {
+        cozifyAPI.setHubKey(hubKey);
+    }
+
+    public boolean isReady() {
+        if (state == CONTROL_PRCESS_STATE_INIT) return true;
+        if (isFinalState(state)) return true;
+        return false;
     }
 
     private boolean isFinalState(@ControlProcessState int state) {
@@ -164,8 +183,8 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
         return false;
     }
 
-    public void updateCurrentState(String device_id, final CozifyAPI.CozifyCallback cb) {
-        cozifyAPI.getSceneOrDeviceState(device_id, new CozifyAPI.CozifyCallback() {
+    public void updateCurrentState(String device_id, final CozifyApiReal.CozifyCallback cb) {
+        cozifyAPI.getSceneOrDeviceState(device_id, new CozifyApiReal.CozifyCallback() {
             public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                 if (success) {
                     setCurrentStateFromJsonResponse(jsonResponse);
@@ -176,7 +195,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
     }
 
     private void updateCurrentStateAndRetryControlAfterDelay() {
-        cozifyAPI.getSceneOrDeviceState(desiredState.id, new CozifyAPI.CozifyCallback() {
+        cozifyAPI.getSceneOrDeviceState(desiredState.id, new CozifyApiReal.CozifyCallback() {
             public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                 if (success) {
                     setCurrentStateFromJsonResponse(jsonResponse);
@@ -196,7 +215,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
         // resend command
         CozifyCommand command = currentState.getCommandTowardsDesiredState(desiredState);
         cozifyAPI.sendCommand(currentState.id, command,
-                new CozifyAPI.CozifyCallback() {
+                new CozifyApiReal.CozifyCallback() {
                     @Override
                     public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                         // Check state after a bit of delay
@@ -211,7 +230,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
     }
 
     private void checkCurrentStateAndSendCommand() {
-        cozifyAPI.getSceneOrDeviceState(currentState.id, new CozifyAPI.CozifyCallback() {
+        cozifyAPI.getSceneOrDeviceState(currentState.id, new CozifyApiReal.CozifyCallback() {
             public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                 if (success) {
                     if (!currentState.reachable) {
@@ -231,13 +250,14 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
 
     }
 
-    public void toggleState(String id, final CozifyAPI.CozifyCallback cbFinished) {
+    public void toggleState(String id, final CozifyApiReal.CozifyCallback cbFinished) {
+        state = CONTROL_PRCESS_STATE_CONTROL_LOCAL;
         this.cbFinished = cbFinished;
         if (startTime == null) {
             startTime = System.currentTimeMillis();
         }
 
-        cozifyAPI.getSceneOrDeviceState(id, new CozifyAPI.CozifyCallback() {
+        cozifyAPI.getSceneOrDeviceState(id, new CozifyApiReal.CozifyCallback() {
             public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                 if (success) {
                     setCurrentStateFromJsonResponse(jsonResponse);
@@ -246,6 +266,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
                     desiredState.isOn = !currentState.isOn;
                     sendCommand();
                 } else {
+                    state = CONTROL_PRCESS_STATE_FAILURE;
                     reportResult();
                 }
             }
@@ -279,6 +300,22 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
             measurement = currentState.getMeasurementsString();
         }
         return measurement;
+    }
+
+    public boolean isOn() {
+        if (currentState == null)
+            return false;
+        return currentState.isOn;
+    }
+
+    public boolean isReachable() {
+        if (currentState == null)
+            return false;
+        return currentState.reachable;
+    }
+
+    public void setReachable(boolean reachable) {
+        currentState.reachable = reachable;
     }
 
 }

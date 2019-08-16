@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class CozifyApiReal extends CozifyAPI {
+public class CozifyApiReal {
 
         private JsonAPI httpAPI;
         private JsonAPI localHttpAPI;
@@ -19,15 +19,10 @@ public class CozifyApiReal extends CozifyAPI {
         private String cloudtoken = "";
         private String hubKey = "";
         private boolean remoteConnection = true;
-        private static CozifyApiReal ourInstance = new CozifyApiReal();
         private Map<String, CozifySceneOrDeviceState> deviceStates = new HashMap<String, CozifySceneOrDeviceState>();
         private long deviceStateTimestamp = 0;
 
-        public static CozifyApiReal getInstance() {
-            return ourInstance;
-        }
-
-        private CozifyApiReal() {
+        public CozifyApiReal() {
             httpAPI = new JsonAPI();
             localHttpAPI = new JsonAPI();
             cloudBaseUrl = "https://api.cozify.fi/ui/0.2/hub/remote/";
@@ -35,6 +30,17 @@ public class CozifyApiReal extends CozifyAPI {
             apiver = "1.11";
         }
 
+        public interface JsonCallback {
+            void result(boolean success, String status, JSONObject resultJson);
+        }
+
+        public interface StringCallback {
+            void result(boolean success, String status, String resultString);
+        }
+
+        public interface CozifyCallback {
+            void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest);
+        }
         private void trafficLog(String method, String data) {
             //Log.i(method, data);
         }
@@ -360,9 +366,12 @@ public class CozifyApiReal extends CozifyAPI {
 
         private void parsePoll(final JSONObject request, final String device_id, int statusCode, JSONObject result, final CozifyCallback cb) {
             try {
-                JSONObject stateJSon = null;
+                JSONObject stateJson = null;
                 long timestamp = result.getLong("timestamp");
-                deviceStateTimestamp = timestamp;
+                boolean fullPoll = result.getBoolean("full");
+                if (fullPoll) {
+                    //deviceStateTimestamp = timestamp;
+                }
                 JSONArray polls = result.getJSONArray("polls");
                 for (int i = 0; i < polls.length(); i++) {
                     JSONObject p = polls.getJSONObject(i);
@@ -383,24 +392,25 @@ public class CozifyApiReal extends CozifyAPI {
                             state.fromPollData(target, timestamp);
                             deviceStates.put(state.id, state);
                             if (device_id.equals(state.id)) {
-                                stateJSon = state.toJson();
+                                stateJson = state.toJson();
                             }
                         }
                     }
                 }
-                if (stateJSon == null) {
+                if (stateJson == null) {
                     CozifySceneOrDeviceState deviceState = deviceStates.get(device_id);
                     if (deviceState != null) {
-                        stateJSon = deviceState.toJson();
+                        stateJson = deviceState.toJson();
                     } else {
                         cb.result(false, "ERROR: Could not find device state ", null, request);
+                        return;
                     }
                 }
-                if (stateJSon != null)
-                    trafficLog("getSceneOrDeviceState", request.toString() + " : " + stateJSon.toString());
+                if (stateJson != null)
+                    trafficLog("getSceneOrDeviceState", request.toString() + " : " + stateJson.toString());
                 else
                     trafficLog("getSceneOrDeviceState", request.toString());
-                cb.result(true, "OK " + statusCode, stateJSon, request);
+                cb.result(true, "OK " + statusCode, stateJson, request);
             } catch (JSONException e) {
                 e.printStackTrace();
                 cb.result(false, "Exception:" + e.getMessage(), null, request);

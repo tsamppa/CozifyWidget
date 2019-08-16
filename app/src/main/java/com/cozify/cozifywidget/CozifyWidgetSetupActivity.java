@@ -23,7 +23,7 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
             = "com.cozify.android.apis.appwidget.CozifyWidgetProvider";
     static final String PREF_PREFIX_KEY = "prefix_";
 
-    private static CozifyAPI cozifyAPI = CozifyApiReal.getInstance();
+    private static CozifyApiReal cozifyAPI = new CozifyApiReal();
 
     TextView textViewStatus;
     EditText editTextEmail;
@@ -120,7 +120,7 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
 
 
     private void listHubs() {
-        cozifyAPI.listHubs(new CozifyAPI.StringCallback() {
+        cozifyAPI.listHubs(new CozifyApiReal.StringCallback() {
             @Override
             public void result(boolean success, String message, String result) {
                 if (success) {
@@ -133,7 +133,7 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
     }
 
     private void confirmPassword(String pw, String email_address) {
-        cozifyAPI.confirmPassword(pw, email_address, new CozifyAPI.StringCallback() {
+        cozifyAPI.confirmPassword(pw, email_address, new CozifyApiReal.StringCallback() {
             @Override
             public void result(boolean success, String message, String result) {
                 if (success) {
@@ -156,7 +156,7 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
     private void getHubKeys() {
         textViewStatus.setText("Checking connection..");
         buttonLogin.setEnabled(false);
-        cozifyAPI.getHubKeys(new CozifyAPI.JsonCallback() {
+        cozifyAPI.getHubKeys(new CozifyApiReal.JsonCallback() {
             @Override
             public void result(boolean success, String message, JSONObject jsonResult) {
                 buttonLogin.setEnabled(true);
@@ -184,7 +184,7 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
                 textInputLayoutEmail.setErrorEnabled(false);
                 // Login with email
                 emailAddress = email_address;
-                cozifyAPI.requestLogin(emailAddress, new CozifyAPI.StringCallback() {
+                cozifyAPI.requestLogin(emailAddress, new CozifyApiReal.StringCallback() {
                     @Override
                     public void result(boolean success, String message, String result) {
                         if (success) {

@@ -27,6 +27,9 @@ public class CozifySceneOrDeviceState {
     public List<String> capabilities = new ArrayList<String>();
 
     public boolean fromJson(JSONObject source) {
+        if (source == null) {
+            return false;
+        }
         try {
             this.id = source.getString("id");
             this.timestamp = source.getLong("timestamp");
@@ -180,12 +183,16 @@ public class CozifySceneOrDeviceState {
         if (capabilities.contains("HUMIDITY")) {
             if (measurement != null) {
                 measurement += "\n";
+            } else {
+                measurement = "";
             }
-            measurement += "\n" + String.format(Locale.ENGLISH, "%.0f %%", humidity);
+            measurement += String.format(Locale.ENGLISH, "%.0f %%", humidity);
         }
         if (capabilities.contains("TEMPERATURE")) {
             if (measurement != null) {
                 measurement += "\n";
+            } else {
+                measurement = "";
             }
             measurement += String.format(Locale.ENGLISH, "%.1f C", temperature);
         }

@@ -45,13 +45,13 @@ public class PersistentStorage {
         return prefs.getString(PREF_PREFIX_KEY + "cloudtoken", null);
     }
 
-    public boolean saveHubKey(Context context, String cloudtoken) {
+    public boolean saveHubKey(Context context, int appWidgetId, String hubKey) {
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
-        prefs.putString(PREF_PREFIX_KEY + "hubKey", cloudtoken);
+        prefs.putString(PREF_PREFIX_KEY + "hubKey", hubKey);
         return prefs.commit();
     }
 
-    public String loadHubKey(Context context) {
+    public String loadHubKey(Context context, int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
         return prefs.getString(PREF_PREFIX_KEY + "hubKey", null);
     }
