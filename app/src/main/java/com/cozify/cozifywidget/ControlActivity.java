@@ -316,6 +316,10 @@ public class ControlActivity extends AppCompatActivity {
                 resourceForState = R.drawable.appwidget_button_unreachable_off;
             }
         }
+        Log.d("ResourceIcon", String.format("resourceForState: %d", resourceForState));
+        if (resourceForState == -1) {
+            resourceForState = R.drawable.appwidget_button_unreachable_off;
+        }
         return resourceForState;
     }
 

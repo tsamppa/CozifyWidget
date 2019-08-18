@@ -3,6 +3,7 @@ package com.cozify.cozifywidget;
 
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -24,19 +25,24 @@ import androidx.test.uiautomator.Until;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
 import static android.os.SystemClock.sleep;
 import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static androidx.test.espresso.action.ViewActions.pressImeActionButton;
+import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
@@ -46,6 +52,7 @@ import static org.hamcrest.core.IsNull.notNullValue;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CozifyWidgetSetupActivityTestOnOff {
     private static final String COZIFY_PACKAGE
             = "com.cozify.cozifywidget";
@@ -53,26 +60,20 @@ public class CozifyWidgetSetupActivityTestOnOff {
     String WIDGET_NAME = "Cozify Scene and Device Control";
     boolean WIDGET_SELECTION_AT_X = false;
     private UiDevice device;
-    private int widgetCount = 1;
-    private Point[] widgetLocations = new Point[6];
+    private int widgetCount = 0;
 
     @Rule
-    public ActivityTestRule<CozifyWidgetSetupActivity> mActivityTestRule = new ActivityTestRule<>(CozifyWidgetSetupActivity.class);
+    public ActivityTestRule<CozifyWidgetSetupActivity> mActivityTestRule = new ActivityTestRule<>(CozifyWidgetSetupActivity.class, true, false);
 
     @Before
     public void startMainActivityFromHomeScreen() {
-        widgetLocations[0] = new Point(80,250);
-        widgetLocations[1] = new Point(80*2,250);
-        widgetLocations[2] = new Point(80*3,250);
-        widgetLocations[3] = new Point(80*4,250);
-        widgetLocations[4] = new Point(80*5,250);
-        widgetLocations[5] = new Point(80,320);
+        int margin = 60;
         // Initialize UiDevice instance
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        createWidget();
     }
 
     private void createWidget() {
+        widgetCount = widgetCount + 1;
 
         // Start from the home screen
         device.pressHome();
@@ -111,26 +112,37 @@ public class CozifyWidgetSetupActivityTestOnOff {
         // Throw the selected widget on screen
         Rect b = widget.getVisibleBounds();
         Point c = new Point(b.left + 150, b.bottom + 150);
-        Point dest = widgetLocations[widgetCount-1];
+        Point dest = new Point(300,300);
         Point[] pa = new Point[3];
         pa[0] = c;
         pa[1] = c;
         pa[2] = dest;
-        device.swipe(pa, 150);
+        device.swipe(pa, 200);
+        Log.d("WIDGET POS", String.format("Widget position:%d, %d", dest.x, dest.y));
 
-        widgetCount = widgetCount + 1;
     }
 
-    @After
     public void removeWidgets() {
-        for (int i=0; i <6; i++) {
+        device.pressHome();
+        removeWidget("T1");
+        removeWidget("T2");
+    }
+
+    public void removeWidget(String widgetName) {
+        device.pressHome();
+        UiObject2 widget = device.findObject(By.text(widgetName));
+        while (widget != null) {
+            Rect r = widget.getVisibleBounds();
+            Point c = new Point(r.centerX(), r.centerY());
             Point[] pa = new Point[3];
-            pa[0] = widgetLocations[i];
-            pa[1] = widgetLocations[i];
-            pa[2] = new Point(device.getDisplayWidth()/2, 50);
+            pa[0] = c;
+            pa[1] = c;
+            pa[2] = new Point(device.getDisplayWidth()/2, 120);
             device.swipe(pa, 150);
+            widget = device.findObject(By.text(widgetName));
         }
     }
+
 
     private void swipeScroll(int amount) {
         int displayWidth = device.getDisplayWidth();
@@ -153,68 +165,81 @@ public class CozifyWidgetSetupActivityTestOnOff {
 
 
     @Test
-    public void cozifyWidgetSetupActivityTestOnOff() {
-        configWidget();
+    public void c1_cozifyWidgetSetupActivityTestCreate1() {
+        createWidget();
+        configWidget("T1", 1, 75);
+        UiObject2 widget1 = findMyWidget("T1");
+        assertThat(widget1, is(notNullValue()));
+        widget1.click();
+        sleep(6000);
+        widget1.click();
+        sleep(2000);
+        widget1.click();
+    }
+
+    @Test
+    public void c2_cozifyWidgetSetupActivityTestCreate2() {
+        createWidget();
+        configWidget("T2", 1, 29);
+        UiObject2 widget2 = findMyWidget("T2");
+        assertThat(widget2, is(notNullValue()));
+        widget2.click();
+        sleep(6000);
+        widget2.click();
+        sleep(2000);
+        widget2.click();
 
     }
+
     @Test
-    public void cozifyWidgetSetupActivityTestOnOff2() {
-        createWidget();
-        configWidget();
+    public void c3_cozifyWidgetSetupActivityTestClicks1() {
+        UiObject2 widget1 = findMyWidget("T1");
+        assertThat(widget1, is(notNullValue()));
+        widget1.click();
+        sleep(1000);
+        widget1.click();
     }
+
     @Test
-    public void cozifyWidgetSetupActivityTestOnOff3() {
-        createWidget();
-        configWidget();
+    public void c4_cozifyWidgetSetupActivityTestClicks2() {
+        UiObject2 widget2 = findMyWidget("T2");
+        assertThat(widget2, is(notNullValue()));
+        widget2.click();
+        sleep(1000);
+        widget2.click();
     }
+
+
     @Test
-    public void cozifyWidgetSetupActivityTestOnOff4() {
-        createWidget();
-        configWidget();
+    public void c5_cozifyWidgetSetupActivityTestRemove() {
+        removeWidget("T1");
+        removeWidget("T1");
     }
-    private void configWidget() {
-        ViewInteraction spinner = onView(
-                allOf(withId(R.id.spinner_hubs),
+
+    private void setWidgetName(String widgetName) {
+        ViewInteraction editText = onView(
+                allOf(withId(R.id.device_name_edit),
                         childAtPosition(
                                 childAtPosition(
-                                        withId(android.R.id.content),
+                                        allOf(withId(R.id.device_name), withContentDescription("Label")),
                                         0),
-                                2),
+                                0),
                         isDisplayed()));
-        spinner.perform(click());
+        editText.perform(replaceText(widgetName), closeSoftKeyboard());
 
-        device.waitForIdle();
-
-        DataInteraction checkedTextView = onData(anything())
-                .inAdapterView(childAtPosition(
-                        withClassName(is("android.widget.PopupWindow$PopupBackgroundView")),
-                        0))
-                .atPosition(1);
-        checkedTextView.perform(click());
-
-        device.waitForIdle();
-
-        ViewInteraction spinner2 = onView(
-                allOf(withId(R.id.spinner_devices),
+        ViewInteraction editText2 = onView(
+                allOf(withId(R.id.device_name_edit), withText(widgetName),
                         childAtPosition(
                                 childAtPosition(
-                                        withId(android.R.id.content),
+                                        allOf(withId(R.id.device_name), withContentDescription("Label")),
                                         0),
-                                3),
+                                0),
                         isDisplayed()));
-        spinner2.perform(click());
+        editText2.perform(pressImeActionButton());
 
-        device.waitForIdle();
+    }
 
-        DataInteraction checkedTextView2 = onData(anything())
-                .inAdapterView(childAtPosition(
-                        withClassName(is("android.widget.PopupWindow$PopupBackgroundView")),
-                        0))
-                .atPosition(3);
-        checkedTextView2.perform(click());
-
-        device.waitForIdle();
-
+    private void testOnButton() {
         ViewInteraction button = onView(
                 allOf(withId(R.id.test_control_on_button), withText("Test ON now"),
                         childAtPosition(
@@ -225,7 +250,9 @@ public class CozifyWidgetSetupActivityTestOnOff {
                         isDisplayed()));
         button.perform(click());
         sleep(2000);
+    }
 
+    private void testOffButton() {
         ViewInteraction button2 = onView(
                 allOf(withId(R.id.test_control_off_button), withText("Test OFF now"),
                         childAtPosition(
@@ -236,7 +263,41 @@ public class CozifyWidgetSetupActivityTestOnOff {
                         isDisplayed()));
         button2.perform(click());
         sleep(2000);
+    }
 
+    private void selectHub(int hubPos) {
+        ViewInteraction spinner = onView(
+                allOf(withId(R.id.spinner_hubs),
+                        childAtPosition(
+                                childAtPosition(
+                                        withId(android.R.id.content),
+                                        0),
+                                2),
+                        isDisplayed()));
+        spinner.perform(click());
+
+        DataInteraction checkedTextView = onData(anything())
+                .inAdapterView(childAtPosition(
+                        withClassName(is("android.widget.PopupWindow$PopupBackgroundView")),
+                        0))
+                .atPosition(hubPos);
+        checkedTextView.perform(click());
+
+    }
+
+    private void configWidget(String widgetName, int hubPos, int devicePos) {
+        selectHub(hubPos);
+
+        device.waitForIdle();
+
+        selectDevice(devicePos);
+
+        setWidgetName(widgetName);
+
+        testOnButton();
+        testOffButton();
+
+        device.waitForIdle();
 
         ViewInteraction button3 = onView(
                 allOf(withId(R.id.create_button),
@@ -244,6 +305,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
         button3.perform(click());
 
         device.waitForIdle();
+        sleep(2000);
 
     }
 
@@ -264,5 +326,24 @@ public class CozifyWidgetSetupActivityTestOnOff {
                         && view.equals(((ViewGroup) parent).getChildAt(position));
             }
         };
+    }
+
+    private void selectDevice(int pos) {
+        ViewInteraction spinner3 = onView(
+                allOf(withId(R.id.spinner_devices),
+                        childAtPosition(
+                                childAtPosition(
+                                        withId(android.R.id.content),
+                                        0),
+                                3),
+                        isDisplayed()));
+        spinner3.perform(click());
+
+        DataInteraction checkedTextView2 = onData(anything())
+                .inAdapterView(childAtPosition(
+                        withClassName(is("android.widget.PopupWindow$PopupBackgroundView")),
+                        0))
+                .atPosition(pos);
+        checkedTextView2.perform(click());
     }
 }

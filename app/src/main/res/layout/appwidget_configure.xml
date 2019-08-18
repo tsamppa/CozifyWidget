@@ -36,6 +36,7 @@
         android:id="@+id/device_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:contentDescription="@string/label"
         android:textColorHint="@android:color/black">
 
         <EditText

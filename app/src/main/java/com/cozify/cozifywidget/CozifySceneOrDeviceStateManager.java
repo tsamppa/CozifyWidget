@@ -2,6 +2,8 @@ package com.cozify.cozifywidget;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
+
 import androidx.annotation.IntDef;
 
 import org.json.JSONObject;
@@ -72,6 +74,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
     }
 
     private boolean isFinalState(@ControlProcessState int state) {
+        Log.d("STATE", explainControlProcessState(state));
         switch (state) {
             case CONTROL_PRCESS_STATE_INIT:
             case CONTROL_PRCESS_STATE_CONTROL_LOCAL:
@@ -108,50 +111,25 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
         }
     }
 
+    private String explainControlProcessState(@ControlProcessState int s) {
+        switch (s) {
+            case CONTROL_PRCESS_STATE_INIT: return("CONTROL_PRCESS_STATE_INIT");
+            case CONTROL_PRCESS_STATE_CONTROL_LOCAL: return("CONTROL_PRCESS_STATE_CONTROL_LOCAL");
+            case CONTROL_PRCESS_STATE_CONTROL_REMOTE: return("CONTROL_PRCESS_STATE_CONTROL_REMOTE");
+            case CONTROL_PRCESS_STATE_RETRY_LOCAL: return("CONTROL_PRCESS_STATE_RETRY_LOCAL");
+            case CONTROL_PRCESS_STATE_RETRY_REMOTE: return("CONTROL_PRCESS_STATE_RETRY_REMOTE");
+            case CONTROL_PRCESS_STATE_ABORTED: return("CONTROL_PRCESS_STATE_ABORTED");
+            case CONTROL_PRCESS_STATE_COMPLETED: return("CONTROL_PRCESS_STATE_COMPLETED");
+            case CONTROL_PRCESS_STATE_EXPIRED: return("CONTROL_PRCESS_STATE_EXPIRED");
+            case CONTROL_PRCESS_STATE_UNREACHABLE: return("CONTROL_PRCESS_STATE_UNREACHABLE");
+            case CONTROL_PRCESS_STATE_FAILURE: return("CONTROL_PRCESS_STATE_FAILURE");
+        }
+        throw new NullPointerException("Logic error in StateManager");
+    }
+
     private void reportResult() {
         if (cbFinished != null) {
-            switch (state) {
-                case CONTROL_PRCESS_STATE_INIT: {
-                    cbFinished.result(false, "INIT", null, null);
-                    break;
-                }
-                case CONTROL_PRCESS_STATE_CONTROL_LOCAL: {
-                    cbFinished.result(false, "CONTROL_LOCAL", null, null);
-                    break;
-                }
-                case CONTROL_PRCESS_STATE_CONTROL_REMOTE: {
-                    cbFinished.result(false, "CONTROL_REMOTE", null, null);
-                    break;
-                }
-                case CONTROL_PRCESS_STATE_RETRY_LOCAL: {
-                    cbFinished.result(false, "RETRY_LOCAL", null, null);
-                    break;
-                }
-                case CONTROL_PRCESS_STATE_RETRY_REMOTE: {
-                    cbFinished.result(false, "RETRY_REMOTE", null, null);
-                    break;
-                }
-                case CONTROL_PRCESS_STATE_ABORTED: {
-                    cbFinished.result(false, "ABORTED", null, null);
-                    break;
-                }
-                case CONTROL_PRCESS_STATE_COMPLETED: {
-                    cbFinished.result(true, "COMPLETED", null, null);
-                    break;
-                }
-                case CONTROL_PRCESS_STATE_EXPIRED: {
-                    cbFinished.result(false, "EXPIRED", null, null);
-                    break;
-                }
-                case CONTROL_PRCESS_STATE_UNREACHABLE: {
-                    cbFinished.result(false, "UNREACHABLE", null, null);
-                    break;
-                }
-                case CONTROL_PRCESS_STATE_FAILURE: {
-                    cbFinished.result(false, "FAILURE", null, null);
-                    break;
-                }
-            }
+            cbFinished.result(state == CONTROL_PRCESS_STATE_COMPLETED, explainControlProcessState(state), null, null);
         } else {
             throw new NullPointerException("Logic error in StateManager");
         }
