@@ -56,8 +56,8 @@ public class PersistentStorageTest {
     @Test
     public void saveSettingsJson() {
         Context appContext = InstrumentationRegistry.getTargetContext();
-        PersistentStorage.getInstance().saveSettings(appContext,1, true, false, false, false, false);
-        PersistentStorage.getInstance().saveSettings(appContext,2, false, true, false, false, false);
+        PersistentStorage.getInstance().saveSettings(appContext,1, true, false, false, false, false, true);
+        PersistentStorage.getInstance().saveSettings(appContext,2, false, true, false, false, false, true);
         JSONObject j1 = PersistentStorage.getInstance().loadSettingsJson(appContext, 1);
         JSONObject j2 = PersistentStorage.getInstance().loadSettingsJson(appContext, 2);
         try {

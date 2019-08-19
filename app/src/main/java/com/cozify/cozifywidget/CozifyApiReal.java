@@ -15,6 +15,7 @@ public class CozifyApiReal {
         private JsonAPI localHttpAPI;
         private String cloudBaseUrl;
         private String localBaseUrl;
+        private String hubLanIp;
         private String apiver;
         private String cloudtoken = "";
         private String hubKey = "";
@@ -46,11 +47,16 @@ public class CozifyApiReal {
         }
 
         public void setHubLanIp(String hubLanIp) {
+            this.hubLanIp = hubLanIp;
             if (hubLanIp != null && hubLanIp.length() > 0) {
                 localBaseUrl = "http://" + hubLanIp + ":8893/";
             } else {
                 localBaseUrl = null;
             }
+        }
+
+        public String getHubLanIp() {
+            return hubLanIp;
         }
 
         public void setCloudToken(String cloudtoken) {
@@ -61,19 +67,21 @@ public class CozifyApiReal {
         public void setHubKey(String hubKey) {
             this.hubKey = hubKey;
             setHeaders();
-            listHubs(new StringCallback() {
-                @Override
-                public void result(boolean success, String status, String resultString) {
-                    if (success) {
-                        if (resultString.length() > 2) {
-                            String hubLanIp = resultString.substring(2, resultString.length() - 2);
-                            setHubLanIp(hubLanIp);
-                        } else {
-                            setHubLanIp("");
+            if (localBaseUrl == null) {
+                listHubs(new StringCallback() {
+                    @Override
+                    public void result(boolean success, String status, String resultString) {
+                        if (success) {
+                            if (resultString.length() > 2) {
+                                String hubLanIp = resultString.substring(2, resultString.length() - 2);
+                                setHubLanIp(hubLanIp);
+                            } else {
+                                setHubLanIp("");
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
         }
 
         public void connectLocally() {
@@ -124,20 +132,6 @@ public class CozifyApiReal {
                 url = cloudBaseUrl + url;
             }
             return url;
-        }
-
-        public boolean parseCommandIsOn(JSONObject command) throws JSONException {
-            String commandString = command.getString("type");
-            if (commandString.equals("CMD_DEVICE_ON")) return true;
-            if (commandString.equals("CMD_DEVICE_OFF")) return false;
-            if (commandString.equals("CMD_SCENE_ON")) return true;
-            if (commandString.equals("CMD_SCENE_OFF")) return false;
-            throw new JSONException("Command type not recognized:" + commandString);
-        }
-
-        public String parseCommandTargetId(JSONObject command) throws JSONException {
-            String id = command.getString("id");
-            return id;
         }
 
         private JsonAPI getHttpAPI() {
@@ -319,16 +313,6 @@ public class CozifyApiReal {
                         }
                     }
             );
-        }
-
-        public void setDeviceCacheState(String id, boolean isOn) {
-            CozifySceneOrDeviceState deviceState = deviceStates.get(id);
-            if (deviceState == null) {
-                deviceState = new CozifySceneOrDeviceState();
-                deviceState.id = id;
-            }
-            deviceState.isOn = isOn;
-            deviceStates.put(id, deviceState);
         }
 
         public void getSceneOrDeviceState(final String device_id, final CozifyCallback cb) {

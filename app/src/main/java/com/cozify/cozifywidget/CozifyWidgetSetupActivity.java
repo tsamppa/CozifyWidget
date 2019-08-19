@@ -23,7 +23,7 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
             = "com.cozify.android.apis.appwidget.CozifyWidgetProvider";
     static final String PREF_PREFIX_KEY = "prefix_";
 
-    private static CozifyApiReal cozifyAPI = new CozifyApiReal();
+    private CozifyApiReal cozifyAPI = new CozifyApiReal();
 
     TextView textViewStatus;
     EditText editTextEmail;

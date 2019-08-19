@@ -252,7 +252,7 @@ public class CozifyAppWidgetConfigure extends Activity {
             PersistentStorage.getInstance().saveHubKey(context, mAppWidgetId, selectedHubKey);
             PersistentStorage.getInstance().saveDeviceId(context, mAppWidgetId, selectedDeviceId);
             PersistentStorage.getInstance().saveDeviceName(context, mAppWidgetId, selectedDeviceShortName);
-            PersistentStorage.getInstance().saveSettings(context, mAppWidgetId, false, false, false, false, true);
+            PersistentStorage.getInstance().saveSettings(context, mAppWidgetId, false, false, false, false, false, true);
 
             // Make sure we pass back the original appWidgetId
             Intent intent = new Intent(this, ControlActivity.class);
@@ -270,7 +270,8 @@ public class CozifyAppWidgetConfigure extends Activity {
             Intent resultValue = new Intent();
             resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
             setResult(RESULT_OK, resultValue);
-            ShowMessage("Widget "+mAppWidgetId+" created for controlling "+selectedDeviceShortName);
+            String hubName = parseHubNameFromToken(selectedHubKey);
+            ShowMessage("Widget "+mAppWidgetId+" created for controlling "+selectedDeviceShortName +" of HUB "+hubName);
             updateDeviceState(context, appWidgetManager, mAppWidgetId);
             finish();
         } else {
@@ -309,7 +310,7 @@ public class CozifyAppWidgetConfigure extends Activity {
                     RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.demo_app_widget);
                     int resourceForState = ControlActivity.getDeviceResourceForState(true, state.isOn, false, false, false, false, false);
                     views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
-                    PersistentStorage.getInstance().saveSettings(context, appWidgetId,  state.isOn, false, false, false, true);
+                    PersistentStorage.getInstance().saveSettings(context, appWidgetId,  state.isOn, false, false, false, false, true);
                     appWidgetManager.updateAppWidget(appWidgetId, views);
                 } else {
                     RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.demo_app_widget);

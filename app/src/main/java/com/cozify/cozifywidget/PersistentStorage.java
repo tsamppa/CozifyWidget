@@ -47,13 +47,13 @@ public class PersistentStorage {
 
     public boolean saveHubKey(Context context, int appWidgetId, String hubKey) {
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
-        prefs.putString(PREF_PREFIX_KEY + "hubKey", hubKey);
+        prefs.putString(PREF_PREFIX_KEY + "hubKey_" + appWidgetId, hubKey);
         return prefs.commit();
     }
 
     public String loadHubKey(Context context, int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        return prefs.getString(PREF_PREFIX_KEY + "hubKey", null);
+        return prefs.getString(PREF_PREFIX_KEY + "hubKey_"+appWidgetId, null);
     }
 
     public boolean saveDeviceId(Context context, int appWidgetId, String deviceId) {
@@ -91,7 +91,7 @@ public class PersistentStorage {
         return settings;
     }
 
-    public boolean saveSettings(Context context, int appWidgetId, boolean isOn, boolean isArmed, boolean isArming, boolean isControlling, boolean isReachable) {
+    public boolean saveSettings(Context context, int appWidgetId, boolean isOn, boolean isArmed, boolean isArming, boolean armedForDesiredState, boolean isControlling, boolean isReachable) {
         JSONObject json = new JSONObject();
         try {
             json.put("armed", isArmed);
@@ -99,6 +99,7 @@ public class PersistentStorage {
             json.put("reachable", isReachable);
             json.put("controlling", isControlling);
             json.put("arming", isArming);
+            json.put("armedForDesiredState", armedForDesiredState);
         } catch (JSONException e) {
             e.printStackTrace();
             return false;
@@ -141,4 +142,18 @@ public class PersistentStorage {
         }
         return false;
     }
+
+    public String loadHubLanIp(Context context, int appWidgetId) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+        String hubLanIp = prefs.getString(PREF_PREFIX_KEY + "hublanip_" + appWidgetId, null);
+        return hubLanIp;
+
+    }
+
+    public boolean saveHubLanIp(Context context, int appWidgetId, String hubLanIp) {
+        SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
+        prefs.putString(PREF_PREFIX_KEY + "hublanip_" + appWidgetId, hubLanIp);
+        return prefs.commit();
+    }
+
 }
