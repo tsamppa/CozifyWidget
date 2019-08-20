@@ -1,6 +1,8 @@
 package com.cozify.cozifywidget;
 
 
+import android.app.Activity;
+import android.app.Instrumentation;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.Log;
@@ -12,7 +14,6 @@ import androidx.test.espresso.DataInteraction;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.filters.LargeTest;
 import androidx.test.platform.app.InstrumentationRegistry;
-import androidx.test.rule.ActivityTestRule;
 import androidx.test.runner.AndroidJUnit4;
 import androidx.test.uiautomator.By;
 import androidx.test.uiautomator.UiDevice;
@@ -26,8 +27,8 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -60,16 +61,23 @@ public class CozifyWidgetSetupActivityTestOnOff {
     String WIDGET_NAME = "Cozify Scene and Device Control";
     boolean WIDGET_SELECTION_AT_X = false;
     private UiDevice device;
+    private Instrumentation.ActivityMonitor monitor;
+    private Activity activity;
     private int widgetCount = 0;
 
-    @Rule
-    public ActivityTestRule<CozifyWidgetSetupActivity> mActivityTestRule = new ActivityTestRule<>(CozifyWidgetSetupActivity.class, true, false);
+
+//    @Rule
+//    public ActivityTestRule<CozifyWidgetSetupActivity> mActivityTestRule = new ActivityTestRule<>(CozifyWidgetSetupActivity.class, true, false);
+
+    @BeforeClass
+    public static void prepare() {
+        removeWidget("Scene or Device");
+    }
 
     @Before
     public void startMainActivityFromHomeScreen() {
-        int margin = 60;
-        // Initialize UiDevice instance
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        monitor = InstrumentationRegistry.getInstrumentation().addMonitor("com.cozify.cozifywidget.CozifyAppWidgetConfigure", null, false);
     }
 
     private void createWidget() {
@@ -119,16 +127,17 @@ public class CozifyWidgetSetupActivityTestOnOff {
         pa[2] = dest;
         device.swipe(pa, 200);
         Log.d("WIDGET POS", String.format("Widget position:%d, %d", dest.x, dest.y));
+        activity = monitor.waitForActivityWithTimeout(2000);
 
     }
 
-    public void removeWidgets() {
-        device.pressHome();
+    public static void removeWidgets() {
         removeWidget("T1");
         removeWidget("T2");
     }
 
-    public void removeWidget(String widgetName) {
+    public static void removeWidget(String widgetName) {
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         device.pressHome();
         UiObject2 widget = device.findObject(By.text(widgetName));
         while (widget != null) {
@@ -213,7 +222,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
     @Test
     public void c5_cozifyWidgetSetupActivityTestRemove() {
         removeWidget("T1");
-        removeWidget("T1");
+        removeWidget("T2");
     }
 
     private void setWidgetName(String widgetName) {
@@ -286,6 +295,8 @@ public class CozifyWidgetSetupActivityTestOnOff {
     }
 
     private void configWidget(String widgetName, int hubPos, int devicePos) {
+        device.waitForIdle();
+
         selectHub(hubPos);
 
         device.waitForIdle();
