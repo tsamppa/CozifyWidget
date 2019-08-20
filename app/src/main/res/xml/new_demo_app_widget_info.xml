@@ -8,4 +8,4 @@
     android:previewImage="@drawable/appwidget_button_clickable_on"
     android:resizeMode="none"
     android:updatePeriodMillis="3600000"
-    android:widgetCategory="keyguard|home_screen" />
+    android:widgetCategory="home_screen" />

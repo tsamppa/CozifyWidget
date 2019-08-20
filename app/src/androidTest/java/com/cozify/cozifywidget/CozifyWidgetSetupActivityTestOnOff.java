@@ -59,7 +59,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
             = "com.cozify.cozifywidget";
     private static final int LAUNCH_TIMEOUT = 5000;
     String WIDGET_NAME = "Cozify Scene and Device Control";
-    boolean WIDGET_SELECTION_AT_X = false;
+    boolean WIDGET_SELECTION_AT_X = true;
     private UiDevice device;
     private Instrumentation.ActivityMonitor monitor;
     private Activity activity;
@@ -95,28 +95,36 @@ public class CozifyWidgetSetupActivityTestOnOff {
 
         device.swipe(device.getDisplayWidth()/2, device.getDisplayHeight()/2,
                 device.getDisplayWidth()/2, device.getDisplayHeight()/2, 150);
-        device.findObject(By.text("Widgets")).click();
+
+        UiObject2 widgetMenu = device.findObject(By.text("Widgets"));
+        if (widgetMenu == null) {
+            widgetMenu = device.findObject(By.text("Pienoisohjelmat"));
+        }
+        widgetMenu.click();
         device.waitForIdle();
 
-        UiScrollable widgets = new UiScrollable(new UiSelector().scrollable(true));
-        widgets.setAsHorizontalList();
-        try {
-            widgets.flingToEnd(2);
-        } catch (UiObjectNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        int displayWidth = device.getDisplayWidth();
-        int displayHeight = device.getDisplayWidth();
-        int centerX = displayWidth / 2;
-        int centerY = displayHeight / 2;
-
         UiObject2 widget = findMyWidget(WIDGET_NAME);
-        while (widget == null) {
-            swipeScroll(WIDGET_SELECTION_AT_X ? centerX : centerY);
-            widget = findMyWidget(WIDGET_NAME);
-        }
 
+        if (widget == null) {
+            UiScrollable widgets = new UiScrollable(new UiSelector().scrollable(true));
+            widgets.setAsHorizontalList();
+            try {
+                widgets.flingToEnd(2);
+            } catch (UiObjectNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            int displayWidth = device.getDisplayWidth();
+            int displayHeight = device.getDisplayWidth();
+            int centerX = displayWidth / 2;
+            int centerY = displayHeight / 2;
+
+            widget = findMyWidget(WIDGET_NAME);
+            while (widget == null) {
+                swipeScroll(WIDGET_SELECTION_AT_X ? centerX : centerY);
+                widget = findMyWidget(WIDGET_NAME);
+            }
+        }
         // Throw the selected widget on screen
         Rect b = widget.getVisibleBounds();
         Point c = new Point(b.left + 150, b.bottom + 150);
@@ -184,6 +192,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
         widget1.click();
         sleep(2000);
         widget1.click();
+        sleep(1000);
     }
 
     @Test
@@ -197,7 +206,31 @@ public class CozifyWidgetSetupActivityTestOnOff {
         widget2.click();
         sleep(2000);
         widget2.click();
+        sleep(1000);
+    }
 
+    @Test
+    public void c2_cozifyWidgetSetupActivityTestCreate3() {
+        for (int i = 3; i < 12; i++) {
+            createWidget();
+            configWidget("T" + i, 1, 7);
+            UiObject2 widget = findMyWidget("T"+i);
+            assertThat(widget, is(notNullValue()));
+        }
+        clickAll();
+        clickAll();
+        clickAll();
+        clickAll();
+    }
+
+    private void clickAll() {
+        for (int i = 3; i < 12; i++) {
+            UiObject2 widget = findMyWidget("T"+i);
+            assertThat(widget, is(notNullValue()));
+            widget.click();
+            sleep(100);
+        }
+        sleep(1000);
     }
 
     @Test
@@ -207,6 +240,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
         widget1.click();
         sleep(1000);
         widget1.click();
+        sleep(1000);
     }
 
     @Test
@@ -216,13 +250,70 @@ public class CozifyWidgetSetupActivityTestOnOff {
         widget2.click();
         sleep(1000);
         widget2.click();
+        sleep(1000);
+    }
+
+    @Test
+    public void c4_cozifyWidgetSetupActivityTestClicks3() {
+        UiObject2 widget1 = findMyWidget("T1");
+        assertThat(widget1, is(notNullValue()));
+        UiObject2 widget2 = findMyWidget("T2");
+        assertThat(widget2, is(notNullValue()));
+        widget2.click();
+        sleep(1000);
+        widget2.click();
+        widget1.click();
+        sleep(1000);
+        widget1.click();
+        sleep(100);
+        widget2.click();
+        sleep(100);
+        widget1.click();
+        sleep(100);
+        widget2.click();
+        sleep(100);
+        widget1.click();
+        sleep(100);
+        widget2.click();
+        sleep(100);
+        widget1.click();
+        sleep(100);
+        widget2.click();
+        sleep(100);
+        widget1.click();
+        sleep(100);
+        widget2.click();
+        sleep(100);
+        widget1.click();
+        sleep(100);
+        widget2.click();
+        sleep(100);
+        widget2.click();
+        sleep(100);
+        widget1.click();
+        sleep(100);
+        widget2.click();
+        sleep(100);
+        widget2.click();
+        sleep(100);
+        widget1.click();
+        sleep(100);
+        widget2.click();
+        sleep(100);
+        widget2.click();
+        sleep(100);
+        widget1.click();
+        sleep(100);
+        widget2.click();
+        sleep(100);
     }
 
 
     @Test
-    public void c5_cozifyWidgetSetupActivityTestRemove() {
-        removeWidget("T1");
-        removeWidget("T2");
+    public void c9_cozifyWidgetSetupActivityTestRemove() {
+        for (int i = 1; i < 12; i++) {
+            removeWidget("T"+i);
+        }
     }
 
     private void setWidgetName(String widgetName) {
