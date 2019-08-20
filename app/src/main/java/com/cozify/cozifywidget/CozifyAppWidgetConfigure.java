@@ -261,7 +261,7 @@ public class CozifyAppWidgetConfigure extends Activity {
             PendingIntent pendingIntent;
             pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             Log.d("PENDING DEBUG","PendingIntent at createWidget: "+mAppWidgetId);
-            RemoteViews views = new RemoteViews(this.getPackageName(), R.layout.demo_app_widget);
+            RemoteViews views = new RemoteViews(this.getPackageName(), R.layout.appwidget_button);
             views.setOnClickPendingIntent(R.id.control_button, pendingIntent);
             views.setCharSequence(R.id.control_button, "setText", selectedDeviceShortName);
 //            ComponentName provider = new ComponentName(context, CozifyAppWidget.class);
@@ -307,13 +307,13 @@ public class CozifyAppWidgetConfigure extends Activity {
                 if (success) {
                     CozifySceneOrDeviceState state = new CozifySceneOrDeviceState();
                     state.fromJson(resultJson);
-                    RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.demo_app_widget);
+                    RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.appwidget_button);
                     int resourceForState = ControlActivity.getDeviceResourceForState(true, state.isOn, false, false, false, false, false);
                     views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
                     PersistentStorage.getInstance().saveSettings(context, appWidgetId,  state.isOn, false, false, false, false, true);
                     appWidgetManager.updateAppWidget(appWidgetId, views);
                 } else {
-                    RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.demo_app_widget);
+                    RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.appwidget_button);
                     int resourceForState = ControlActivity.getDeviceResourceForState(false, false, false, false, false, false, false);
                     views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
                 }

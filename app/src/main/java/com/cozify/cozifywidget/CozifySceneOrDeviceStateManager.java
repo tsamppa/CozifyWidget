@@ -70,9 +70,11 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
         mHubLanIp = PersistentStorage.getInstance().loadHubLanIp(mContext, mAppWidgetId);
         cozifyAPI.setHubLanIp(mHubLanIp);
         String hubKey = PersistentStorage.getInstance().loadHubKey(mContext, mAppWidgetId);
-        String hubName = parseHubNameFromToken(hubKey);
-        Log.d("WIDGET-HUBKEY MATCH", String.format("Widget %d controls hub %s", mAppWidgetId, hubName));
-        cozifyAPI.setHubKey(hubKey);
+        if (hubKey != null && hubKey.length() > 0) {
+            String hubName = parseHubNameFromToken(hubKey);
+            Log.d("WIDGET-HUBKEY MATCH", String.format("Widget %d controls hub %s", mAppWidgetId, hubName));
+            cozifyAPI.setHubKey(hubKey);
+        }
     }
 
     private String parseHubNameFromToken(String token) {

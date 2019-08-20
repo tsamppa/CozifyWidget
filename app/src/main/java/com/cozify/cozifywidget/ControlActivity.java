@@ -304,7 +304,7 @@ public class ControlActivity extends AppCompatActivity {
 
     private void displayDeviceState(String why) {
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
-        RemoteViews views = new RemoteViews(this.getPackageName(), R.layout.demo_app_widget);
+        RemoteViews views = new RemoteViews(this.getPackageName(), R.layout.appwidget_button);
         views.setBoolean(R.id.control_button, "setEnabled", !(mIsControlling || mIsArming || mUpdating));
 
         String measurement = stateMgr.getMeasurementString();
