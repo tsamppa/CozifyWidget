@@ -17,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioGroup;
 import android.widget.RemoteViews;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -50,6 +51,7 @@ public class CozifyAppWidgetConfigure extends Activity {
     String selectedHubKey;
     String selectedHubName;
     String hubLanIp;
+    float textSize = 14;
 
     JSONObject hubkeysJson;
     JSONObject hubNamesJson;
@@ -185,6 +187,25 @@ public class CozifyAppWidgetConfigure extends Activity {
                 enableTestButtons(false);
             }
         });
+
+        RadioGroup rg = (RadioGroup) findViewById(R.id.text_size_radio_group);
+
+        rg.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
+        {
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch(checkedId){
+                    case R.id.text_size_small:
+                        textSize = 12;
+                        break;
+                    case R.id.text_size_medium:
+                        textSize = 16;
+                        break;
+                    case R.id.text_size_large:
+                        textSize = 20;
+                        break;
+                }
+            }
+        });
     }
 
     void enableTestButtons(boolean enabled) {
@@ -252,6 +273,7 @@ public class CozifyAppWidgetConfigure extends Activity {
             PersistentStorage.getInstance().saveHubKey(context, mAppWidgetId, selectedHubKey);
             PersistentStorage.getInstance().saveDeviceId(context, mAppWidgetId, selectedDeviceId);
             PersistentStorage.getInstance().saveDeviceName(context, mAppWidgetId, selectedDeviceShortName);
+            PersistentStorage.getInstance().saveTextSize(context, mAppWidgetId, textSize);
             PersistentStorage.getInstance().saveSettings(context, mAppWidgetId, false, false, false, false, false, true);
 
             // Make sure we pass back the original appWidgetId
@@ -264,7 +286,8 @@ public class CozifyAppWidgetConfigure extends Activity {
             RemoteViews views = new RemoteViews(this.getPackageName(), R.layout.appwidget_button);
             views.setOnClickPendingIntent(R.id.control_button, pendingIntent);
             views.setCharSequence(R.id.control_button, "setText", selectedDeviceShortName);
-//            ComponentName provider = new ComponentName(context, CozifyAppWidget.class);
+            views.setFloat(R.id.control_button, "setTextSize", textSize);
+
             appWidgetManager.updateAppWidget(mAppWidgetId, views);
 
             Intent resultValue = new Intent();

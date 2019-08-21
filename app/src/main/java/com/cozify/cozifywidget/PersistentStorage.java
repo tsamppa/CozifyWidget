@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Locale;
+
 public class PersistentStorage {
 
     static final String PREFS_NAME
@@ -153,6 +155,22 @@ public class PersistentStorage {
     public boolean saveHubLanIp(Context context, int appWidgetId, String hubLanIp) {
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
         prefs.putString(PREF_PREFIX_KEY + "hublanip_" + appWidgetId, hubLanIp);
+        return prefs.commit();
+    }
+
+    public float loadTextSize(Context context, int appWidgetId) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+        String textSizeStr = prefs.getString(PREF_PREFIX_KEY + "textsize_" + appWidgetId, "14");
+        float textSize = 14;
+        if (textSizeStr != null && textSizeStr.length() > 0)
+            textSize = Float.valueOf(textSizeStr);
+        return textSize;
+
+    }
+
+    public boolean saveTextSize(Context context, int appWidgetId, float textSize) {
+        SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
+        prefs.putString(PREF_PREFIX_KEY + "textsize_" + appWidgetId, String.format(Locale.ENGLISH,"%f", textSize));
         return prefs.commit();
     }
 

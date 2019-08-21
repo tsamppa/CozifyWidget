@@ -33,6 +33,9 @@ public class CozifyAppWidget extends AppWidgetProvider {
             views.setCharSequence(R.id.control_button, "setText", "NA: "+appWidgetId);
             Log.e("Widget:"+appWidgetId, "ERROR: Device name not found from Persistent Storage!");
         }
+        float textSize = PersistentStorage.getInstance().loadTextSize(context, appWidgetId);
+        views.setFloat(R.id.control_button, "setTextSize", textSize);
+
         JSONObject settings = PersistentStorage.getInstance().loadSettingsJson(context, appWidgetId);
         if (settings != null) {
             try {

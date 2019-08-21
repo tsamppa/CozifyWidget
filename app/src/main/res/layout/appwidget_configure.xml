@@ -46,8 +46,34 @@
             android:inputType="textEmailAddress"
             android:hint="@string/device_name"
             android:importantForAutofill="no" />
-
     </com.google.android.material.textfield.TextInputLayout>
+
+    <RadioGroup
+        android:id="@+id/text_size_radio_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <RadioButton
+            android:id="@+id/text_size_small"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/small" />
+        <RadioButton
+            android:id="@+id/text_size_medium"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/medium" />
+        <RadioButton
+            android:id="@+id/text_size_large"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/large" />
+    </RadioGroup>
 
     <Button
         android:id="@+id/test_control_on_button"

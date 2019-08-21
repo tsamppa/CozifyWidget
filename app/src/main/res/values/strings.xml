@@ -20,4 +20,7 @@
     <string name="email_address">Email address</string>
     <string name="tip_select_device_first">Select target device first</string>
     <string name="label">Label</string>
+    <string name="small">Small</string>
+    <string name="medium">Medium</string>
+    <string name="large">Large</string>
 </resources>

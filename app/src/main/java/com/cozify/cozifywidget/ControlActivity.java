@@ -321,6 +321,8 @@ public class ControlActivity extends AppCompatActivity {
             if (device_name != null) {
                 String label = measurement + "\n" + device_name;
                 views.setCharSequence(R.id.control_button, "setText", label);
+                float textSize = PersistentStorage.getInstance().loadTextSize(context, mAppWidgetId);
+                views.setFloat(R.id.control_button, "setTextSize", textSize);
             }
         }
 
