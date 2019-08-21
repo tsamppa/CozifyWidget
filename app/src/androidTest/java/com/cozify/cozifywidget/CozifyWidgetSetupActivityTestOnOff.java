@@ -59,7 +59,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
             = "com.cozify.cozifywidget";
     private static final int LAUNCH_TIMEOUT = 5000;
     String WIDGET_NAME = "Cozify Scene and Device Control";
-    boolean WIDGET_SELECTION_AT_X = true;
+    boolean WIDGET_SELECTION_AT_X = false;
     private UiDevice device;
     private Instrumentation.ActivityMonitor monitor;
     private Activity activity;
@@ -98,8 +98,12 @@ public class CozifyWidgetSetupActivityTestOnOff {
 
         UiObject2 widgetMenu = device.findObject(By.text("Widgets"));
         if (widgetMenu == null) {
+            widgetMenu = device.findObject(By.text("WIDGETS"));
+        }
+        if (widgetMenu == null) {
             widgetMenu = device.findObject(By.text("Pienoisohjelmat"));
         }
+        assertThat(widgetMenu, notNullValue());
         widgetMenu.click();
         device.waitForIdle();
 
