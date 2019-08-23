@@ -64,7 +64,7 @@ public class CozifyApiReal {
             setHeaders();
         }
 
-        public void setHubKey(String hubKey) {
+        public void setHubKey(String hubKey, final CozifyCallback cbConnected) {
             this.hubKey = hubKey;
             setHeaders();
             if (localBaseUrl == null) {
@@ -75,10 +75,15 @@ public class CozifyApiReal {
                             if (resultString.length() > 2) {
                                 String hubLanIp = resultString.substring(2, resultString.length() - 2);
                                 setHubLanIp(hubLanIp);
+                                if (cbConnected != null)
+                                    cbConnected.result(true, "Connected successfully", null, null);
+                                return;
                             } else {
                                 setHubLanIp("");
                             }
                         }
+                        if (cbConnected != null)
+                            cbConnected.result(false, "Connection failed", null, null);
                     }
                 });
             }

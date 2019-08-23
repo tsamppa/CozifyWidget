@@ -3,13 +3,13 @@
     android:layout_width="80dp"
     android:layout_height="80dp"
     android:orientation="vertical"
-    android:padding="0dp">
+    android:padding="@dimen/widget_margin">
 
     <Button
         android:id="@+id/control_button"
         android:contentDescription="@string/app_name"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_gravity="center"
         android:layout_margin="0dp"
         android:text="@string/appwidget_text"

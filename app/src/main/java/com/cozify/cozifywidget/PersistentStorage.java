@@ -160,7 +160,7 @@ public class PersistentStorage {
 
     public float loadTextSize(Context context, int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        String textSizeStr = prefs.getString(PREF_PREFIX_KEY + "textsize_" + appWidgetId, "14");
+        String textSizeStr = prefs.getString(PREF_PREFIX_KEY + "textsize_" + appWidgetId, "17");
         float textSize = 14;
         if (textSizeStr != null && textSizeStr.length() > 0)
             textSize = Float.valueOf(textSizeStr);

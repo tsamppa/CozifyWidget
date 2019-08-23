@@ -20,6 +20,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
     private Handler handler;
     private Long startTime = null;
     private CozifyApiReal.CozifyCallback cbFinished = null;
+    public boolean connected = false;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({CONTROL_PRCESS_STATE_INIT,
@@ -73,7 +74,12 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
         if (hubKey != null && hubKey.length() > 0) {
             String hubName = parseHubNameFromToken(hubKey);
             Log.d("WIDGET-HUBKEY MATCH", String.format("Widget %d controls hub %s", mAppWidgetId, hubName));
-            cozifyAPI.setHubKey(hubKey);
+            cozifyAPI.setHubKey(hubKey, new CozifyApiReal.CozifyCallback() {
+                @Override
+                public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
+                    connected = success;
+                }
+            });
         }
     }
 

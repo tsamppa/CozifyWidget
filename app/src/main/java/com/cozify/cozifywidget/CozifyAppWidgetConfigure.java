@@ -38,7 +38,7 @@ public class CozifyAppWidgetConfigure extends Activity {
     public static final String KEY_BUTTON_TEXT = "Control device";
     private int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
 
-    private static CozifyApiReal cozifyAPI = new CozifyApiReal();
+    private CozifyApiReal cozifyAPI = new CozifyApiReal();
 
     String cloudtoken;
     EditText editTextDeviceName;
@@ -51,8 +51,8 @@ public class CozifyAppWidgetConfigure extends Activity {
     String selectedHubKey;
     String selectedHubName;
     String hubLanIp;
-    float textSize = 14;
-
+    float textSize = 16;
+    boolean connected = false;
     JSONObject hubkeysJson;
     JSONObject hubNamesJson;
     JSONObject devicesJson;
@@ -107,6 +107,11 @@ public class CozifyAppWidgetConfigure extends Activity {
         if (cloudtoken != null) {
             setAuthHeader();
             String tokeninfo = getDecodedJwt(cloudtoken);
+        } else {
+            setStatus(String.format(Locale.ENGLISH,"Error in setting cannot connect to cloud. Please re-login."));
+            Intent intent = new Intent(this, CozifyWidgetSetupActivity.class);
+            startActivity(intent);
+            return;
         }
         // Find the Device Name EditText
         editTextDeviceName = findViewById(R.id.device_name_edit);
@@ -195,10 +200,10 @@ public class CozifyAppWidgetConfigure extends Activity {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 switch(checkedId){
                     case R.id.text_size_small:
-                        textSize = 12;
+                        textSize = 13;
                         break;
                     case R.id.text_size_medium:
-                        textSize = 16;
+                        textSize = 17;
                         break;
                     case R.id.text_size_large:
                         textSize = 20;
@@ -236,7 +241,12 @@ public class CozifyAppWidgetConfigure extends Activity {
     private void setAuthHeader() {
         cozifyAPI.setCloudToken(cloudtoken);
         if (selectedHubKey != null) {
-            cozifyAPI.setHubKey(selectedHubKey);
+            cozifyAPI.setHubKey(selectedHubKey, new CozifyApiReal.CozifyCallback() {
+                @Override
+                public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
+                    connected = success;
+                }
+            });
         }
     }
 

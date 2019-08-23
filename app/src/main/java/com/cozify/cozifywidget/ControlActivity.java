@@ -374,11 +374,20 @@ public class ControlActivity extends AppCompatActivity {
                     }
                 } else {
                     stateMgr.setReachable(false);
+                    if (!stateMgr.connected) {
+                        ShowErrorMessage("Login expired. Please login again.", "!stateMgr.connected in ControlActivity.updateCurrentState()");
+                        loginAgain();
+                    }
                 }
                 saveSettings();
                 displayDeviceState("updateDeviceState().stateMgr.updateCurrentState");
             }
         });
+    }
+
+    private void loginAgain() {
+        Intent intent = new Intent(this, CozifyWidgetSetupActivity.class);
+        startActivity(intent);
     }
 
     private void updateDeviceStateAndArm() {

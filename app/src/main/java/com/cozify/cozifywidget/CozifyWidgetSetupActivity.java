@@ -1,5 +1,7 @@
 package com.cozify.cozifywidget;
 
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -153,6 +155,14 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
         cozifyAPI.setCloudToken(cloudtoken);
     }
 
+    private void updateAllWidgets() {
+        Intent intent = new Intent(this, CozifyAppWidget.class);
+        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        int[] ids = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), CozifyAppWidget.class));
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+        sendBroadcast(intent);
+    }
+
     private void getHubKeys() {
         textViewStatus.setText("Checking connection..");
         buttonLogin.setEnabled(false);
@@ -163,6 +173,7 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
                 if (success) {
                     final Context context = CozifyWidgetSetupActivity.this;
                     Toast.makeText(context, "Connected to Cozify. You can now create widgets.", Toast.LENGTH_SHORT).show();
+                    updateAllWidgets();
                     Intent resultValue = new Intent();
                     setResult(RESULT_OK, resultValue);
                     finish();

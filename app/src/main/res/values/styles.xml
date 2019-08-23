@@ -20,7 +20,7 @@
         <item name="android:clickable">true</item>
         <item name="android:selectable">true</item>
         <item name="android:includeFontPadding">false</item>
-        <item name="android:gravity">center|top</item>
+        <item name="android:gravity">center</item>
     </style>
 
     <style name="ButtonNormalTextWithIcon" parent="ButtonNormalText">
