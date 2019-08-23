@@ -331,26 +331,14 @@ public class CozifyWidgetSetupActivityTestOnOff {
                         isDisplayed()));
         editText.perform(replaceText(widgetName), closeSoftKeyboard());
 
-        ViewInteraction editText2 = onView(
-                allOf(withId(R.id.device_name_edit), withText(widgetName),
-                        childAtPosition(
-                                childAtPosition(
-                                        allOf(withId(R.id.device_name), withContentDescription("Label")),
-                                        0),
-                                0),
-                        isDisplayed()));
-        editText2.perform(pressImeActionButton());
+        editText.perform(pressImeActionButton());
 
     }
 
     private void testOnButton() {
         ViewInteraction button = onView(
-                allOf(withId(R.id.test_control_on_button), withText("Test ON now"),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(android.R.id.content),
-                                        0),
-                                5),
+                allOf(withId(R.id.test_control_on_button),
+                        withText("Test ON now"),
                         isDisplayed()));
         button.perform(click());
         sleep(2000);
@@ -358,12 +346,8 @@ public class CozifyWidgetSetupActivityTestOnOff {
 
     private void testOffButton() {
         ViewInteraction button2 = onView(
-                allOf(withId(R.id.test_control_off_button), withText("Test OFF now"),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(android.R.id.content),
-                                        0),
-                                6),
+                allOf(withId(R.id.test_control_off_button),
+                        withText("Test OFF now"),
                         isDisplayed()));
         button2.perform(click());
         sleep(2000);
@@ -372,11 +356,6 @@ public class CozifyWidgetSetupActivityTestOnOff {
     private void selectHub(int hubPos) {
         ViewInteraction spinner = onView(
                 allOf(withId(R.id.spinner_hubs),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(android.R.id.content),
-                                        0),
-                                2),
                         isDisplayed()));
         spinner.perform(click());
 
@@ -437,11 +416,6 @@ public class CozifyWidgetSetupActivityTestOnOff {
     private void selectDevice(int pos) {
         ViewInteraction spinner3 = onView(
                 allOf(withId(R.id.spinner_devices),
-                        childAtPosition(
-                                childAtPosition(
-                                        withId(android.R.id.content),
-                                        0),
-                                3),
                         isDisplayed()));
         spinner3.perform(click());
 
