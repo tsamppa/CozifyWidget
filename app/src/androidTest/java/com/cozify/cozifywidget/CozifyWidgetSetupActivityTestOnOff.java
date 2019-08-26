@@ -33,6 +33,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
+import java.io.File;
+
 import static android.os.SystemClock.sleep;
 import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
@@ -46,6 +48,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.is;
@@ -132,7 +135,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
         // Throw the selected widget on screen
         Rect b = widget.getVisibleBounds();
         Point c = new Point(b.left+120, b.bottom+150);
-        Point dest = new Point(displayCenterX,displayCenterY);
+        Point dest = new Point(displayCenterX/2,displayCenterY/2);
         Point[] pa = new Point[3];
         pa[0] = c;
         pa[1] = c;
@@ -182,9 +185,8 @@ public class CozifyWidgetSetupActivityTestOnOff {
 
     @Test
     public void c1_cozifyWidgetSetupActivityTestLongName() {
-        createWidget();
-        String name = "1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0";
-        configWidget(name, 1, 75);
+        String name = "12345678901234567890123456789012345678901234567890";
+        createAndConfigWidget(name, 1, "Erkkeri jalka lamppu", "Medium");
         UiObject2 widget1 = findMyWidget(name);
         assertThat(widget1, is(notNullValue()));
         widget1.click();
@@ -195,6 +197,25 @@ public class CozifyWidgetSetupActivityTestOnOff {
         sleep(6000);
         widget1.click();
         removeWidget(name);
+    }
+
+    @Test
+    public void c1_cozifyWidgetSetupActivityTestScreenshot() {
+        createAndConfigWidget("HOME ALARM", 1, "Erkkeri jalka lamppu", "Medium");
+        createAndConfigWidget("A/C", 1, "Erkkeri jalka lamppu", "Large");
+        createAndConfigWidget("NIGHT", 1, "Erkkeri jalka lamppu", "Medium");
+        createAndConfigWidget("Bathroom", 1, "Kylppäri kosteus", "Small");
+        //takeScreenshot("homeScreenWithDevices");
+        sleep(10000);
+        removeWidget("HOME ALARM");
+        removeWidget("AC BOOST");
+        removeWidget("NIGHT");
+        removeWidget("Bathroom");
+    }
+
+    private void takeScreenshot(String name) {
+        File path = new File("/sdcard/"+name+".png");
+        device.takeScreenshot(path);
     }
 
     @Test
@@ -407,6 +428,30 @@ public class CozifyWidgetSetupActivityTestOnOff {
 
     }
 
+    private void createAndConfigWidget(String widgetName, int hubPos, String deviceName, String fontSize) {
+        createWidget();
+        device.waitForIdle();
+        selectHub(hubPos);
+        selectDevice(deviceName);
+        setWidgetName(widgetName);
+        selectFontSize(fontSize);
+        onView(allOf(withId(R.id.create_button), isDisplayed())).perform(click());
+        UiObject2 widget1 = findMyWidget(widgetName);
+        assertThat(widget1, is(notNullValue()));
+        widget1.click();
+        sleep(7000);
+        device.waitForIdle();
+    }
+
+    private void selectFontSize(String fontSize) {
+        if (fontSize.equals("Small"))
+            onView(allOf(withId(R.id.text_size_small), withText(fontSize), isDisplayed())).perform(click());
+        if (fontSize.equals("Medium"))
+            onView(allOf(withId(R.id.text_size_medium), withText(fontSize), isDisplayed())).perform(click());
+        if (fontSize.equals("Large"))
+            onView(allOf(withId(R.id.text_size_large), withText(fontSize), isDisplayed())).perform(click());
+    }
+
     private static Matcher<View> childAtPosition(
             final Matcher<View> parentMatcher, final int position) {
 
@@ -438,5 +483,10 @@ public class CozifyWidgetSetupActivityTestOnOff {
                         0))
                 .atPosition(pos);
         checkedTextView2.perform(click());
+    }
+
+    private void selectDevice(String name) {
+        onView(allOf(withId(R.id.spinner_devices), isDisplayed())).perform(click());
+        onData(allOf(is(instanceOf(String.class)), is(name))).perform(click());
     }
 }
