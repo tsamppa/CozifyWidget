@@ -217,7 +217,11 @@ public class CozifyApiReal {
                                     cb.result(false, "Exception:"+e.getMessage(), null);
                                 }
                             } else {
-                                cb.result(false, "Status code "+statusCode, null);
+                                if (jsonResult != null) {
+                                    cb.result(false, "Status code " + statusCode, jsonResult);
+                                } else {
+                                    cb.result(false, "Status code " + statusCode, null);
+                                }
                             }
                         }
                     }

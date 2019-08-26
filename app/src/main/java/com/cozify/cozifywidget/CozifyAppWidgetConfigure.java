@@ -305,7 +305,6 @@ public class CozifyAppWidgetConfigure extends Activity {
             setResult(RESULT_OK, resultValue);
             String hubName = parseHubNameFromToken(selectedHubKey);
             ShowMessage("Widget "+mAppWidgetId+" created for controlling "+selectedDeviceShortName +" of HUB "+hubName);
-            updateDeviceState(context, appWidgetManager, mAppWidgetId);
             finish();
         } else {
             String error = "Please enter short device name";
@@ -325,33 +324,6 @@ public class CozifyAppWidgetConfigure extends Activity {
     private void ShowErrorMessage(String errorMessage, String details) {
         ShowMessage(errorMessage);
         Log.e("Widget: "+mAppWidgetId+" ERROR details:", details);
-    }
-
-
-    private void updateDeviceState(final Context context, final AppWidgetManager appWidgetManager,
-                                   final int appWidgetId) {
-        String deviceId = PersistentStorage.getInstance().loadDeviceId(context, appWidgetId);
-        if (deviceId == null) {
-            return;
-        }
-        cozifyAPI.getSceneOrDeviceState(deviceId, new CozifyApiReal.CozifyCallback() {
-            @Override
-            public void result(boolean success, String status, JSONObject resultJson, JSONObject requestJson) {
-                if (success) {
-                    CozifySceneOrDeviceState state = new CozifySceneOrDeviceState();
-                    state.fromJson(resultJson);
-                    RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.appwidget_button);
-                    int resourceForState = ControlActivity.getDeviceResourceForState(true, state.isOn, false, false, false, false, false);
-                    views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
-                    PersistentStorage.getInstance().saveSettings(context, appWidgetId,  state.isOn, false, false, false, false, true);
-                    appWidgetManager.updateAppWidget(appWidgetId, views);
-                } else {
-                    RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.appwidget_button);
-                    int resourceForState = ControlActivity.getDeviceResourceForState(false, false, false, false, false, false, false);
-                    views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
-                }
-            }
-        });
     }
 
     View.OnClickListener mOnClickListenerTestOn = new View.OnClickListener() {
@@ -413,7 +385,11 @@ public class CozifyAppWidgetConfigure extends Activity {
                     setSpinnerItems(items, devicesList);
                     getScenes();
                 } else {
-                    setStatus("ERROR in requesting devices: "+status);
+                    if (resultJson != null) {
+                        setStatus("ERROR in requesting devices: (" + status + ") " + resultJson.toString());
+                    } else {
+                        setStatus("ERROR in requesting devices: " + status);
+                    }
                     if (status.contains("408")) {
                         revertToLocalHubConnection();
                     } else {
