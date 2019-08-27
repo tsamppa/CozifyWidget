@@ -33,6 +33,7 @@
             android:id="@+id/email_edit"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:minHeight="48dp"
             android:layout_margin="10dp"
             android:autofillHints="Email"
             android:contentDescription="@string/email_address"
