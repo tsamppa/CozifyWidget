@@ -6,8 +6,8 @@ android {
         applicationId "com.cozify.cozifywidget"
         minSdkVersion 24
         targetSdkVersion 26
-        versionCode 16
-        versionName "1.16"
+        versionCode 17
+        versionName "1.17"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
