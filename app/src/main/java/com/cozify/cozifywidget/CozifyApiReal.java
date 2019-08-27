@@ -79,18 +79,41 @@ public class CozifyApiReal {
                             if (resultString.length() > 2) {
                                 String hubLanIp = resultString.substring(2, resultString.length() - 2);
                                 setHubLanIp(hubLanIp);
-                                if (cbConnected != null)
-                                    cbConnected.result(true, "Connected successfully", null, null);
-                                return;
                             } else {
                                 setHubLanIp("");
                             }
+                            getHubVersion(new JsonCallback() {
+                                @Override
+                                public void result(boolean success, String status, JSONObject resultJson) {
+                                    if (success) {
+                                        setApiVersion(parseApiVersionFromJson(resultJson));
+                                        if (cbConnected != null)
+                                            cbConnected.result(true, "Connected successfully", resultJson, null);
+                                    } else {
+                                        if (cbConnected != null)
+                                            cbConnected.result(false, "Connection failed", resultJson, null);
+                                    }
+                                }
+                            });
+                        } else {
+                            if (cbConnected != null)
+                                cbConnected.result(false, "Connection failed", null, null);
                         }
-                        if (cbConnected != null)
-                            cbConnected.result(false, "Connection failed", null, null);
                     }
                 });
             }
+        }
+
+        public String parseApiVersionFromJson(JSONObject resultJson) {
+            String hubApiVersion = "1.11";
+            try {
+                String version = resultJson.get("version").toString();
+                String[] s = version.split("[.]");
+                hubApiVersion = s[0] + "." + s[1];
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return hubApiVersion;
         }
 
         public void connectLocally() {

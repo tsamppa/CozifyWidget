@@ -174,4 +174,16 @@ public class PersistentStorage {
         return prefs.commit();
     }
 
+    public boolean saveHubApiVersion(Context context, int appWidgetId, String hubApiVersion) {
+        SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
+        prefs.putString(PREF_PREFIX_KEY + "hubApiVersion_" + appWidgetId, hubApiVersion);
+        return prefs.commit();
+    }
+
+    public String loadHubApiVersion(Context context, int appWidgetId) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+        String hubApiVersion = prefs.getString(PREF_PREFIX_KEY + "hubApiVersion_" + appWidgetId, null);
+        return hubApiVersion;
+    }
+
 }

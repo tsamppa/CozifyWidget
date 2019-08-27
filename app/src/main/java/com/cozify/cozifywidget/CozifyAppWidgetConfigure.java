@@ -51,6 +51,7 @@ public class CozifyAppWidgetConfigure extends Activity {
     String selectedHubKey;
     String selectedHubName;
     String hubLanIp;
+    String hubApiVersion;
     float textSize = 16;
     boolean connected = false;
     JSONObject hubkeysJson;
@@ -159,25 +160,22 @@ public class CozifyAppWidgetConfigure extends Activity {
                     try {
                         selectedHubKey = hubNamesJson.getString(selectedHubName);
                         setAuthHeader();
-                        cozifyAPI.getHubVersion(new CozifyApiReal.JsonCallback() {
-                            @Override
-                            public void result(boolean success, String status, JSONObject resultJson) {
-                                if (success) {
-                                    try {
-                                        String version = resultJson.get("version").toString();
-                                        String[] s = version.split("[.]");
-                                        String apiver = s[0] + "." + s[1];
-                                        cozifyAPI.setApiVersion(apiver);
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
+                        if (selectedHubKey != null) {
+                            cozifyAPI.setHubKey(selectedHubKey, new CozifyApiReal.CozifyCallback() {
+                                @Override
+                                public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
+                                    connected = success;
+                                    if (success) {
+                                        getDevices();
+                                    } else {
+                                        String message = parseMessageFromJsonResponse(jsonResponse);
+                                        setStatus(status + ": "+ message);
                                     }
-                                } else {
-                                    ShowErrorMessage("Hub API version error", "Retrieving hub version failed!");
                                 }
-                            }
-                        });
-                        getDevices();
+                            });
+                        }
                     } catch (JSONException e) {
+                        e.printStackTrace();
                         return;
                     }
                 }
@@ -257,14 +255,6 @@ public class CozifyAppWidgetConfigure extends Activity {
 
     private void setAuthHeader() {
         cozifyAPI.setCloudToken(cloudtoken);
-        if (selectedHubKey != null) {
-            cozifyAPI.setHubKey(selectedHubKey, new CozifyApiReal.CozifyCallback() {
-                @Override
-                public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
-                    connected = success;
-                }
-            });
-        }
     }
 
     private void revertToLocalHubConnection() {
@@ -403,17 +393,7 @@ public class CozifyAppWidgetConfigure extends Activity {
                     getScenes();
                 } else {
                     if (resultJson != null) {
-                        String message = "(" + status + ") " + resultJson.toString();
-                        if (resultJson.has("message")) {
-                            try {
-                                String m = resultJson.getString("message");
-                                if (m != null && m.length() > 0) {
-                                    message = m;
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
+                        String message = parseMessageFromJsonResponse(resultJson);
                         setStatus("ERROR in requesting devices: " + message);
                     } else {
                         setStatus("ERROR in requesting devices: " + status);
@@ -427,6 +407,22 @@ public class CozifyAppWidgetConfigure extends Activity {
                 }
             }
         });
+    }
+
+    String parseMessageFromJsonResponse(JSONObject resultJson) {
+        if (resultJson == null) return "N/A";
+        String message = resultJson.toString();
+        if (resultJson.has("message")) {
+            try {
+                String m = resultJson.getString("message");
+                if (m != null && m.length() > 0) {
+                    message = m;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return message;
     }
 
     void setSpinnerItems(Spinner spinner, ArrayList<String> items) {
