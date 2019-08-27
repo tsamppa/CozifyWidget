@@ -208,7 +208,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
         //takeScreenshot("homeScreenWithDevices");
         sleep(10000);
         removeWidget("HOME ALARM");
-        removeWidget("AC BOOST");
+        removeWidget("A/C");
         removeWidget("NIGHT");
         removeWidget("Bathroom");
     }
