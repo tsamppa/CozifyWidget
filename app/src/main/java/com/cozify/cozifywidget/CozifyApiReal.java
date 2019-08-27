@@ -64,6 +64,10 @@ public class CozifyApiReal {
             setHeaders();
         }
 
+        public void setApiVersion(String version) {
+            apiver = version;
+        }
+
         public void setHubKey(String hubKey, final CozifyCallback cbConnected) {
             this.hubKey = hubKey;
             setHeaders();
@@ -178,7 +182,13 @@ public class CozifyApiReal {
                                         cb.result(true, "Status code " + statusCode, null,  dataJson);
                                     }
                                 } catch (JSONException e) {
-                                    cb.result(false, "JSON reply parse error: " + e.getMessage(), null, dataJson);
+                                    JSONObject jsonResult = new JSONObject();
+                                    try {
+                                        jsonResult.put("valueError", stringResult);
+                                        cb.result(false, "JSON reply parse error: " + e.getMessage(), jsonResult, dataJson);
+                                    } catch (JSONException e1) {
+                                        cb.result(false, "JSON reply parse error: " + e.getMessage(), null, dataJson);
+                                    }
                                 }
                             } else {
                                 remoteConnection = !remoteConnection;
@@ -214,13 +224,13 @@ public class CozifyApiReal {
                                     cb.result(true, "OK "+statusCode, devicesJson);
                                 } catch (JSONException e) {
                                     e.printStackTrace();
-                                    cb.result(false, "Exception:"+e.getMessage(), null);
+                                    cb.result(false, "Exception:"+e.getMessage(), jsonResult);
                                 }
                             } else {
                                 if (jsonResult != null) {
                                     cb.result(false, "Status code " + statusCode, jsonResult);
                                 } else {
-                                    cb.result(false, "Status code " + statusCode, null);
+                                    cb.result(false, "Status code " + statusCode, jsonResult);
                                 }
                             }
                         }
@@ -246,10 +256,10 @@ public class CozifyApiReal {
                                     cb.result(true, "OK "+statusCode, scenesJson);
                                 } catch (JSONException e) {
                                     e.printStackTrace();
-                                    cb.result(false, "Exception:" + e.getMessage(), null);
+                                    cb.result(false, "Exception:" + e.getMessage(), jsonResult);
                                 }
                             } else {
-                                cb.result(false, "Status code " + statusCode, null);
+                                cb.result(false, "Status code " + statusCode, jsonResult);
                             }
                         }
                     }
@@ -265,7 +275,7 @@ public class CozifyApiReal {
                             if (statusCode == 200) {
                                 cb.result(true, "OK: "+statusCode, jsonResult);
                             } else {
-                                cb.result(false, "Status code: "+statusCode, null);
+                                cb.result(false, "Status code: "+statusCode, jsonResult);
                             }
                         }
                     }
@@ -280,12 +290,29 @@ public class CozifyApiReal {
                             if (statusCode == 200) {
                                 cb.result(true, "OK: "+statusCode, result);
                             } else {
-                                cb.result(false, "Status code: "+statusCode, null);
+                                cb.result(false, "Status code: "+statusCode, result);
                             }
                         }
                     }
             );
         }
+
+        public void getHubVersion(final JsonCallback cb) {
+            String url = "https://api.cozify.fi/ui/0.2/hub/remote/hub";
+            httpAPI.get(url, new JsonAPI.JsonCallback() {
+                        @Override
+                        public void onResponse(int statusCode, JSONObject json) {
+                            if (statusCode == 200) {
+                                cb.result(true, "OK: "+statusCode, json);
+                            } else {
+                                cb.result(false, "Status code: "+statusCode, json);
+                            }
+                        }
+                    }
+            );
+        }
+
+
 
         public void confirmPassword(String pw, String email_address, final StringCallback cb) {
             String url = "https://api.cozify.fi/ui/0.2/user/emaillogin";
@@ -302,7 +329,7 @@ public class CozifyApiReal {
                             if (statusCode == 200) {
                                 cb.result(true, "OK: "+statusCode, result);
                             } else {
-                                cb.result(false, "Status code: "+statusCode, null);
+                                cb.result(false, "Status code: "+statusCode, result);
                             }
                         }
                     }
@@ -317,7 +344,7 @@ public class CozifyApiReal {
                             if (statusCode == 200) {
                                 cb.result(true, "OK: "+statusCode, result);
                             } else {
-                                cb.result(false, "Status code: "+statusCode, null);
+                                cb.result(false, "Status code: "+statusCode, result);
                             }
                         }
                     }
@@ -346,7 +373,7 @@ public class CozifyApiReal {
                                                 if (statusCode == 200) {
                                                     parsePoll(request, device_id, statusCode, result, cb);
                                                 } else {
-                                                    cb.result(false, "Status code " + statusCode, null, request);
+                                                    cb.result(false, "Status code " + statusCode, result, request);
                                                 }
                                             }
                                         }
@@ -395,7 +422,7 @@ public class CozifyApiReal {
                     if (deviceState != null) {
                         stateJson = deviceState.toJson();
                     } else {
-                        cb.result(false, "ERROR: Could not find device state ", null, request);
+                        cb.result(false, "ERROR: Could not find device state ", request, request);
                         return;
                     }
                 }
