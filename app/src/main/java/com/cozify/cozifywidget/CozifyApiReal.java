@@ -28,7 +28,7 @@ public class CozifyApiReal {
             localHttpAPI = new JsonAPI();
             cloudBaseUrl = "https://api.cozify.fi/ui/0.2/hub/remote/";
             localBaseUrl = null;
-            apiver = "1.11";
+            apiver = null;
         }
 
         public interface JsonCallback {
@@ -68,10 +68,14 @@ public class CozifyApiReal {
             apiver = version;
         }
 
-        public void setHubKey(String hubKey, final CozifyCallback cbConnected) {
+        public String getApiVersion() {
+            return apiver;
+        }
+
+        public void selectToUseHubWithKey(String hubKey, final CozifyCallback cbConnected) {
             this.hubKey = hubKey;
             setHeaders();
-            if (localBaseUrl == null) {
+            if (localBaseUrl == null || apiver == null) {
                 listHubs(new StringCallback() {
                     @Override
                     public void result(boolean success, String status, String resultString) {
@@ -82,19 +86,23 @@ public class CozifyApiReal {
                             } else {
                                 setHubLanIp("");
                             }
-                            getHubVersion(new JsonCallback() {
-                                @Override
-                                public void result(boolean success, String status, JSONObject resultJson) {
-                                    if (success) {
-                                        setApiVersion(parseApiVersionFromJson(resultJson));
-                                        if (cbConnected != null)
-                                            cbConnected.result(true, "Connected successfully", resultJson, null);
-                                    } else {
-                                        if (cbConnected != null)
-                                            cbConnected.result(false, "Connection failed", resultJson, null);
+                            if (apiver == null) {
+                                getHubVersion(new JsonCallback() {
+                                    @Override
+                                    public void result(boolean success, String status, JSONObject resultJson) {
+                                        if (success) {
+                                            setApiVersion(parseApiVersionFromJson(resultJson));
+                                            if (cbConnected != null)
+                                                cbConnected.result(true, "Connected successfully", resultJson, null);
+                                        } else {
+                                            if (cbConnected != null)
+                                                cbConnected.result(false, "Connection failed", resultJson, null);
+                                        }
                                     }
-                                }
-                            });
+                                });
+                            } else {
+                                cbConnected.result(true, "Connected successfully", createJsonMesageFromString(resultString), null);
+                            }
                         } else {
                             if (cbConnected != null)
                                 cbConnected.result(false, "Connection failed", null, null);
@@ -102,6 +110,16 @@ public class CozifyApiReal {
                     }
                 });
             }
+        }
+
+        public JSONObject createJsonMesageFromString(String message) {
+            JSONObject o = new JSONObject();
+            try {
+                o.put("message", message);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return o;
         }
 
         public String parseApiVersionFromJson(JSONObject resultJson) {

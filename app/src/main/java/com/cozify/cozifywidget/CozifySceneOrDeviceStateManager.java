@@ -52,7 +52,8 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
     private static final int maxRuntime = 10*60*1000; // 10 minutes
     private int mAppWidgetId;
     private Context mContext;
-    private String mHubLanIp = null;
+    private String mHubLanIp;
+    private String hubApiVersion;
 
     private CozifyApiReal cozifyAPI = new CozifyApiReal();
 
@@ -70,11 +71,13 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
         cozifyAPI.setCloudToken(PersistentStorage.getInstance().loadCloudToken(mContext));
         mHubLanIp = PersistentStorage.getInstance().loadHubLanIp(mContext, mAppWidgetId);
         cozifyAPI.setHubLanIp(mHubLanIp);
+        hubApiVersion = PersistentStorage.getInstance().loadHubApiVersion(mContext, mAppWidgetId);
+        cozifyAPI.setApiVersion(hubApiVersion);
         String hubKey = PersistentStorage.getInstance().loadHubKey(mContext, mAppWidgetId);
         if (hubKey != null && hubKey.length() > 0) {
             String hubName = parseHubNameFromToken(hubKey);
             Log.d("WIDGET-HUBKEY MATCH", String.format("Widget %d controls hub %s", mAppWidgetId, hubName));
-            cozifyAPI.setHubKey(hubKey, new CozifyApiReal.CozifyCallback() {
+            cozifyAPI.selectToUseHubWithKey(hubKey, new CozifyApiReal.CozifyCallback() {
                 @Override
                 public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                     connected = success;
@@ -116,6 +119,8 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
         PersistentStorage.getInstance().saveState(mContext, mAppWidgetId, currentState);
         mHubLanIp = cozifyAPI.getHubLanIp();
         PersistentStorage.getInstance().saveHubLanIp(mContext, mAppWidgetId, mHubLanIp);
+        hubApiVersion = cozifyAPI.getApiVersion();
+        PersistentStorage.getInstance().saveHubApiVersion(mContext, mAppWidgetId, hubApiVersion);
     }
 
     public boolean isReady() {

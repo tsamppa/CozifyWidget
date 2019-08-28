@@ -104,7 +104,7 @@ public class CozifyAppWidgetConfigure extends Activity {
         }
         buttonCreate = findViewById(R.id.create_button);
         buttonCreate.setEnabled(false);
-        cloudtoken =  PersistentStorage.getInstance().loadCloudToken(context);
+        cloudtoken = PersistentStorage.getInstance().loadCloudToken(context);
         if (cloudtoken != null) {
             setAuthHeader();
             String tokeninfo = getDecodedJwt(cloudtoken);
@@ -161,11 +161,12 @@ public class CozifyAppWidgetConfigure extends Activity {
                         selectedHubKey = hubNamesJson.getString(selectedHubName);
                         setAuthHeader();
                         if (selectedHubKey != null) {
-                            cozifyAPI.setHubKey(selectedHubKey, new CozifyApiReal.CozifyCallback() {
+                            cozifyAPI.selectToUseHubWithKey(selectedHubKey, new CozifyApiReal.CozifyCallback() {
                                 @Override
                                 public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                                     connected = success;
                                     if (success) {
+                                        hubApiVersion = cozifyAPI.getApiVersion();
                                         getDevices();
                                     } else {
                                         String message = parseMessageFromJsonResponse(jsonResponse);
@@ -288,6 +289,7 @@ public class CozifyAppWidgetConfigure extends Activity {
 
             // Save device ID for control
             PersistentStorage.getInstance().saveHubKey(context, mAppWidgetId, selectedHubKey);
+            PersistentStorage.getInstance().saveHubApiVersion(context, mAppWidgetId, hubApiVersion);
             PersistentStorage.getInstance().saveDeviceId(context, mAppWidgetId, selectedDeviceId);
             PersistentStorage.getInstance().saveDeviceName(context, mAppWidgetId, selectedDeviceShortName);
             PersistentStorage.getInstance().saveTextSize(context, mAppWidgetId, textSize);
