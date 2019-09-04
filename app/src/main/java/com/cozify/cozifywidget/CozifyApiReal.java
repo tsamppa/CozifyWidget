@@ -1,5 +1,8 @@
 package com.cozify.cozifywidget;
 
+import android.content.Context;
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,6 +34,27 @@ public class CozifyApiReal {
             apiver = null;
         }
 
+        public boolean saveState(Context c, int widgetId) {
+            boolean success = true;
+            if (!PersistentStorage.getInstance().saveHubApiVersion(c, widgetId, apiver))
+                success = false;
+            if (!PersistentStorage.getInstance().saveCloudToken(c, cloudtoken))
+                success = false;
+            if (!PersistentStorage.getInstance().saveHubKey(c, widgetId, hubKey))
+                success = false;
+            if (!PersistentStorage.getInstance().saveHubLanIp(c, widgetId, hubLanIp))
+                success = false;
+            return success;
+        }
+
+        public void loadState(Context c, int widgetId) {
+            apiver = PersistentStorage.getInstance().loadHubApiVersion(c, widgetId);
+            cloudtoken = PersistentStorage.getInstance().loadCloudToken(c);
+            hubKey = PersistentStorage.getInstance().loadHubKey(c, widgetId);
+            hubLanIp = PersistentStorage.getInstance().loadHubLanIp(c, widgetId);
+            setHubLanIp(hubLanIp);
+        }
+
         public interface JsonCallback {
             void result(boolean success, String status, JSONObject resultJson);
         }
@@ -43,7 +67,7 @@ public class CozifyApiReal {
             void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest);
         }
         private void trafficLog(String method, String data) {
-            //Log.i(method, data);
+            Log.i(method, data);
         }
 
         public void setHubLanIp(String hubLanIp) {
@@ -159,17 +183,23 @@ public class CozifyApiReal {
             }
         }
 
-        public void controlOnOff(String id, boolean isDevice, boolean on, final CozifyCallback cb) {
-            if (isDevice) {
+        public void controlOnOff(String id, int type, boolean on, final CozifyCallback cb) {
+            if (type == 1) {
                 if (on)
                     controlOnOffMessage(id, "/devices/command", "CMD_DEVICE_ON", cb);
                 else
                     controlOnOffMessage(id, "/devices/command", "CMD_DEVICE_OFF", cb);
-            } else {
+            } else if (type == 2) {
                 if (on)
                     controlOnOffMessage(id, "/scenes/command", "CMD_SCENE_ON", cb);
                 else
                     controlOnOffMessage(id, "/scenes/command", "CMD_SCENE_OFF", cb);
+
+            } else if (type == 3){
+                if (on)
+                    controlOnOffMessage(id, "/groups/command", "CMD_GROUP_ON", cb);
+                else
+                    controlOnOffMessage(id, "/groups/command", "CMD_GROUP_OFF", cb);
             }
         }
 
@@ -217,7 +247,13 @@ public class CozifyApiReal {
                                     if (stringResult != null && !stringResult.equals("null")) {
                                         stringResult = stringResult.startsWith("[") ? stringResult.substring(1) : stringResult;
                                         stringResult = stringResult.endsWith("]") ? stringResult.substring(0, stringResult.length() - 1) : stringResult;
-                                        JSONObject jsonResult = new JSONObject(stringResult);
+                                        JSONObject jsonResult;
+                                        if (stringResult.startsWith("{")) {
+                                            jsonResult = new JSONObject(stringResult);
+                                        } else {
+                                            jsonResult = new JSONObject();
+                                            jsonResult.put("response", stringResult);
+                                        }
                                         cb.result(true, "Status code " + statusCode, jsonResult,  dataJson);
                                     } else {
                                         cb.result(true, "Status code " + statusCode, null,  dataJson);
@@ -279,7 +315,39 @@ public class CozifyApiReal {
             );
         }
 
-        public void getScenes(final JsonCallback cb) {
+    public void getGroups(final String[] capabilities, final JsonCallback cb) {
+        String url = completeUrl("/groups");
+        getHttpAPI().get(url, new JsonAPI.JsonCallback() {
+                    @Override
+                    public void onResponse(int statusCode, JSONObject jsonResult) {
+                        if (statusCode == 200) {
+                            JSONObject devicesJson = new JSONObject();
+                            Iterator<?> keys = jsonResult.keys();
+                            try {
+                                while (keys.hasNext()) {
+                                    String deviceKey = (String) keys.next();
+                                    JSONObject dJson = (JSONObject) jsonResult.get(deviceKey);
+                                    String deviceName = dJson.get("name").toString();
+                                    devicesJson.put(deviceName,deviceKey);
+                                }
+                                cb.result(true, "OK "+statusCode, devicesJson);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                cb.result(false, "Exception:"+e.getMessage(), jsonResult);
+                            }
+                        } else {
+                            if (jsonResult != null) {
+                                cb.result(false, "Status code " + statusCode, jsonResult);
+                            } else {
+                                cb.result(false, "Status code " + statusCode, jsonResult);
+                            }
+                        }
+                    }
+                }
+        );
+    }
+
+    public void getScenes(final JsonCallback cb) {
             String url = completeUrl("/scenes");
             getHttpAPI().get(url, new JsonAPI.JsonCallback() {
                         @Override
@@ -443,6 +511,9 @@ public class CozifyApiReal {
                     }
                     if (type.equals("SCENE_DELTA")) {
                         targets = p.getJSONObject("scenes");
+                    }
+                    if (type.equals("GROUP_DELTA")) {
+                        targets = p.getJSONObject("groups");
                     }
                     if (targets != null) {
                         Iterator<?> ds = targets.keys();

@@ -126,7 +126,7 @@ public class PersistentStorage {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
         String stateStr = prefs.getString(PREF_PREFIX_KEY + "state_" + appWidgetId, null);
         CozifySceneOrDeviceState state = new CozifySceneOrDeviceState();
-        if (state.fromJsonStr(stateStr)) {
+        if (stateStr != null && state.fromJsonStr(stateStr)) {
             return state;
         }
         return null;

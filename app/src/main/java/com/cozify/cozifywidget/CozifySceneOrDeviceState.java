@@ -96,6 +96,14 @@ public class CozifySceneOrDeviceState {
                     capabilities.add(c);
                 }
             }
+            if (pollData.has("maxCapabilities")) {
+                JSONObject caps = pollData.getJSONObject("maxCapabilities");
+                JSONArray cs = caps.getJSONArray("values");
+                for (int i = 0; i < cs.length(); i++) {
+                    String c = cs.getString(i);
+                    capabilities.add(c);
+                }
+            }
             if (pollData.has("state")) {
                 if (pollData.getJSONObject("state").has("reachable")) {
                     this.reachable = pollData.getJSONObject("state").getBoolean("reachable");
@@ -155,11 +163,14 @@ public class CozifySceneOrDeviceState {
     public boolean isScene() {
         return type.contains("SCENE");
     }
+    public boolean isGroup() {
+        return type.contains("GROUP");
+    }
     public boolean hasMeasurement() {
        return capabilities.contains("TEMPERATURE") || capabilities.contains("HUMIDITY");
     }
     public boolean isOnOff() {
-        return capabilities.contains("ON_OFF") || isScene();
+        return capabilities.contains("ON_OFF") || isScene() || isGroup();
     }
 
     public boolean similarToState(CozifySceneOrDeviceState other) {
@@ -170,8 +181,15 @@ public class CozifySceneOrDeviceState {
     public CozifyCommand getCommandTowardsDesiredState(CozifySceneOrDeviceState desiredState) {
         if (desiredState == null)
             throw new NullPointerException("desiredState is null in method getCommandTowardsDesiredState(CozifySceneOrDeviceState desiredState)");
-        String path = isScene() ? "/scenes/command" : "/devices/command";
-        String cmd = isScene() ? "CMD_SCENE" : "CMD_DEVICE";
+        String path = "/devices/command";
+        String cmd = "CMD_DEVICE";
+        if (isScene()) {
+            path = "/scenes/command";
+            cmd = "CMD_SCENE";
+        } else if (isGroup()) {
+            path = "/groups/command";
+            cmd = "CMD_GROUP";
+        }
         String commandString = desiredState.isOn ? cmd + "_ON" : cmd + "_OFF";
         return new CozifyCommand(path, commandString);
     }

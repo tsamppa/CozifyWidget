@@ -88,6 +88,7 @@ public class CozifyAppWidgetConfigure extends Activity {
             ShowErrorMessage("Invalid Widget ID", "mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID");
             finish();
         }
+        cozifyAPI.loadState(context, mAppWidgetId);
 
         devicesList = new ArrayList<>();
 
@@ -279,7 +280,7 @@ public class CozifyAppWidgetConfigure extends Activity {
 
         String device_name = editTextDeviceName.getText().toString();
 
-        if (selectedDeviceId.length() > 0) {
+        if (selectedDeviceId != null && selectedDeviceId.length() > 0) {
             selectedDeviceShortName =  selectedDeviceName;
             if (device_name.length() > 0) {
                 selectedDeviceShortName = device_name; // override name
@@ -288,8 +289,7 @@ public class CozifyAppWidgetConfigure extends Activity {
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
 
             // Save device ID for control
-            PersistentStorage.getInstance().saveHubKey(context, mAppWidgetId, selectedHubKey);
-            PersistentStorage.getInstance().saveHubApiVersion(context, mAppWidgetId, hubApiVersion);
+            cozifyAPI.saveState(context, mAppWidgetId);
             PersistentStorage.getInstance().saveDeviceId(context, mAppWidgetId, selectedDeviceId);
             PersistentStorage.getInstance().saveDeviceName(context, mAppWidgetId, selectedDeviceShortName);
             PersistentStorage.getInstance().saveTextSize(context, mAppWidgetId, textSize);
@@ -316,8 +316,8 @@ public class CozifyAppWidgetConfigure extends Activity {
             ShowMessage("Widget "+mAppWidgetId+" created for controlling "+selectedDeviceShortName +" of HUB "+hubName);
             finish();
         } else {
-            String error = "Please enter short device name";
-            ShowErrorMessage(error, "selectedDeviceId.length() <= 0: "+selectedDeviceId.length());
+            String error = "Please select device";
+            ShowErrorMessage(error, "selectedDeviceId.length() <= 0 or null: ");
             if (textInputLayoutDeviceName != null) {
                 textInputLayoutDeviceName.setErrorEnabled(true);
                 textInputLayoutDeviceName.setError(error);
@@ -337,9 +337,11 @@ public class CozifyAppWidgetConfigure extends Activity {
 
     View.OnClickListener mOnClickListenerTestOn = new View.OnClickListener() {
         public void onClick(View v) {
-            if (selectedDeviceId.length() > 0) {
-                boolean isScene = selectedDeviceName.contains("Scene:");
-                cozifyAPI.controlOnOff(selectedDeviceId, !isScene, true, new CozifyApiReal.CozifyCallback(){
+            if (selectedDeviceId != null && selectedDeviceId.length() > 0) {
+                int type = 1;
+                if (selectedDeviceName.contains("Scene:")) type = 2;
+                if (selectedDeviceName.contains("Group:")) type = 3;
+                cozifyAPI.controlOnOff(selectedDeviceId, type, true, new CozifyApiReal.CozifyCallback(){
                     @Override
                     public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                         setStatus("Test result:" + status);
@@ -353,9 +355,12 @@ public class CozifyAppWidgetConfigure extends Activity {
 
     View.OnClickListener mOnClickListenerTestOff = new View.OnClickListener() {
         public void onClick(View v) {
-            if (selectedDeviceId.length() > 0) {
-                boolean isScene = selectedDeviceName.contains("Scene:");
-                cozifyAPI.controlOnOff(selectedDeviceId, !isScene, false, new CozifyApiReal.CozifyCallback(){
+            if (selectedDeviceId != null && selectedDeviceId.length() > 0 && selectedDeviceName != null) {
+                int type = 1;
+                if (selectedDeviceName.contains("Scene:")) type = 2;
+                if (selectedDeviceName.contains("Group:")) type = 3;
+
+                cozifyAPI.controlOnOff(selectedDeviceId, type, false, new CozifyApiReal.CozifyCallback(){
                     @Override
                     public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                         setStatus("Test result:" + status);
@@ -392,7 +397,7 @@ public class CozifyAppWidgetConfigure extends Activity {
 
                     Spinner items = findViewById(R.id.spinner_devices);
                     setSpinnerItems(items, devicesList);
-                    getScenes();
+                    getGroups();
                 } else {
                     if (resultJson != null) {
                         String message = parseMessageFromJsonResponse(resultJson);
@@ -505,7 +510,7 @@ public class CozifyAppWidgetConfigure extends Activity {
                     enableSpinners(true);
 
                 } else {
-                    setStatus("ERROR when fetching scenes; " + status);
+                    setStatus("ERROR when fetching Scenes; " + status);
                     if (status.contains("408")) {
                         revertToLocalHubConnection();
                     } else {
@@ -513,6 +518,34 @@ public class CozifyAppWidgetConfigure extends Activity {
                         enableSpinners(true);
                     }
                 }
+            }
+        });
+    }
+
+    private void getGroups() {
+        String[] capabilities = {"ON_OFF"};
+        cozifyAPI.getGroups(capabilities, new CozifyApiReal.JsonCallback() {
+            @Override
+            public void result(boolean success, String status, JSONObject resultJson) {
+                if (success) {
+                    Iterator<?> keys = resultJson.keys();
+                    try {
+                        while (keys.hasNext()) {
+                            String groupName = (String) keys.next();
+                            String sceneId = resultJson.get(groupName).toString();
+                            devicesJson.put("Group: "+groupName, sceneId);
+                            devicesList.add("Group: "+groupName);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    Spinner items = findViewById(R.id.spinner_devices);
+                    setSpinnerItems(items, devicesList);
+                } else {
+                    setStatus("ERROR when fetching Groups; " + status);
+                }
+                getScenes();
             }
         });
     }

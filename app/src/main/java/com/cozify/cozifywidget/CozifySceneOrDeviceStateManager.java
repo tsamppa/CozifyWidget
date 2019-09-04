@@ -48,7 +48,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
     private static final int CONTROL_PRCESS_STATE_FAILURE = 9;
 
 
-    private static final int retryDelay = 30 * 1000; // 30 secs
+    private static final int retryDelay = 10 * 1000; // 10 secs
     private static final int maxRuntime = 10*60*1000; // 10 minutes
     private int mAppWidgetId;
     private Context mContext;
@@ -68,11 +68,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
 
     public void loadState() {
         currentState = PersistentStorage.getInstance().loadState(mContext, mAppWidgetId);
-        cozifyAPI.setCloudToken(PersistentStorage.getInstance().loadCloudToken(mContext));
-        mHubLanIp = PersistentStorage.getInstance().loadHubLanIp(mContext, mAppWidgetId);
-        cozifyAPI.setHubLanIp(mHubLanIp);
-        hubApiVersion = PersistentStorage.getInstance().loadHubApiVersion(mContext, mAppWidgetId);
-        cozifyAPI.setApiVersion(hubApiVersion);
+        cozifyAPI.loadState(mContext, mAppWidgetId);
         String hubKey = PersistentStorage.getInstance().loadHubKey(mContext, mAppWidgetId);
         if (hubKey != null && hubKey.length() > 0) {
             String hubName = parseHubNameFromToken(hubKey);
@@ -81,6 +77,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
                 @Override
                 public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                     connected = success;
+                    cozifyAPI.saveState(mContext, mAppWidgetId);
                 }
             });
         }
@@ -117,10 +114,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
 
     public void saveState() {
         PersistentStorage.getInstance().saveState(mContext, mAppWidgetId, currentState);
-        mHubLanIp = cozifyAPI.getHubLanIp();
-        PersistentStorage.getInstance().saveHubLanIp(mContext, mAppWidgetId, mHubLanIp);
-        hubApiVersion = cozifyAPI.getApiVersion();
-        PersistentStorage.getInstance().saveHubApiVersion(mContext, mAppWidgetId, hubApiVersion);
+        cozifyAPI.saveState(mContext, mAppWidgetId);
     }
 
     public boolean isReady() {
