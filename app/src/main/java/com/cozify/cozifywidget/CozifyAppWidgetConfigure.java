@@ -30,6 +30,7 @@ import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
 
@@ -394,7 +395,7 @@ public class CozifyAppWidgetConfigure extends Activity {
                         String deviceName = (String) keys.next();
                         devicesList.add(deviceName);
                     }
-
+                    Collections.sort(devicesList);
                     Spinner items = findViewById(R.id.spinner_devices);
                     setSpinnerItems(items, devicesList);
                     getGroups();
