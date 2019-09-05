@@ -146,6 +146,9 @@ public class CozifyWidgetSetupActivityTestOnOff {
 
     }
 
+    public static void removeWidget(UiObject2 widget) {
+    }
+
     public static void removeWidget(String widgetName) {
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         device.pressHome();
@@ -182,29 +185,59 @@ public class CozifyWidgetSetupActivityTestOnOff {
         return device.findObject(By.text(withName));
     }
 
+    private void armAndControl(UiObject2 widget) {
+        widget.click();
+        sleep(4000);
+        widget.click();
+        sleep(8000);
+    }
+
+    private void clickAndWait(UiObject2 widget) {
+        widget.click();
+        sleep(8000);
+    }
+
+    private void clickWaitArmControl(UiObject2 widget) {
+        device.waitForIdle();
+        clickAndWait(widget);
+        device.waitForIdle();
+        armAndControl(widget);
+        device.waitForIdle();
+    }
+
+    @Test
+    public void c1_cozifyWidgetSetupActivityTestNetworkLost() {
+        String name = "Bad internet";
+        UiObject2 widget1 = createAndConfigWidget(name, 1, "Test Device", "Small");
+        enableNetwork(false);
+        clickWaitArmControl(widget1);
+        enableNetwork(false);
+        clickWaitArmControl(widget1);
+        removeWidget(name);
+    }
 
     @Test
     public void c1_cozifyWidgetSetupActivityTestLongName() {
         String name = "12345678901234567890123456789012345678901234567890";
-        createAndConfigWidget(name, 1, "Erkkeri jalka lamppu", "Medium");
-        UiObject2 widget1 = findMyWidget(name);
-        assertThat(widget1, is(notNullValue()));
-        widget1.click();
-        sleep(6000);
-        widget1.click();
-        sleep(2000);
-        widget1.click();
-        sleep(6000);
-        widget1.click();
+        UiObject2 widget1 = createAndConfigWidget(name, 1, "Test Device", "Small");
+        UiObject2 widget2 = createAndConfigWidget(name, 1, "Test Device", "Medium");
+        UiObject2 widget3 = createAndConfigWidget(name, 1, "Test Device", "Large");
+        clickWaitArmControl(widget1);
+        clickWaitArmControl(widget2);
+        clickWaitArmControl(widget3);
         removeWidget(name);
     }
 
     @Test
     public void c1_cozifyWidgetSetupActivityTestScreenshot() {
-        createAndConfigWidget("HOME ALARM", 1, "Erkkeri jalka lamppu", "Medium");
-        createAndConfigWidget("A/C", 1, "Erkkeri jalka lamppu", "Large");
-        createAndConfigWidget("NIGHT", 1, "Erkkeri jalka lamppu", "Medium");
-        createAndConfigWidget("Bathroom", 1, "Kylppäri kosteus", "Small");
+        UiObject2 widget1 = createAndConfigWidget("HOME ALARM", 1, "Test Device", "Medium");
+        UiObject2 widget2 = createAndConfigWidget("A/C", 1, "Test Device", "Large");
+        UiObject2 widget3 = createAndConfigWidget("NIGHT", 1, "Test Device", "Medium");
+        UiObject2 widget4 = createAndConfigWidget("Bathroom", 1, "Test Sensor", "Small");
+        clickAndWait(widget1);
+        clickAndWait(widget2);
+        clickAndWait(widget3);
+        clickAndWait(widget4);
         //takeScreenshot("homeScreenWithDevices");
         sleep(10000);
         removeWidget("HOME ALARM");
@@ -217,6 +250,35 @@ public class CozifyWidgetSetupActivityTestOnOff {
         File path = new File("/sdcard/"+name+".png");
         device.takeScreenshot(path);
     }
+
+
+    @Test
+    public void c2_cozifyWidgetSetupActivityTestCreateAllTypes() {
+        UiObject2 widget1 = createAndConfigWidget("T Device", 1, "Test Device", "Medium");
+        UiObject2 widget2 = createAndConfigWidget("T Sensor", 1, "Test Sensor", "Medium");
+        UiObject2 widget3 = createAndConfigWidget("T Scene", 1, "Scene: Test Scene", "Medium");
+        UiObject2 widget4 = createAndConfigWidget("T Group", 1, "Group: Test Group", "Medium");
+        widget1.click();
+        widget2.click();
+        widget3.click();
+        widget4.click();
+        sleep(7000);
+        widget1.click();
+        widget2.click();
+        widget3.click();
+        widget4.click();
+        sleep(1000);
+        widget1.click();
+        widget2.click();
+        widget3.click();
+        widget4.click();
+        sleep(10000);
+        removeWidget("T Group");
+        removeWidget("T Sensor");
+        removeWidget("T Scene");
+        removeWidget("T Device");
+    }
+
 
     @Test
     public void c2_cozifyWidgetSetupActivityTestCreate1() {
@@ -363,6 +425,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
                                         0),
                                 0),
                         isDisplayed()));
+        assertThat(editText, notNullValue());
         editText.perform(replaceText(widgetName), closeSoftKeyboard());
 
         editText.perform(pressImeActionButton());
@@ -374,6 +437,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
                 allOf(withId(R.id.test_control_on_button),
                         withText("Test ON now"),
                         isDisplayed()));
+        assertThat(button, notNullValue());
         button.perform(click());
         sleep(2000);
     }
@@ -383,6 +447,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
                 allOf(withId(R.id.test_control_off_button),
                         withText("Test OFF now"),
                         isDisplayed()));
+        assertThat(button2, notNullValue());
         button2.perform(click());
         sleep(2000);
     }
@@ -398,6 +463,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
                         withClassName(is("android.widget.PopupWindow$PopupBackgroundView")),
                         0))
                 .atPosition(hubPos);
+        assertThat(checkedTextView, notNullValue());
         checkedTextView.perform(click());
 
     }
@@ -428,7 +494,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
 
     }
 
-    private void createAndConfigWidget(String widgetName, int hubPos, String deviceName, String fontSize) {
+    private UiObject2 createAndConfigWidget(String widgetName, int hubPos, String deviceName, String fontSize) {
         createWidget();
         device.waitForIdle();
         selectHub(hubPos);
@@ -438,9 +504,8 @@ public class CozifyWidgetSetupActivityTestOnOff {
         onView(allOf(withId(R.id.create_button), isDisplayed())).perform(click());
         UiObject2 widget1 = findMyWidget(widgetName);
         assertThat(widget1, is(notNullValue()));
-        widget1.click();
-        sleep(7000);
         device.waitForIdle();
+        return widget1;
     }
 
     private void selectFontSize(String fontSize) {
@@ -482,11 +547,32 @@ public class CozifyWidgetSetupActivityTestOnOff {
                         withClassName(is("android.widget.PopupWindow$PopupBackgroundView")),
                         0))
                 .atPosition(pos);
+        assertThat(checkedTextView2, notNullValue());
         checkedTextView2.perform(click());
     }
 
     private void selectDevice(String name) {
         onView(allOf(withId(R.id.spinner_devices), isDisplayed())).perform(click());
-        onData(allOf(is(instanceOf(String.class)), is(name))).perform(click());
+        device.waitForIdle();
+        DataInteraction deviceSpinner = onData(allOf(is(instanceOf(String.class)), is(name)));
+        assertThat(deviceSpinner, notNullValue());
+        deviceSpinner.perform(click());
+        device.waitForIdle();
     }
+
+    private void enableNetwork(boolean on) {
+        try {
+            if (on) {
+                Runtime.getRuntime().exec("\"svc wifi enable\"");
+                Runtime.getRuntime().exec("\"svc data enable\"");
+            } else {
+                Runtime.getRuntime().exec("\"svc wifi disable\"");
+                Runtime.getRuntime().exec("\"svc data disable\"");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        device.waitForIdle();
+    }
+
 }
