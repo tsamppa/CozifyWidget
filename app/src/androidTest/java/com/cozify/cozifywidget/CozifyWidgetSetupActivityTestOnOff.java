@@ -426,10 +426,10 @@ public class CozifyWidgetSetupActivityTestOnOff {
                                 0),
                         isDisplayed()));
         assertThat(editText, notNullValue());
+        device.waitForIdle();
         editText.perform(replaceText(widgetName), closeSoftKeyboard());
-
         editText.perform(pressImeActionButton());
-
+        device.waitForIdle();
     }
 
     private void testOnButton() {
