@@ -325,10 +325,15 @@ public class ControlActivity extends AppCompatActivity {
         views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
 
         if (measurement != null) {
-            if (device_name != null) {
-                String label = measurement + "\n" + device_name;
+            String label = measurement;
+                if (device_name != null) {
+                    label = measurement + "\n" + device_name;
+                }
                 views.setCharSequence(R.id.control_button, "setText", label);
                 views.setFloat(R.id.control_button, "setTextSize", textSize);
+        } else {
+            if (device_name != null) {
+                views.setCharSequence(R.id.control_button, "setText", device_name);
             }
         }
         appWidgetManager.updateAppWidget(appWidgetId, views);
