@@ -24,4 +24,11 @@
         android:pathData="M92 42L108 42L108 90L92 90L92 42Z"
         android:fillColor="@color/icon_color_active_blue" />
 
+    <group android:name="shine">
+        <path
+            android:name="circle"
+            android:fillColor="#38FFFFFF"
+            android:pathData="M45,85m-10,0a10,8 0,1 1,130 0a10,8 0,1 1,-100 0" />
+    </group>
+
 </vector>

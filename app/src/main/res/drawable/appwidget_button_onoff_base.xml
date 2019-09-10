@@ -50,4 +50,12 @@
     <path
         android:pathData="M120 100C120 111.04 111.04 120 100 120C88.96 120 80 111.04 80 100C80 88.96 88.96 80 100 80C111.04 80 120 88.96 120 100Z"
         android:fillColor="@color/icon_color_off_grey" />
+
+    <group android:name="shine">
+        <path
+            android:name="circle"
+            android:fillColor="#38FFFFFF"
+            android:pathData="M45,85m-10,0a10,8 0,1 1,130 0a10,8 0,1 1,-100 0" />
+    </group>
+
 </vector>

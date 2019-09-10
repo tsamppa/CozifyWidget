@@ -11,7 +11,7 @@
         android:strokeAlpha="0.2">
     </path>
     <path
-        android:pathData="M0 0 L200 200"
+        android:pathData="M10 10 L190 190"
         android:strokeWidth="20"
         android:strokeColor="@color/icon_color_warning_yellow" />
     <path
@@ -31,4 +31,12 @@
         android:pathData="M190 100C190 149.67 149.67 190 100 190C50.33 190 10 149.67 10 100C10 50.33 50.33 10 100 10C149.67 10 190 50.33 190 100Z"
         android:strokeColor="@color/icon_color_armed"
         android:strokeWidth="5" />
+
+    <group android:name="shine">
+        <path
+            android:name="circle"
+            android:fillColor="#38FFFFFF"
+            android:pathData="M45,85m-10,0a10,8 0,1 1,130 0a10,8 0,1 1,-100 0" />
+    </group>
+
 </vector>
