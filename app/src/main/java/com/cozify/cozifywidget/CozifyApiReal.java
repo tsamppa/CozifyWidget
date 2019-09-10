@@ -23,7 +23,7 @@ public class CozifyApiReal {
         private String cloudtoken = "";
         private String hubKey = "";
         private boolean remoteConnection = true;
-        private Map<String, CozifySceneOrDeviceState> deviceStates = new HashMap<String, CozifySceneOrDeviceState>();
+        private Map<String, CozifySceneOrDeviceState> deviceStates = new HashMap<>();
         private long deviceStateTimestamp = 0;
 
         public CozifyApiReal() {
@@ -133,6 +133,8 @@ public class CozifyApiReal {
                         }
                     }
                 });
+            } else {
+                cbConnected.result(true, "Connected successfully", null, null);
             }
         }
 
@@ -498,9 +500,9 @@ public class CozifyApiReal {
                 JSONObject stateJson = null;
                 long timestamp = result.getLong("timestamp");
                 boolean fullPoll = result.getBoolean("full");
-                if (fullPoll) {
+//                if (fullPoll) {
                     //deviceStateTimestamp = timestamp;
-                }
+//                }
                 JSONArray polls = result.getJSONArray("polls");
                 for (int i = 0; i < polls.length(); i++) {
                     JSONObject p = polls.getJSONObject(i);

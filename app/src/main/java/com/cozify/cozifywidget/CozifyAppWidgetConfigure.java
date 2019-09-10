@@ -179,7 +179,6 @@ public class CozifyAppWidgetConfigure extends Activity {
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
-                        return;
                     }
                 }
             }
@@ -211,7 +210,7 @@ public class CozifyAppWidgetConfigure extends Activity {
             }
         });
 
-        RadioGroup rg = (RadioGroup) findViewById(R.id.text_size_radio_group);
+        RadioGroup rg = findViewById(R.id.text_size_radio_group);
 
         rg.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
         {
@@ -435,7 +434,7 @@ public class CozifyAppWidgetConfigure extends Activity {
 
     void setSpinnerItems(Spinner spinner, ArrayList<String> items) {
         final Context context = CozifyAppWidgetConfigure.this;
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 context, android.R.layout.simple_spinner_dropdown_item, items);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
@@ -449,7 +448,7 @@ public class CozifyAppWidgetConfigure extends Activity {
                 if (success) {
                     hubkeysJson = resultJson;
                     hubNamesJson = new JSONObject();
-                    ArrayList<String> hubs = new ArrayList<String>();
+                    ArrayList<String> hubs = new ArrayList<>();
                     Iterator<?> keys = hubkeysJson.keys();
                     try {
                         while (keys.hasNext()) {
@@ -481,12 +480,13 @@ public class CozifyAppWidgetConfigure extends Activity {
     void resetDevicesSpinner() {
         // Reset devices spinner
         devicesJson = new JSONObject();
-        devicesList = new ArrayList<String>();
+        devicesList = new ArrayList<>();
         Spinner ditems = findViewById(R.id.spinner_devices);
         setSpinnerItems(ditems, devicesList);
     }
 
     private void getScenes() {
+        setStatus("Wait while fetching list of Scenes..");
         cozifyAPI.getScenes(new CozifyApiReal.JsonCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson) {
@@ -524,6 +524,7 @@ public class CozifyAppWidgetConfigure extends Activity {
     }
 
     private void getGroups() {
+        setStatus("Wait while fetching list of Groups..");
         String[] capabilities = {"ON_OFF"};
         cozifyAPI.getGroups(capabilities, new CozifyApiReal.JsonCallback() {
             @Override

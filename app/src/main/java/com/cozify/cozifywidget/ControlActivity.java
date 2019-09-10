@@ -303,30 +303,36 @@ public class ControlActivity extends AppCompatActivity {
     }
 
     private void displayDeviceState(String why) {
+        final Context context = ControlActivity.this;
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
-        RemoteViews views = new RemoteViews(this.getPackageName(), R.layout.appwidget_button);
-        views.setBoolean(R.id.control_button, "setEnabled", !(mIsControlling || mIsArming || mUpdating));
+        String device_name = PersistentStorage.getInstance().loadDeviceName(context, mAppWidgetId);
+        float textSize = PersistentStorage.getInstance().loadTextSize(context, mAppWidgetId);
+        int resourceForState = updateDeviceState(device_name, mIsControlling, mIsArming, mIsArmed, mUpdating,
+                stateMgr, textSize, mAppWidgetId, appWidgetManager, this.getPackageName());
+        Log.d("ResourceForState", String.format("%s : %s (%d)", why, getResources().getResourceEntryName(resourceForState), resourceForState));
+    }
 
+    public static int updateDeviceState(String device_name, boolean isControlling, boolean isArming, boolean isArmed, boolean isUpdating,
+                                        CozifySceneOrDeviceStateManager stateMgr,
+                                        float textSize,
+                                        int appWidgetId, AppWidgetManager appWidgetManager, String packageName) {
+
+        RemoteViews views = new RemoteViews(packageName, R.layout.appwidget_button);
+        views.setBoolean(R.id.control_button, "setEnabled", !(isControlling || isArming || isUpdating));
         String measurement = stateMgr.getMeasurementString();
         boolean isSensor = measurement != null;
-
-        int resourceForState = getDeviceResourceForState(stateMgr.isReachable(), stateMgr.isOn(), mIsArmed, mIsArming, mIsControlling, isSensor, mUpdating);
+        int resourceForState = getDeviceResourceForState(stateMgr.isReachable(), stateMgr.isOn(), isArmed, isArming, isControlling, isSensor, isUpdating);
         views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
 
-        Log.d("ResourceForState", String.format("%s : %s (%d)", why, getResources().getResourceEntryName(resourceForState), resourceForState));
-
         if (measurement != null) {
-            final Context context = ControlActivity.this;
-            String device_name = PersistentStorage.getInstance().loadDeviceName(context, mAppWidgetId);
             if (device_name != null) {
                 String label = measurement + "\n" + device_name;
                 views.setCharSequence(R.id.control_button, "setText", label);
-                float textSize = PersistentStorage.getInstance().loadTextSize(context, mAppWidgetId);
                 views.setFloat(R.id.control_button, "setTextSize", textSize);
             }
         }
-
-        appWidgetManager.updateAppWidget(mAppWidgetId, views);
+        appWidgetManager.updateAppWidget(appWidgetId, views);
+        return resourceForState;
     }
 
     private void startControl() {
