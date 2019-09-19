@@ -320,7 +320,8 @@ public class ControlActivity extends AppCompatActivity {
         RemoteViews views = new RemoteViews(packageName, R.layout.appwidget_button);
         views.setBoolean(R.id.control_button, "setEnabled", !(isControlling || isArming || isUpdating));
         String measurement = stateMgr.getMeasurementString();
-        boolean isSensor = measurement != null;
+        CozifySceneOrDeviceState s = stateMgr.getCurrentState();
+        boolean isSensor = s.hasMeasurement() && !s.isOnOff();
         int resourceForState = getDeviceResourceForState(stateMgr.isReachable(), stateMgr.isOn(), isArmed, isArming, isControlling, isSensor, isUpdating);
         views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
 

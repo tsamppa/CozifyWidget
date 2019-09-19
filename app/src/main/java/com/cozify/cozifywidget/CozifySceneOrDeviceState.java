@@ -22,6 +22,8 @@ public class CozifySceneOrDeviceState {
     public double temperature = 0;
     public double humidity = 0;
     public double co2 = 0;
+    public int lux = 0;
+    public double watt = 0;
     public boolean reachable = true;
     public boolean isOn = false;
     public List<String> capabilities = new ArrayList<String>();
@@ -49,13 +51,24 @@ public class CozifySceneOrDeviceState {
                 this.room = source.getString("room");
             }
             if (capabilities.contains("TEMPERATURE")) {
-                this.temperature = source.getDouble("temperature");
+                if (source.has("temperature"))
+                    this.temperature = source.getDouble("temperature");
             }
             if (capabilities.contains("HUMIDITY")) {
-                this.humidity = source.getDouble("humidity");
+                if (source.has("humidity"))
+                    this.humidity = source.getDouble("humidity");
             }
             if (capabilities.contains("CO2")) {
-                this.co2 = source.getDouble("co2");
+                if (source.has("co2"))
+                    this.co2 = source.getDouble("co2");
+            }
+            if (capabilities.contains("LUX")) {
+                if (source.has("lux"))
+                    this.lux = source.getInt("lux");
+            }
+            if (capabilities.contains("MEASURE_POWER")) {
+                if (source.has("activePower"))
+                    this.watt = source.getDouble("activePower");
             }
             if (source.has("reachable")) {
                 this.reachable = source.getBoolean("reachable");
@@ -121,6 +134,12 @@ public class CozifySceneOrDeviceState {
                 if (capabilities.contains("CO2")) {
                     co2 = pollData.getJSONObject("state").getDouble("co2Ppm");
                 }
+                if (capabilities.contains("LUX")) {
+                    lux = pollData.getJSONObject("state").getInt("lux");
+                }
+                if (capabilities.contains("MEASURE_POWER")) {
+                    watt = pollData.getJSONObject("state").getDouble("activePower");
+                }
             }
             if (pollData.has("room")) {
                 this.room = pollData.getString("room");
@@ -154,6 +173,8 @@ public class CozifySceneOrDeviceState {
         jsonObject.put("temperature", this.temperature);
         jsonObject.put("humidity", this.humidity);
         jsonObject.put("co2", this.co2);
+        jsonObject.put("lux", this.lux);
+        jsonObject.put("activePower", this.watt);
         jsonObject.put("capabilities", this.capabilities.toString());
         return jsonObject;
     }
@@ -167,7 +188,11 @@ public class CozifySceneOrDeviceState {
         return type.contains("GROUP");
     }
     public boolean hasMeasurement() {
-       return capabilities.contains("TEMPERATURE") || capabilities.contains("HUMIDITY");
+       return capabilities.contains("TEMPERATURE") ||
+               capabilities.contains("HUMIDITY") ||
+               capabilities.contains("CO2") ||
+               capabilities.contains("LUX") ||
+               capabilities.contains("MEASURE_POWER");
     }
     public boolean isOnOff() {
         return capabilities.contains("ON_OFF") || isScene() || isGroup();
@@ -214,6 +239,22 @@ public class CozifySceneOrDeviceState {
                 measurement = "";
             }
             measurement += String.format(Locale.ENGLISH, "%.1f C", temperature);
+        }
+        if (capabilities.contains("LUX")) {
+            if (measurement != null) {
+                measurement += "\n";
+            } else {
+                measurement = "";
+            }
+            measurement += String.format(Locale.ENGLISH, "%d lx", lux);
+        }
+        if (capabilities.contains("MEASURE_POWER")) {
+            if (measurement != null) {
+                measurement += "\n";
+            } else {
+                measurement = "";
+            }
+            measurement += String.format(Locale.ENGLISH, "%.0f W", watt);
         }
         return measurement;
     }
