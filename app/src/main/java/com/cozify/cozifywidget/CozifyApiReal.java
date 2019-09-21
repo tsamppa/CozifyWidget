@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 
 public class CozifyApiReal {
@@ -377,7 +378,19 @@ public class CozifyApiReal {
             );
         }
 
-
+        private String extractErrorMessageFromJsonResult(int statusCode, JSONObject jsonResult) {
+            String error = String.format(Locale.ENGLISH, "Status code: %d", statusCode);
+            try {
+                if (jsonResult.has("message")) {
+                    error = jsonResult.getString("message");
+                    error += String.format(Locale.ENGLISH, "(%d)", statusCode);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return error;
+        }
+        
         public void getHubKeys(final JsonCallback cb) {
             String url = "https://api.cozify.fi/ui/0.2/user/hubkeys";
             httpAPI.get(url, new JsonAPI.JsonCallback() {
@@ -386,7 +399,7 @@ public class CozifyApiReal {
                             if (statusCode == 200) {
                                 cb.result(true, "OK: "+statusCode, jsonResult);
                             } else {
-                                cb.result(false, "Status code: "+statusCode, jsonResult);
+                                cb.result(false, extractErrorMessageFromJsonResult(statusCode, jsonResult), jsonResult);
                             }
                         }
                     }
@@ -412,11 +425,11 @@ public class CozifyApiReal {
             String url = "https://api.cozify.fi/ui/0.2/hub/remote/hub";
             httpAPI.get(url, new JsonAPI.JsonCallback() {
                         @Override
-                        public void onResponse(int statusCode, JSONObject json) {
+                        public void onResponse(int statusCode, JSONObject jsonResult) {
                             if (statusCode == 200) {
-                                cb.result(true, "OK: "+statusCode, json);
+                                cb.result(true, "OK: "+statusCode, jsonResult);
                             } else {
-                                cb.result(false, "Status code: "+statusCode, json);
+                                cb.result(false, extractErrorMessageFromJsonResult(statusCode, jsonResult), jsonResult);
                             }
                         }
                     }
@@ -480,11 +493,11 @@ public class CozifyApiReal {
                                 toggleConnectType();
                                 getHttpAPI().get(url, new JsonAPI.JsonCallback() {
                                             @Override
-                                            public void onResponse(int statusCode, JSONObject result) {
+                                            public void onResponse(int statusCode, JSONObject jsonResult) {
                                                 if (statusCode == 200) {
-                                                    parsePoll(request, device_id, statusCode, result, cb);
+                                                    parsePoll(request, device_id, statusCode, jsonResult, cb);
                                                 } else {
-                                                    cb.result(false, "Status code " + statusCode, result, request);
+                                                    cb.result(false, extractErrorMessageFromJsonResult(statusCode, jsonResult), jsonResult, request);
                                                 }
                                             }
                                         }

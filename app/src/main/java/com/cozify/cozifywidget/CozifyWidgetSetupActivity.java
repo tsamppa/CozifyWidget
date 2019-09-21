@@ -47,14 +47,9 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
         buttonLogin = findViewById(R.id.login_button);
         textInputLayoutEmail = findViewById(R.id.email_layout);
 
-        // Login automatically with saved credentials
-        if (checkAccess()) {
-            Toast.makeText(this, "Connected to Cozify with saved credentials.", Toast.LENGTH_SHORT).show();
-            Intent resultValue = new Intent();
-            setResult(RESULT_OK, resultValue);
-            finish();
-        } else {
-            showEmailFields();
+        // Login automatically with saved credentials or show the Login screen
+        if (!checkAccess()) {
+            enableEmailLogin();
         }
 
         editTextEmail.addTextChangedListener(new TextWatcher() {
@@ -108,16 +103,17 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
 
             }
         });
-        listHubs();
     }
 
     private void showEmailFields() {
         textInputLayoutEmail.setVisibility(View.VISIBLE);
+        textInputLayoutEmail.requestFocus();
         buttonLogin.setVisibility(View.VISIBLE);
     }
 
     private void showPasswordField() {
         textInputLayoutPw.setVisibility(View.VISIBLE);
+        textInputLayoutPw.requestFocus();
     }
 
 
@@ -178,12 +174,16 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
                     setResult(RESULT_OK, resultValue);
                     finish();
                 } else {
-                    textViewStatus.setText("Please check internet connection and try again");
+                    enableEmailLogin();
                 }
             }
         });
     }
 
+    private void enableEmailLogin() {
+        listHubs();
+        showEmailFields();
+    }
 
     View.OnClickListener mOnClickListenerLogin = new View.OnClickListener() {
         public void onClick(View v) {
@@ -224,6 +224,7 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
         if (emailAddress == null || emailAddress.length() < 5) {
             return false;
         }
+        editTextEmail.setText(emailAddress);
         cloudtoken = PersistentStorage.getInstance().loadCloudToken(context);
         if (cloudtoken == null || cloudtoken.length() < 5) {
             return false;

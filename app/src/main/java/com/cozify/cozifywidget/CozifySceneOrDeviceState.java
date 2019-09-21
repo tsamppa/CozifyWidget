@@ -178,16 +178,13 @@ public class CozifySceneOrDeviceState {
         jsonObject.put("capabilities", this.capabilities.toString());
         return jsonObject;
     }
-    public boolean isDevice() {
-        return capabilities.contains("DEVICE");
-    }
     public boolean isScene() {
         return type.contains("SCENE");
     }
     public boolean isGroup() {
         return type.contains("GROUP");
     }
-    public boolean hasMeasurement() {
+    public boolean isSensor() {
        return capabilities.contains("TEMPERATURE") ||
                capabilities.contains("HUMIDITY") ||
                capabilities.contains("CO2") ||

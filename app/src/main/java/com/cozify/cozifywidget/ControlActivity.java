@@ -95,7 +95,7 @@ public class ControlActivity extends AppCompatActivity {
             if (state.isOnOff()) {
                 return handleToggleClick();
             }
-            if (state.hasMeasurement()) {
+            if (state.isSensor()) {
                 return handleMeasurementUpdate();
             }
         } else {
@@ -321,7 +321,10 @@ public class ControlActivity extends AppCompatActivity {
         views.setBoolean(R.id.control_button, "setEnabled", !(isControlling || isArming || isUpdating));
         String measurement = stateMgr.getMeasurementString();
         CozifySceneOrDeviceState s = stateMgr.getCurrentState();
-        boolean isSensor = s.hasMeasurement() && !s.isOnOff();
+        boolean isSensor = false;
+        if (s != null) {
+            isSensor = s.isSensor() && !s.isOnOff();
+        }
         int resourceForState = getDeviceResourceForState(stateMgr.isReachable(), stateMgr.isOn(), isArmed, isArming, isControlling, isSensor, isUpdating);
         views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
 
@@ -383,12 +386,6 @@ public class ControlActivity extends AppCompatActivity {
                     CozifySceneOrDeviceState state = stateMgr.getCurrentState();
                     if (state == null) {
                         return;
-                    }
-                } else {
-                    stateMgr.setReachable(false);
-                    if (!stateMgr.connected) {
-                        ShowErrorMessage("Login expired. Please login again.", "!stateMgr.connected in ControlActivity.updateCurrentState()");
-                        loginAgain();
                     }
                 }
                 saveSettings();
