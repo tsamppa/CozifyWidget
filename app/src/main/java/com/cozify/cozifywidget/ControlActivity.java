@@ -309,6 +309,9 @@ public class ControlActivity extends AppCompatActivity {
         float textSize = PersistentStorage.getInstance().loadTextSize(context, mAppWidgetId);
         int resourceForState = updateDeviceState(device_name, mIsControlling, mIsArming, mIsArmed, mUpdating,
                 stateMgr, textSize, mAppWidgetId, appWidgetManager, this.getPackageName());
+        RemoteViews views = new RemoteViews(this.getPackageName(), R.layout.appwidget_button);
+        views.setContentDescription(R.id.control_button,  context.getResources().getResourceEntryName(resourceForState));
+        appWidgetManager.updateAppWidget(mAppWidgetId, views);
         Log.d("ResourceForState", String.format("%s : %s (%d)", why, getResources().getResourceEntryName(resourceForState), resourceForState));
     }
 

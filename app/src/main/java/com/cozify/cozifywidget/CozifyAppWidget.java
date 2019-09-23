@@ -29,6 +29,7 @@ public class CozifyAppWidget extends AppWidgetProvider {
         float textSize = PersistentStorage.getInstance().loadTextSize(context, appWidgetId);
         int resourceForState = ControlActivity.updateDeviceState(device_name, false, false, false, false,
                 stateMgr, textSize, appWidgetId, appWidgetManager, context.getPackageName());
+        views.setContentDescription(R.id.control_button,  context.getResources().getResourceEntryName(resourceForState));
         Log.d("ResourceForState", String.format("%s : %s (%d)", "CozifyAppWidget.updateAppWidget", context.getResources().getResourceEntryName(resourceForState), resourceForState));
         // Tell the AppWidgetManager to perform an update on the current app widget
         appWidgetManager.updateAppWidget(appWidgetId, views);

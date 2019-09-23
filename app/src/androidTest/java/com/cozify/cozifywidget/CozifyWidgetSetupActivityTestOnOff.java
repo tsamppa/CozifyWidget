@@ -44,13 +44,11 @@ import static androidx.test.espresso.action.ViewActions.pressImeActionButton;
 import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 
@@ -58,15 +56,14 @@ import static org.hamcrest.core.IsNull.notNullValue;
 @RunWith(AndroidJUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CozifyWidgetSetupActivityTestOnOff {
-    private static final String COZIFY_PACKAGE
-            = "com.cozify.cozifywidget";
+    private static final String COZIFY_PACKAGE = "com.cozify.cozifywidget";
     private static final int LAUNCH_TIMEOUT = 5000;
-    String WIDGET_NAME = "Cozify Scene and Device Control";
-    boolean WIDGET_SELECTION_AT_X = false;
-    private UiDevice device;
+    private String WIDGET_NAME = "Cozify Scene and Device Control";
+    private boolean WIDGET_SELECTION_AT_X = false;
+    private static UiDevice device;
     private Instrumentation.ActivityMonitor monitor;
-    private Activity activity;
     private int widgetCount = 0;
+    private Activity activity;
 
 
 //    @Rule
@@ -146,7 +143,21 @@ public class CozifyWidgetSetupActivityTestOnOff {
 
     }
 
+    public void checkIcon(String wigdetName, String drawableName) {
+        UiObject2 widget = findMyWidget(wigdetName);
+        assertThat(widget, is(notNullValue()));
+        String p = widget.getContentDescription();
+        assertThat(p, is(drawableName));
+    }
+
     public static void removeWidget(UiObject2 widget) {
+        Rect r = widget.getVisibleBounds();
+        Point c = new Point(r.centerX(), r.centerY());
+        Point[] pa = new Point[3];
+        pa[0] = c;
+        pa[1] = c;
+        pa[2] = new Point(device.getDisplayWidth()/2, 120);
+        device.swipe(pa, 150);
     }
 
     public static void removeWidget(String widgetName) {
@@ -154,13 +165,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
         device.pressHome();
         UiObject2 widget = device.findObject(By.text(widgetName));
         while (widget != null) {
-            Rect r = widget.getVisibleBounds();
-            Point c = new Point(r.centerX(), r.centerY());
-            Point[] pa = new Point[3];
-            pa[0] = c;
-            pa[1] = c;
-            pa[2] = new Point(device.getDisplayWidth()/2, 120);
-            device.swipe(pa, 150);
+            removeWidget(widget);
             widget = device.findObject(By.text(widgetName));
         }
     }
@@ -208,7 +213,8 @@ public class CozifyWidgetSetupActivityTestOnOff {
     @Test
     public void c1_cozifyWidgetSetupActivityTestNetworkLost() {
         String name = "Bad internet";
-        UiObject2 widget1 = createAndConfigWidget(name, 1, "Test Device", "Small");
+        UiObject2 widget1 = createAndConfigWidgetAndSetOn(name, "Samppa's Hub", "Test Device", "Small", true);
+        checkIcon(name, "appwidget_button_clickable_on");
         enableNetwork(false);
         clickWaitArmControl(widget1);
         enableNetwork(false);
@@ -217,11 +223,41 @@ public class CozifyWidgetSetupActivityTestOnOff {
     }
 
     @Test
+    public void c1_cozifyWidgetSetupActivityTestIconStates() {
+        String name = "ICON";
+        UiObject2 widget = createAndConfigWidgetAndSetOn(name, "Samppa's Hub", "Test Device", "Small", true);
+        checkIcon(name, "appwidget_button_clickable_on");
+        widget.click();
+        sleep(100);
+        checkIcon(name, "appwidget_button_arming_on");
+        sleep(3000);
+        checkIcon(name, "appwidget_button_armed_on");
+        widget.click();
+        sleep(100);
+        checkIcon(name, "appwidget_button_controlling_off");
+        sleep(5000);
+        checkIcon(name, "appwidget_button_clickable_off");
+        sleep(5000);
+        widget.click();
+        sleep(100);
+        checkIcon(name, "appwidget_button_arming_off");
+        sleep(3000);
+        checkIcon(name, "appwidget_button_armed_off");
+        widget.click();
+        sleep(100);
+        checkIcon(name, "appwidget_button_controlling_on");
+        sleep(5000);
+        checkIcon(name, "appwidget_button_clickable_on");
+
+        removeWidget(name);
+    }
+
+    @Test
     public void c1_cozifyWidgetSetupActivityTestLongName() {
         String name = "12345678901234567890123456789012345678901234567890";
-        UiObject2 widget1 = createAndConfigWidget(name, 1, "Test Device", "Small");
-        UiObject2 widget2 = createAndConfigWidget(name, 1, "Test Device", "Medium");
-        UiObject2 widget3 = createAndConfigWidget(name, 1, "Test Device", "Large");
+        UiObject2 widget1 = createAndConfigWidget(name, "Samppa's Hub", "Test Device", "Small");
+        UiObject2 widget2 = createAndConfigWidget(name, "Samppa's Hub", "Test Device", "Medium");
+        UiObject2 widget3 = createAndConfigWidget(name, "Samppa's Hub", "Test Device", "Large");
         clickWaitArmControl(widget1);
         clickWaitArmControl(widget2);
         clickWaitArmControl(widget3);
@@ -230,10 +266,10 @@ public class CozifyWidgetSetupActivityTestOnOff {
 
     @Test
     public void c1_cozifyWidgetSetupActivityTestScreenshot() {
-        UiObject2 widget1 = createAndConfigWidget("HOME ALARM", 1, "Test Device", "Medium");
-        UiObject2 widget2 = createAndConfigWidget("A/C", 1, "Test Device", "Large");
-        UiObject2 widget3 = createAndConfigWidget("NIGHT", 1, "Test Device", "Medium");
-        UiObject2 widget4 = createAndConfigWidget("Bathroom", 1, "Test Sensor", "Small");
+        UiObject2 widget1 = createAndConfigWidget("HOME ALARM", "Samppa's Hub", "Test Device", "Medium");
+        UiObject2 widget2 = createAndConfigWidget("A/C", "Samppa's Hub", "Test Device", "Large");
+        UiObject2 widget3 = createAndConfigWidget("NIGHT", "Samppa's Hub", "Test Device", "Medium");
+        UiObject2 widget4 = createAndConfigWidget("Bathroom", "Samppa's Hub", "Test Sensor", "Small");
         clickAndWait(widget1);
         clickAndWait(widget2);
         clickAndWait(widget3);
@@ -254,67 +290,50 @@ public class CozifyWidgetSetupActivityTestOnOff {
 
     @Test
     public void c2_cozifyWidgetSetupActivityTestCreateAllTypes() {
-        UiObject2 widget1 = createAndConfigWidget("T Device", 1, "Test Device", "Medium");
-        UiObject2 widget2 = createAndConfigWidget("T Sensor", 1, "Test Sensor", "Medium");
-        UiObject2 widget3 = createAndConfigWidget("T Scene", 1, "Scene: Test Scene", "Medium");
-        UiObject2 widget4 = createAndConfigWidget("T Group", 1, "Group: Test Group", "Medium");
+        UiObject2 widget1 = createAndConfigWidgetAndSetOn("T Scene", "Samppa's Hub", "Scene: Test Scene", "Medium", true);
+        UiObject2 widget2 = createAndConfigWidget("T Device", "Samppa's Hub", "Test Device", "Medium");
+        UiObject2 widget3 = createAndConfigWidget("T TEMP", "Samppa's Hub", "Test Sensor", "Medium");
+        UiObject2 widget4 = createAndConfigWidget("T Group", "Samppa's Hub", "Group: Test Group", "Medium");
+        UiObject2 widget5 = createAndConfigWidget("T LUX", "Samppa's Hub", "Keittiön liik", "Medium");
+        UiObject2 widget6 = createAndConfigWidget("T WATT", "Samppa's Hub", "Kiertovesipumppu", "Medium");
+        UiObject2 widget7 = createAndConfigWidget("T HUM", "Samppa's Hub", "Kylppäri kosteus", "Medium");
         widget1.click();
         widget2.click();
         widget3.click();
         widget4.click();
+        widget5.click();
+        widget6.click();
+        widget7.click();
         sleep(7000);
         widget1.click();
         widget2.click();
         widget3.click();
         widget4.click();
+        widget5.click();
+        widget6.click();
+        widget7.click();
         sleep(1000);
         widget1.click();
         widget2.click();
         widget3.click();
         widget4.click();
+        widget5.click();
+        widget6.click();
+        widget7.click();
         sleep(10000);
         removeWidget("T Group");
-        removeWidget("T Sensor");
+        removeWidget("T TEMP");
         removeWidget("T Scene");
         removeWidget("T Device");
-    }
-
-
-    @Test
-    public void c2_cozifyWidgetSetupActivityTestCreate1() {
-        createWidget();
-        configWidget("T1", 1, 75);
-        UiObject2 widget1 = findMyWidget("T1");
-        assertThat(widget1, is(notNullValue()));
-        widget1.click();
-        sleep(6000);
-        widget1.click();
-        sleep(2000);
-        widget1.click();
-        sleep(1000);
-    }
-
-    @Test
-    public void c3_cozifyWidgetSetupActivityTestCreate2() {
-        createWidget();
-        configWidget("T2", 1, 29);
-        UiObject2 widget2 = findMyWidget("T2");
-        assertThat(widget2, is(notNullValue()));
-        widget2.click();
-        sleep(6000);
-        widget2.click();
-        sleep(2000);
-        widget2.click();
-        sleep(1000);
+        removeWidget("T LUX");
+        removeWidget("T WATT");
+        removeWidget("T HUM");
     }
 
     @Test
     public void c4_cozifyWidgetSetupActivityTestCreate3() {
         for (int i = 3; i < 12; i++) {
-            createWidget();
-            configWidget("T" + i, 1, 7);
-            UiObject2 widget = findMyWidget("T"+i);
-            assertThat(widget, is(notNullValue()));
+            createAndConfigWidget("T" + i, "Samppa's Hub", "Test Device", "Medium");
         }
         clickAll();
         clickAll();
@@ -330,81 +349,6 @@ public class CozifyWidgetSetupActivityTestOnOff {
             sleep(100);
         }
         sleep(1000);
-    }
-
-    @Test
-    public void c5_cozifyWidgetSetupActivityTestClicks1() {
-        UiObject2 widget1 = findMyWidget("T1");
-        assertThat(widget1, is(notNullValue()));
-        widget1.click();
-        sleep(1000);
-        widget1.click();
-        sleep(1000);
-    }
-
-    @Test
-    public void c6_cozifyWidgetSetupActivityTestClicks2() {
-        UiObject2 widget2 = findMyWidget("T2");
-        assertThat(widget2, is(notNullValue()));
-        widget2.click();
-        sleep(1000);
-        widget2.click();
-        sleep(1000);
-    }
-
-    @Test
-    public void c7_cozifyWidgetSetupActivityTestClicks3() {
-        UiObject2 widget1 = findMyWidget("T1");
-        assertThat(widget1, is(notNullValue()));
-        UiObject2 widget2 = findMyWidget("T2");
-        assertThat(widget2, is(notNullValue()));
-        widget2.click();
-        sleep(1000);
-        widget2.click();
-        widget1.click();
-        sleep(1000);
-        widget1.click();
-        sleep(100);
-        widget2.click();
-        sleep(100);
-        widget1.click();
-        sleep(100);
-        widget2.click();
-        sleep(100);
-        widget1.click();
-        sleep(100);
-        widget2.click();
-        sleep(100);
-        widget1.click();
-        sleep(100);
-        widget2.click();
-        sleep(100);
-        widget1.click();
-        sleep(100);
-        widget2.click();
-        sleep(100);
-        widget1.click();
-        sleep(100);
-        widget2.click();
-        sleep(100);
-        widget2.click();
-        sleep(100);
-        widget1.click();
-        sleep(100);
-        widget2.click();
-        sleep(100);
-        widget2.click();
-        sleep(100);
-        widget1.click();
-        sleep(100);
-        widget2.click();
-        sleep(100);
-        widget2.click();
-        sleep(100);
-        widget1.click();
-        sleep(100);
-        widget2.click();
-        sleep(100);
     }
 
 
@@ -452,61 +396,43 @@ public class CozifyWidgetSetupActivityTestOnOff {
         sleep(2000);
     }
 
-    private void selectHub(int hubPos) {
-        ViewInteraction spinner = onView(
-                allOf(withId(R.id.spinner_hubs),
-                        isDisplayed()));
-        spinner.perform(click());
-
-        DataInteraction checkedTextView = onData(anything())
-                .inAdapterView(childAtPosition(
-                        withClassName(is("android.widget.PopupWindow$PopupBackgroundView")),
-                        0))
-                .atPosition(hubPos);
-        assertThat(checkedTextView, notNullValue());
-        checkedTextView.perform(click());
-
-    }
-
-    private void configWidget(String widgetName, int hubPos, int devicePos) {
-        device.waitForIdle();
-
-        selectHub(hubPos);
-
-        device.waitForIdle();
-
-        selectDevice(devicePos);
-
-        setWidgetName(widgetName);
-
-        testOnButton();
-        testOffButton();
-
-        device.waitForIdle();
-
-        ViewInteraction button3 = onView(
-                allOf(withId(R.id.create_button),
-                        isDisplayed()));
-        button3.perform(click());
-
-        device.waitForIdle();
-        sleep(2000);
-
-    }
-
-    private UiObject2 createAndConfigWidget(String widgetName, int hubPos, String deviceName, String fontSize) {
+    private void createAndPrepareWidget(String widgetName, String hubName, String deviceName) {
         createWidget();
         device.waitForIdle();
-        selectHub(hubPos);
+        selectHub(hubName);
         selectDevice(deviceName);
         setWidgetName(widgetName);
-        selectFontSize(fontSize);
-        onView(allOf(withId(R.id.create_button), isDisplayed())).perform(click());
-        UiObject2 widget1 = findMyWidget(widgetName);
-        assertThat(widget1, is(notNullValue()));
-        device.waitForIdle();
-        return widget1;
     }
+
+    private UiObject2 returnCreatedWidget(String widgetName) {
+        onView(allOf(withId(R.id.create_button), isDisplayed())).perform(click());
+        UiObject2 widget = findMyWidget(widgetName);
+        assertThat(widget, is(notNullValue()));
+        device.waitForIdle();
+        return widget;
+    }
+
+    private UiObject2 createAndConfigWidget(String widgetName, String hubName, String deviceName, String fontSize) {
+        createAndPrepareWidget(widgetName, hubName, deviceName);
+        selectFontSize(fontSize);
+        return returnCreatedWidget(widgetName);
+    }
+
+    private UiObject2 createAndConfigWidgetAndSetOn(String widgetName, String hubName, String deviceName, String fontSize, boolean on) {
+        createAndPrepareWidget(widgetName, hubName, deviceName);
+        selectFontSize(fontSize);
+        if (on) {
+            testOnButton();
+        } else {
+            testOffButton();
+        }
+        sleep(4000);
+        UiObject2 widget = returnCreatedWidget(widgetName);
+        widget.click();
+        sleep(7000);
+        return widget;
+    }
+
 
     private void selectFontSize(String fontSize) {
         if (fontSize.equals("Small"))
@@ -536,21 +462,6 @@ public class CozifyWidgetSetupActivityTestOnOff {
         };
     }
 
-    private void selectDevice(int pos) {
-        ViewInteraction spinner3 = onView(
-                allOf(withId(R.id.spinner_devices),
-                        isDisplayed()));
-        spinner3.perform(click());
-
-        DataInteraction checkedTextView2 = onData(anything())
-                .inAdapterView(childAtPosition(
-                        withClassName(is("android.widget.PopupWindow$PopupBackgroundView")),
-                        0))
-                .atPosition(pos);
-        assertThat(checkedTextView2, notNullValue());
-        checkedTextView2.perform(click());
-    }
-
     private void selectDevice(String name) {
         onView(allOf(withId(R.id.spinner_devices), isDisplayed())).perform(click());
         device.waitForIdle();
@@ -559,6 +470,16 @@ public class CozifyWidgetSetupActivityTestOnOff {
         deviceSpinner.perform(click());
         device.waitForIdle();
     }
+
+    private void selectHub(String hubName) {
+        onView(allOf(withId(R.id.spinner_hubs), isDisplayed())).perform(click());
+        device.waitForIdle();
+        DataInteraction deviceSpinner = onData(allOf(is(instanceOf(String.class)), is(hubName)));
+        assertThat(deviceSpinner, notNullValue());
+        deviceSpinner.perform(click());
+        device.waitForIdle();
+    }
+
 
     private void enableNetwork(boolean on) {
         try {
