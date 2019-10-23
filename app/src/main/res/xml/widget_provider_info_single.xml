@@ -4,6 +4,7 @@
     android:initialLayout="@layout/appwidget_button"
     android:minWidth="40dp"
     android:minResizeWidth="40dp"
+    android:minResizeHeight="40dp"
     android:minHeight="40dp"
     android:previewImage="@drawable/appwidget_button_clickable_on"
     android:resizeMode="none"

@@ -18,13 +18,23 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning"
         android:usesCleartextTraffic="true">
-        <receiver android:name="com.cozify.cozifywidget.CozifyAppWidget">
+
+        <receiver android:name="com.cozify.cozifywidget.CozifyAppWidget" android:label="Single">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/new_demo_app_widget_info" />
+                android:resource="@xml/widget_provider_info_single" />
+        </receiver>
+
+        <receiver android:name="com.cozify.cozifywidget.CozifyAppWidgetDouble" android:label="Double size">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_provider_info_double" />
         </receiver>
 
         <activity

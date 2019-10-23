@@ -4,9 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.Locale;
 
 public class PersistentStorage {
 
@@ -14,125 +11,78 @@ public class PersistentStorage {
             = "com.cozify.android.apis.appwidget.CozifyWidgetProvider";
     static final String PREF_PREFIX_KEY = "prefix_";
 
-    private static PersistentStorage ourInstance = new PersistentStorage();
-    public static PersistentStorage getInstance() {
+    private Context context;
+    private static PersistentStorage ourInstance = null;
+    public static PersistentStorage getInstance(Context context) {
         if (ourInstance == null)
-            ourInstance = new PersistentStorage();
+            ourInstance = new PersistentStorage(context);
         return ourInstance;
     }
 
-    private PersistentStorage() {
-
+    private PersistentStorage(Context context) {
+        this.context = context.getApplicationContext();
     }
 
-    public boolean saveEmail(Context context, String email) {
+    public boolean saveCloudSettings(String settings) {
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
-        prefs.putString(PREF_PREFIX_KEY + "email", email);
+        prefs.putString(PREF_PREFIX_KEY + "cloudSettings", settings);
         return prefs.commit();
     }
 
-    public String loadEmail(Context context) {
+    public String loadCloudSettings() {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        return prefs.getString(PREF_PREFIX_KEY + "email", null);
+        String settingsStr = prefs.getString(PREF_PREFIX_KEY + "cloudSettings", null);
+        return settingsStr;
     }
 
-    public boolean saveCloudToken(Context context, String cloudtoken) {
+    public boolean saveApiSettings(int appWidgetId, String settings) {
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
-        prefs.putString(PREF_PREFIX_KEY + "cloudtoken", cloudtoken);
+        prefs.putString(PREF_PREFIX_KEY + "apiSettings_" + appWidgetId, settings);
         return prefs.commit();
     }
 
-    public String loadCloudToken(Context context) {
+    public String loadApiSettings(int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        return prefs.getString(PREF_PREFIX_KEY + "cloudtoken", null);
+        String settingsStr = prefs.getString(PREF_PREFIX_KEY + "apiSettings_" + appWidgetId, null);
+        return settingsStr;
     }
 
-    public boolean saveHubKey(Context context, int appWidgetId, String hubKey) {
+    public boolean saveWidgetSettings(int appWidgetId, String state) {
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
-        prefs.putString(PREF_PREFIX_KEY + "hubKey_" + appWidgetId, hubKey);
+        prefs.putString(PREF_PREFIX_KEY + "widgetSettings_" + appWidgetId, state);
         return prefs.commit();
     }
 
-    public String loadHubKey(Context context, int appWidgetId) {
+    public String loadWidgetSettings(int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        return prefs.getString(PREF_PREFIX_KEY + "hubKey_"+appWidgetId, null);
+        String settingsStr = prefs.getString(PREF_PREFIX_KEY + "widgetSettings_" + appWidgetId, null);
+        return settingsStr;
     }
 
-    public boolean saveDeviceId(Context context, int appWidgetId, String deviceId) {
+    public boolean saveControlState(int appWidgetId, String state) {
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
-        prefs.putString(PREF_PREFIX_KEY + "deviceId_" + appWidgetId, deviceId);
+        prefs.putString(PREF_PREFIX_KEY + "controlState_" + appWidgetId, state);
         return prefs.commit();
     }
 
-    public String loadDeviceId(Context context, int appWidgetId) {
+    public String loadControlState(int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        return prefs.getString(PREF_PREFIX_KEY + "deviceId_" + appWidgetId, null);
+        String settingsStr = prefs.getString(PREF_PREFIX_KEY + "controlState_" + appWidgetId, null);
+        return settingsStr;
     }
 
-    public boolean saveDeviceName(Context context, int appWidgetId, String deviceName) {
-        SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
-        prefs.putString(PREF_PREFIX_KEY + "deviceName_" + appWidgetId, deviceName);
-        return prefs.commit();
-    }
 
-    public String loadDeviceName(Context context, int appWidgetId) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        String deviceName = prefs.getString(PREF_PREFIX_KEY + "deviceName_" + appWidgetId, null);
-        return deviceName;
-    }
-
-    private boolean saveSettings(Context context, int appWidgetId, String settings) {
-        SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
-        prefs.putString(PREF_PREFIX_KEY + "settings_" + appWidgetId, settings);
-        return prefs.commit();
-    }
-
-    public String loadSettings(Context context, int appWidgetId) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        String settings = prefs.getString(PREF_PREFIX_KEY + "settings_" + appWidgetId, null);
-        return settings;
-    }
-
-    public boolean saveSettings(Context context, int appWidgetId, boolean isOn, boolean isArmed, boolean isArming, boolean armedForDesiredState, boolean isControlling, boolean isReachable) {
-        JSONObject json = new JSONObject();
-        try {
-            json.put("armed", isArmed);
-            json.put("isOn", isOn);
-            json.put("reachable", isReachable);
-            json.put("controlling", isControlling);
-            json.put("arming", isArming);
-            json.put("armedForDesiredState", armedForDesiredState);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return saveSettings(context, appWidgetId, json.toString());
-    }
-
-    public JSONObject loadSettingsJson(Context context, int appWidgetId) {
-        String settings = loadSettings(context, appWidgetId);
-        if (settings != null && settings.length() > 0) {
-            try {
-                return new JSONObject(settings);
-            } catch (JSONException e) {
-                e.printStackTrace();
-                return null;
-            }
-        }
-        return null;
-    }
-
-    public CozifySceneOrDeviceState loadState(Context context, int appWidgetId) {
+    public CozifySceneOrDeviceState loadDeviceState(int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
         String stateStr = prefs.getString(PREF_PREFIX_KEY + "state_" + appWidgetId, null);
         CozifySceneOrDeviceState state = new CozifySceneOrDeviceState();
-        if (stateStr != null && state.fromJsonStr(stateStr)) {
+        if (stateStr != null && state.fromJsonString(stateStr)) {
             return state;
         }
         return null;
     }
 
-    public boolean saveState(Context context, int appWidgetId, CozifySceneOrDeviceState state) {
+    public boolean saveDeviceState(int appWidgetId, CozifySceneOrDeviceState state) {
         if (state == null) return false;
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
         try {
@@ -145,45 +95,26 @@ public class PersistentStorage {
         return false;
     }
 
-    public String loadHubLanIp(Context context, int appWidgetId) {
+    public CozifySceneOrDeviceState loadDesiredState(int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        String hubLanIp = prefs.getString(PREF_PREFIX_KEY + "hublanip_" + appWidgetId, null);
-        return hubLanIp;
-
+        String stateStr = prefs.getString(PREF_PREFIX_KEY + "desiredState_" + appWidgetId, null);
+        CozifySceneOrDeviceState state = new CozifySceneOrDeviceState();
+        if (stateStr != null && state.fromJsonString(stateStr)) {
+            return state;
+        }
+        return null;
     }
 
-    public boolean saveHubLanIp(Context context, int appWidgetId, String hubLanIp) {
+    public boolean saveDesiredState(int appWidgetId, CozifySceneOrDeviceState state) {
+        if (state == null) return false;
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
-        prefs.putString(PREF_PREFIX_KEY + "hublanip_" + appWidgetId, hubLanIp);
-        return prefs.commit();
+        try {
+            String strState = state.toJson().toString();
+            prefs.putString(PREF_PREFIX_KEY + "desiredState_" + appWidgetId, strState);
+            return prefs.commit();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
-
-    public float loadTextSize(Context context, int appWidgetId) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        String textSizeStr = prefs.getString(PREF_PREFIX_KEY + "textsize_" + appWidgetId, "17");
-        float textSize = 14;
-        if (textSizeStr != null && textSizeStr.length() > 0)
-            textSize = Float.valueOf(textSizeStr);
-        return textSize;
-
-    }
-
-    public boolean saveTextSize(Context context, int appWidgetId, float textSize) {
-        SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
-        prefs.putString(PREF_PREFIX_KEY + "textsize_" + appWidgetId, String.format(Locale.ENGLISH,"%f", textSize));
-        return prefs.commit();
-    }
-
-    public boolean saveHubApiVersion(Context context, int appWidgetId, String hubApiVersion) {
-        SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
-        prefs.putString(PREF_PREFIX_KEY + "hubApiVersion_" + appWidgetId, hubApiVersion);
-        return prefs.commit();
-    }
-
-    public String loadHubApiVersion(Context context, int appWidgetId) {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        String hubApiVersion = prefs.getString(PREF_PREFIX_KEY + "hubApiVersion_" + appWidgetId, null);
-        return hubApiVersion;
-    }
-
 }

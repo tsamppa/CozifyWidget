@@ -17,7 +17,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class HttpTask extends AsyncTask<com.cozify.cozifywidget.HttpRequest, String, com.cozify.cozifywidget.HttpResponse> {
 
-    private boolean logRequests = false;
+    private boolean logRequests = true;
 
     @Override
     protected com.cozify.cozifywidget.HttpResponse doInBackground(com.cozify.cozifywidget.HttpRequest... params) {
@@ -41,6 +41,7 @@ public class HttpTask extends AsyncTask<com.cozify.cozifywidget.HttpRequest, Str
             }
         } catch (Exception e) {
             e.printStackTrace();
+            response.setResponse(e.getMessage());
         }
 
         return response;
@@ -52,6 +53,7 @@ public class HttpTask extends AsyncTask<com.cozify.cozifywidget.HttpRequest, Str
         try {
             urlConnectionHttps = (HttpsURLConnection) url.openConnection();
             if (logRequests) Log.i("HttpsTask", request.getMethodString() + " " + url.toString());
+            if (logRequests) Log.i("HttpsTaskDetails", request.getHeaders().toString() + " " + request.getPostData());
 
             urlConnectionHttps.setRequestMethod(request.getMethodString());
 

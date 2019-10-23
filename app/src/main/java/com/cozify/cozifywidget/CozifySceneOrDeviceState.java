@@ -81,7 +81,7 @@ public class CozifySceneOrDeviceState {
         return false;
     }
 
-    public boolean fromJsonStr(String source) {
+    public boolean fromJsonString(String source) {
         if (source != null) {
             try {
                 JSONObject json = new JSONObject(source);

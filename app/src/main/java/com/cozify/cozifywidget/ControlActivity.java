@@ -1,6 +1,7 @@
 package com.cozify.cozifywidget;
 
 import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,18 +13,17 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Arrays;
 
 public class ControlActivity extends AppCompatActivity {
     private int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     private TextView textViewStatus;
-    private boolean mUpdating = false;
-    private boolean mIsArming = false;
-    private boolean mIsArmed = false;
-    private boolean mIsControlling = false;
-    private boolean mArmedForDesiredState = false;
-    private String mDeviceId;
+
+    private ControlState controlState;
+    private WidgetSettings widgetSettings;
+
     private static Handler handler = new Handler();
     private Runnable delayedDisarm = null;
 
@@ -44,6 +44,7 @@ public class ControlActivity extends AppCompatActivity {
             finish();
             return;
         }
+        Log.d("CLICK", "WidgetID:"+mAppWidgetId);
         if (stateMgr == null) {
             stateMgr = new CozifySceneOrDeviceStateManager(this, mAppWidgetId);
         }
@@ -59,15 +60,16 @@ public class ControlActivity extends AppCompatActivity {
                 setResult(RESULT_OK, resultValue);
             }
         }
+        updateAllOtherWidgets();
         finish();
     }
 
     private boolean handleToggleClick() {
-        if (mIsControlling || mIsArming || mUpdating) {
+        if (!controlState.shouldUpdate() &&
+                (controlState.isControlling() || controlState.isArming() || controlState.isUpdating())) {
             return true;
         } else {
             if (isArmed()) {
-                cancelDelayedDisarm();
                 if (toggleOnOff()) {
                     return true;
                 } else {
@@ -104,6 +106,26 @@ public class ControlActivity extends AppCompatActivity {
         return false;
     }
 
+    static int[] addElement(int[] a, int e) {
+        a  = Arrays.copyOf(a, a.length + 1);
+        a[a.length - 1] = e;
+        return a;
+    }
+
+    private void updateAllOtherWidgets() {
+        Intent intent = new Intent(this, CozifyAppWidget.class);
+        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        int[] ids = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), CozifyAppWidget.class));
+        int[] other_ids = new int[0];
+        for (int i = 0; i < ids.length; i++) {
+            if (ids[i] != mAppWidgetId) {
+                other_ids = addElement(other_ids, ids[i]);
+            }
+        }
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, other_ids);
+        sendBroadcast(intent);
+    }
+
     private void ShowMessage(String message) {
         setStatusMessage(message);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
@@ -116,25 +138,22 @@ public class ControlActivity extends AppCompatActivity {
     }
 
     private boolean isArmed() {
-        return mIsArmed;
+        return controlState.isArmed();
     }
 
     private void arm(boolean armForOnOff) {
-        mIsArmed = true;
-        mIsArming = false;
-        mArmedForDesiredState = armForOnOff;
-        saveSettings();
-        ShowMessage("Press again in 5s to control " + (mArmedForDesiredState ? "ON" : "OFF"));
+        controlState.setArmed(true);
+        controlState.setArmedForDesiredState(armForOnOff);
+        saveState();
+        ShowMessage("Press again in 5s to control " + (controlState.getArmedForDesiredState() ? "ON" : "OFF"));
         displayDeviceState("arm");
         delayedDisarm = new Runnable() {
             @Override
             public void run() {
-                if (mIsArmed) {
-                    mIsArmed = false;
-                    saveSettings();
-                    if (!(mIsControlling || mIsArming) ) {
-                        updateDeviceState("delayedDisarm.!mIsControlling");
-                    }
+                loadSavedSettings();
+                if (controlState.isArmed()) {
+                    controlState.setArmed(false);
+                    saveState();
                     displayDeviceState("delayedDisarm");
                 }
             }
@@ -152,44 +171,30 @@ public class ControlActivity extends AppCompatActivity {
             handler.removeCallbacks(delayedDisarm);
             delayedDisarm = null;
         }
-        mIsArmed = false;
-        saveSettings();
+        controlState.setArmed(false);
+        saveState();
         displayDeviceState("disarm");
     }
 
-    private void saveSettings() {
-        if (!PersistentStorage.getInstance().saveSettings(this, mAppWidgetId, stateMgr.isOn(), mIsArmed, mIsArming, mArmedForDesiredState, mIsControlling, stateMgr.isReachable())) {
-           ShowErrorMessage("Saving settings failed", "SharedPreferences returned failure in commit() for setting.");
-        }
+    private void saveState() {
         stateMgr.saveState();
     }
 
     private boolean loadSavedSettings() {
         if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
-            ShowMessage("INVALID_APPWIDGET_ID : Loading settings failed!");
+            ShowMessage("INVALID_APPWIDGET_ID : Loading settingsHub failed!");
             return false;
         }
         final Context context = ControlActivity.this;
 
-        JSONObject settings = PersistentStorage.getInstance().loadSettingsJson(context, mAppWidgetId);
-        if (settings == null) {
-            ShowErrorMessage("FAILED to load settings", "PersistentStorage returned null.");
+        controlState = new ControlState(context, mAppWidgetId);
+        if (!controlState.init) {
+            ShowErrorMessage("FAILED to load settingsHub", "PersistentStorage returned null.");
             return false;
         }
-        try {
-            mIsArmed = settings.getBoolean("armed");
-            mArmedForDesiredState = settings.getBoolean("armedForDesiredState");
-            mIsControlling = settings.getBoolean("controlling");
-            if (mIsControlling) {
-                mIsControlling = !stateMgr.isReady();
-            }
-            mIsArming  = settings.getBoolean("arming");
-        } catch (JSONException e) {
-            ShowErrorMessage("FAILED to load settings", e.getMessage());
-        }
 
-        mDeviceId = PersistentStorage.getInstance().loadDeviceId(this, mAppWidgetId);
-        if (mDeviceId == null) {
+        widgetSettings = new WidgetSettings(context, mAppWidgetId);
+        if (!widgetSettings.init || widgetSettings.getDeviceId() == null) {
             ShowErrorMessage("Configuration issue","Stored device ID not found (null). Please remove and recreate the device widget");
             return false;
         }
@@ -305,12 +310,17 @@ public class ControlActivity extends AppCompatActivity {
     private void displayDeviceState(String why) {
         final Context context = ControlActivity.this;
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
-        String device_name = PersistentStorage.getInstance().loadDeviceName(context, mAppWidgetId);
-        float textSize = PersistentStorage.getInstance().loadTextSize(context, mAppWidgetId);
-        int resourceForState = updateDeviceState(device_name, mIsControlling, mIsArming, mIsArmed, mUpdating,
-                stateMgr, textSize, mAppWidgetId, appWidgetManager, this.getPackageName());
-        RemoteViews views = new RemoteViews(this.getPackageName(), R.layout.appwidget_button);
-        views.setContentDescription(R.id.control_button,  context.getResources().getResourceEntryName(resourceForState));
+        int resourceForState = updateDeviceState(widgetSettings.getDeviceName(),
+                controlState.isControlling(), controlState.isArming(), controlState.isArmed(), controlState.isUpdating(),
+                stateMgr, widgetSettings.getTextSize(), mAppWidgetId, appWidgetManager, this.getPackageName(), widgetSettings.getDoubleSize());
+        int layout = appWidgetManager.getAppWidgetInfo(mAppWidgetId).initialLayout;
+        RemoteViews views = new RemoteViews(this.getPackageName(),
+                layout);
+        int bid = R.id.control_button;
+        if (layout == R.layout.appwidget_button_double) {
+            bid = R.id.control_button_double;
+        }
+        views.setContentDescription(bid,  context.getResources().getResourceEntryName(resourceForState));
         appWidgetManager.updateAppWidget(mAppWidgetId, views);
         Log.d("ResourceForState", String.format("%s : %s (%d)", why, getResources().getResourceEntryName(resourceForState), resourceForState));
     }
@@ -318,10 +328,16 @@ public class ControlActivity extends AppCompatActivity {
     public static int updateDeviceState(String device_name, boolean isControlling, boolean isArming, boolean isArmed, boolean isUpdating,
                                         CozifySceneOrDeviceStateManager stateMgr,
                                         float textSize,
-                                        int appWidgetId, AppWidgetManager appWidgetManager, String packageName) {
+                                        int appWidgetId, AppWidgetManager appWidgetManager, String packageName, boolean doubleSize) {
 
-        RemoteViews views = new RemoteViews(packageName, R.layout.appwidget_button);
-        views.setBoolean(R.id.control_button, "setEnabled", !(isControlling || isArming || isUpdating));
+        int layout = appWidgetManager.getAppWidgetInfo(appWidgetId).initialLayout;
+        RemoteViews views = new RemoteViews(packageName,
+                layout);
+        int bid = R.id.control_button;
+        if (layout == R.layout.appwidget_button_double) {
+            bid = R.id.control_button_double;
+        }
+        views.setBoolean(bid, "setEnabled", !(isControlling || isArming || isUpdating));
         String measurement = stateMgr.getMeasurementString();
         CozifySceneOrDeviceState s = stateMgr.getCurrentState();
         boolean isSensor = false;
@@ -329,18 +345,18 @@ public class ControlActivity extends AppCompatActivity {
             isSensor = s.isSensor() && !s.isOnOff();
         }
         int resourceForState = getDeviceResourceForState(stateMgr.isReachable(), stateMgr.isOn(), isArmed, isArming, isControlling, isSensor, isUpdating);
-        views.setInt(R.id.control_button, "setBackgroundResource", resourceForState);
+        views.setInt(bid, "setBackgroundResource", resourceForState);
 
         if (measurement != null) {
             String label = measurement;
                 if (device_name != null) {
                     label = measurement + "\n" + device_name;
                 }
-                views.setCharSequence(R.id.control_button, "setText", label);
-                views.setFloat(R.id.control_button, "setTextSize", textSize);
+                views.setCharSequence(bid, "setText", label);
+                views.setFloat(bid, "setTextSize", textSize);
         } else {
             if (device_name != null) {
-                views.setCharSequence(R.id.control_button, "setText", device_name);
+                views.setCharSequence(bid, "setText", device_name);
             }
         }
         appWidgetManager.updateAppWidget(appWidgetId, views);
@@ -348,20 +364,21 @@ public class ControlActivity extends AppCompatActivity {
     }
 
     private void startControl() {
-        mIsControlling = true;
-        saveSettings();
-        disarm();
-        ShowMessage("Sending control command..");
+        controlState.setControlling(true);
+        saveState();
+        displayDeviceState("startControl");
+        ShowMessage(String.format("Controlling %s to %s", widgetSettings.getDeviceName(),
+                controlState.getArmedForDesiredState()? "ON" : "OFF"));
     }
 
     private void endControl(boolean success, String reason) {
-        mIsControlling = false;
-        saveSettings();
+        controlState.setControlling(false);
+        saveState();
         displayDeviceState("endControl");
         if (success) {
-            ShowMessage("Control OK");
+            ShowMessage(String.format("Control %s OK", widgetSettings.getDeviceName()));
         } else {
-            ShowErrorMessage("Control FAILED!", reason);
+            ShowErrorMessage(String.format("FAILED to control %s", widgetSettings.getDeviceName()), reason);
         }
     }
 
@@ -372,26 +389,20 @@ public class ControlActivity extends AppCompatActivity {
     }
 
     private void updateDeviceState(String why) {
-        if (mUpdating) return;
-        mUpdating = true;
+        if (controlState.isUpdating()) return;
+        controlState.setUpdating(true);
+        saveState();
         displayDeviceState(why + ".updateDeviceState()");
-        if (mDeviceId == null) {
+        if (widgetSettings.getDeviceId() == null) {
             ShowMessage("Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
             return;
         }
 
-        stateMgr.updateCurrentState(mDeviceId, new CozifyApiReal.CozifyCallback() {
+        stateMgr.updateCurrentState(widgetSettings.getDeviceId(), true, new CozifyApiReal.CozifyCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson, JSONObject requestJson) {
-                mUpdating = false;
-                if (success) {
-                    loadSavedSettings();
-                    CozifySceneOrDeviceState state = stateMgr.getCurrentState();
-                    if (state == null) {
-                        return;
-                    }
-                }
-                saveSettings();
+                controlState.setUpdating(false);
+                saveState();
                 displayDeviceState("updateDeviceState().stateMgr.updateCurrentState");
             }
         });
@@ -403,13 +414,14 @@ public class ControlActivity extends AppCompatActivity {
     }
 
     private void updateDeviceStateAndArm() {
-        if (mDeviceId == null) {
+        if (widgetSettings.getDeviceId() == null) {
             ShowMessage("Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
             return;
         }
-        mIsArming = true;
+        controlState.setArming(true);
+        saveState();
         displayDeviceState("updateDeviceStateAndArm");
-        stateMgr.updateCurrentState(mDeviceId, new CozifyApiReal.CozifyCallback() {
+        stateMgr.updateCurrentState(widgetSettings.getDeviceId(), true, new CozifyApiReal.CozifyCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson, JSONObject requestJson) {
                 if (success) {
@@ -418,8 +430,8 @@ public class ControlActivity extends AppCompatActivity {
                     arm(!state.isOn);
                 } else {
                     stateMgr.setReachable(false);
-                    mIsArming = false;
-                    saveSettings();
+                    controlState.setArming(false);
+                    saveState();
                     displayDeviceState("updateDeviceStateAndArm().stateMgr.updateCurrentState");
                 }
             }
@@ -429,7 +441,7 @@ public class ControlActivity extends AppCompatActivity {
 
     private boolean toggleOnOff() {
         startControl();
-        if (mDeviceId == null) {
+        if (widgetSettings.getDeviceId() == null) {
             endControl(false, "Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
             return false;
         }
@@ -438,7 +450,7 @@ public class ControlActivity extends AppCompatActivity {
     }
 
     void controlToggle() {
-        stateMgr.controlStateToDesired(mDeviceId, mArmedForDesiredState, new CozifyApiReal.CozifyCallback() {
+        stateMgr.controlStateToDesired(widgetSettings.getDeviceId(), controlState.getArmedForDesiredState(), new CozifyApiReal.CozifyCallback() {
             @Override
             public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                 if (success) {

@@ -25,7 +25,7 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
             = "com.cozify.android.apis.appwidget.CozifyWidgetProvider";
     static final String PREF_PREFIX_KEY = "prefix_";
 
-    private CozifyApiReal cozifyAPI = new CozifyApiReal();
+    private CozifyApiReal cozifyAPI = new CozifyApiReal(this);
 
     TextView textViewStatus;
     EditText editTextEmail;
@@ -34,15 +34,14 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
     TextInputLayout textInputLayoutPw;
     Button buttonLogin;
 
-    String emailAddress;
-    String cloudtoken;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_widget);
         editTextEmail = findViewById(R.id.email_edit);
-        editTextEmail.setText(emailAddress);
+        if (cozifyAPI.getEmail() != null) {
+            editTextEmail.setText(cozifyAPI.getEmail());
+        }
         textViewStatus = findViewById(R.id.login_status);
         buttonLogin = findViewById(R.id.login_button);
         textInputLayoutEmail = findViewById(R.id.email_layout);
@@ -92,7 +91,7 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
                 int str_len = s.length();
                 if (str_len == 6) {
                     textInputLayoutPw.setErrorEnabled(false);
-                    confirmPassword(editTextPw.getText().toString(), emailAddress);
+                    confirmPassword(editTextPw.getText().toString());
                 } else {
                     textInputLayoutPw.setErrorEnabled(true);
                 }
@@ -130,25 +129,18 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
         });
     }
 
-    private void confirmPassword(String pw, String email_address) {
-        cozifyAPI.confirmPassword(pw, email_address, new CozifyApiReal.StringCallback() {
+    private void confirmPassword(String pw) {
+        cozifyAPI.confirmPassword(pw, cozifyAPI.getEmail(), new CozifyApiReal.StringCallback() {
             @Override
             public void result(boolean success, String message, String result) {
                 if (success) {
-                    cloudtoken = result;
-                    setAuthHeader();
-                    final Context context = CozifyWidgetSetupActivity.this;
-                    PersistentStorage.getInstance().saveCloudToken(context, cloudtoken);
+                    cozifyAPI.setCloudToken(result);
                     getHubKeys();
                 } else {
                     textViewStatus.setText(message);
                 }
             }
         });
-    }
-
-    private void setAuthHeader() {
-        cozifyAPI.setCloudToken(cloudtoken);
     }
 
     private void updateAllWidgets() {
@@ -194,8 +186,8 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
             if (email_address.length() > 0) {
                 textInputLayoutEmail.setErrorEnabled(false);
                 // Login with email
-                emailAddress = email_address;
-                cozifyAPI.requestLogin(emailAddress, new CozifyApiReal.StringCallback() {
+                cozifyAPI.setEmail(email_address);
+                cozifyAPI.requestLogin(email_address, new CozifyApiReal.StringCallback() {
                     @Override
                     public void result(boolean success, String message, String result) {
                         if (success) {
@@ -209,7 +201,6 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
                         }
                     }
                 });
-                PersistentStorage.getInstance().saveEmail(context, email_address);
             } else {
                 textInputLayoutEmail.setErrorEnabled(true);
                 textInputLayoutEmail.setError("Please enter login email");
@@ -219,17 +210,14 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
     };
 
     private boolean checkAccess() {
-        final Context context = CozifyWidgetSetupActivity.this;
-        emailAddress = PersistentStorage.getInstance().loadEmail(context);
-        if (emailAddress == null || emailAddress.length() < 5) {
+        cozifyAPI.loadCloudSettings();
+        if (cozifyAPI.getEmail() == null) {
             return false;
         }
-        editTextEmail.setText(emailAddress);
-        cloudtoken = PersistentStorage.getInstance().loadCloudToken(context);
-        if (cloudtoken == null || cloudtoken.length() < 5) {
+        editTextEmail.setText(cozifyAPI.getEmail());
+        if (cozifyAPI.getCloudToken() == null) {
             return false;
         }
-        setAuthHeader();
         getHubKeys();
         return true;
     }

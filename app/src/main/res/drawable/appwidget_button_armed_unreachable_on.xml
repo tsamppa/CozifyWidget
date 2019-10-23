@@ -3,13 +3,12 @@
     android:viewportHeight="200"
     android:width="200dp"
     android:height="200dp">
-    <path
-        android:pathData="M100 100 L100 100"
-        android:strokeWidth="200"
-        android:strokeColor="#000000"
-        android:strokeLineCap="square"
-        android:strokeAlpha="0.2">
-    </path>
+    <group android:name="bg_shadow">
+        <path
+            android:fillColor="#22000000"
+            android:pathData="M0 0 L0 200 0 200 200 200 200 0z">
+        </path>
+    </group>
     <path
         android:pathData="M10 10 L190 190"
         android:strokeWidth="20"

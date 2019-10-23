@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -28,7 +27,6 @@ import com.google.android.material.textfield.TextInputLayout;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -39,9 +37,8 @@ public class CozifyAppWidgetConfigure extends Activity {
     public static final String KEY_BUTTON_TEXT = "Control device";
     private int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
 
-    private CozifyApiReal cozifyAPI = new CozifyApiReal();
+    private CozifyApiReal cozifyAPI = new CozifyApiReal(this);
 
-    String cloudtoken;
     EditText editTextDeviceName;
     TextInputLayout textInputLayoutDeviceName;
     TextView textViewStatus;
@@ -89,7 +86,7 @@ public class CozifyAppWidgetConfigure extends Activity {
             ShowErrorMessage("Invalid Widget ID", "mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID");
             finish();
         }
-        cozifyAPI.loadState(context, mAppWidgetId);
+        cozifyAPI.loadState(mAppWidgetId);
 
         devicesList = new ArrayList<>();
 
@@ -106,11 +103,7 @@ public class CozifyAppWidgetConfigure extends Activity {
         }
         buttonCreate = findViewById(R.id.create_button);
         buttonCreate.setEnabled(false);
-        cloudtoken = PersistentStorage.getInstance().loadCloudToken(context);
-        if (cloudtoken != null) {
-            setAuthHeader();
-            String tokeninfo = getDecodedJwt(cloudtoken);
-        } else {
+        if (cozifyAPI.getCloudToken() == null) {
             setStatus(String.format(Locale.ENGLISH,"Error in setting cannot connect to cloud. Please re-login."));
             Intent intent = new Intent(this, CozifyWidgetSetupActivity.class);
             startActivity(intent);
@@ -161,9 +154,8 @@ public class CozifyAppWidgetConfigure extends Activity {
                     selectedHubName = selectedItem.toString();
                     try {
                         selectedHubKey = hubNamesJson.getString(selectedHubName);
-                        setAuthHeader();
                         if (selectedHubKey != null) {
-                            cozifyAPI.selectToUseHubWithKey(selectedHubKey, new CozifyApiReal.CozifyCallback() {
+                            cozifyAPI.selectToUseHubWithKey(selectedHubKey, mAppWidgetId, new CozifyApiReal.CozifyCallback() {
                                 @Override
                                 public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                                     connected = success;
@@ -254,11 +246,6 @@ public class CozifyAppWidgetConfigure extends Activity {
         return id;
     }
 
-
-    private void setAuthHeader() {
-        cozifyAPI.setCloudToken(cloudtoken);
-    }
-
     private void revertToLocalHubConnection() {
         cozifyAPI.listHubs(new CozifyApiReal.StringCallback() {
             @Override
@@ -276,7 +263,7 @@ public class CozifyAppWidgetConfigure extends Activity {
     }
 
     public void createWidget(View w) {
-        Context context = this;
+        final Context context = CozifyAppWidgetConfigure.this;
 
         String device_name = editTextDeviceName.getText().toString();
 
@@ -287,13 +274,14 @@ public class CozifyAppWidgetConfigure extends Activity {
             }
 
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-
-            // Save device ID for control
-            cozifyAPI.saveState(context, mAppWidgetId);
-            PersistentStorage.getInstance().saveDeviceId(context, mAppWidgetId, selectedDeviceId);
-            PersistentStorage.getInstance().saveDeviceName(context, mAppWidgetId, selectedDeviceShortName);
-            PersistentStorage.getInstance().saveTextSize(context, mAppWidgetId, textSize);
-            PersistentStorage.getInstance().saveSettings(context, mAppWidgetId, false, false, false, false, false, true);
+            // Save selected settingsHub
+            WidgetSettings settings = new WidgetSettings(context, mAppWidgetId);
+            settings.setDeviceId(selectedDeviceId);
+            settings.setDeviceName(selectedDeviceShortName);
+            settings.setTextSize(textSize);
+            ControlState controlState = new ControlState(context, mAppWidgetId);
+            controlState.setControlling(false);
+            updateCurrentState(selectedDeviceId);
 
             // Make sure we pass back the original appWidgetId
             Intent intent = new Intent(this, ControlActivity.class);
@@ -301,18 +289,24 @@ public class CozifyAppWidgetConfigure extends Activity {
             intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
             PendingIntent pendingIntent;
             pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            Log.d("PENDING DEBUG","PendingIntent at createWidget: "+mAppWidgetId);
-            RemoteViews views = new RemoteViews(this.getPackageName(), R.layout.appwidget_button);
-            views.setOnClickPendingIntent(R.id.control_button, pendingIntent);
-            views.setCharSequence(R.id.control_button, "setText", selectedDeviceShortName);
-            views.setFloat(R.id.control_button, "setTextSize", textSize);
+            //Log.d("PENDING DEBUG","PendingIntent at createWidget: "+mAppWidgetId);
+            int layout = appWidgetManager.getAppWidgetInfo(mAppWidgetId).initialLayout;
+            RemoteViews views = new RemoteViews(this.getPackageName(),
+                    layout);
+            int bid = R.id.control_button;
+            if (layout == R.layout.appwidget_button_double) {
+                bid = R.id.control_button_double;
+            }
+            views.setOnClickPendingIntent(bid, pendingIntent);
+            views.setCharSequence(bid, "setText", selectedDeviceShortName);
+            views.setFloat(bid, "setTextSize", textSize);
 
             appWidgetManager.updateAppWidget(mAppWidgetId, views);
 
             Intent resultValue = new Intent();
             resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
             setResult(RESULT_OK, resultValue);
-            String hubName = parseHubNameFromToken(selectedHubKey);
+            String hubName = cozifyAPI.parseHubNameFromToken(selectedHubKey);
             ShowMessage("Widget "+mAppWidgetId+" created for controlling "+selectedDeviceShortName +" of HUB "+hubName);
             finish();
         } else {
@@ -324,6 +318,19 @@ public class CozifyAppWidgetConfigure extends Activity {
             }
         }
     }
+
+    private void updateCurrentState(String device_id) {
+        cozifyAPI.getSceneOrDeviceState(device_id, true, new CozifyApiReal.CozifyCallback() {
+            public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
+                if (success) {
+                    CozifySceneOrDeviceState state = new CozifySceneOrDeviceState();
+                    state.fromJson(jsonResponse);
+                    PersistentStorage.getInstance(CozifyAppWidgetConfigure.this).saveDeviceState(mAppWidgetId, state);
+                }
+            }
+        });
+    }
+
 
     private void ShowMessage(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
@@ -454,7 +461,7 @@ public class CozifyAppWidgetConfigure extends Activity {
                         while (keys.hasNext()) {
                             String hubId = (String) keys.next();
                             String hubKey = hubkeysJson.get(hubId).toString();
-                            String hubName = parseHubNameFromToken(hubKey);
+                            String hubName = cozifyAPI.parseHubNameFromToken(hubKey);
                             hubNamesJson.put(hubName, hubKey);
                             hubs.add(hubName);
                         }
@@ -550,35 +557,5 @@ public class CozifyAppWidgetConfigure extends Activity {
                 getScenes();
             }
         });
-    }
-
-
-    private String parseHubNameFromToken(String token) {
-        String hubName = "";
-        try {
-            JSONObject json = new JSONObject(getDecodedJwt(token));
-            hubName = json.getString("hub_name");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return hubName;
-    }
-
-    public String getDecodedJwt(String jwt) {
-        String result0;
-        String result1;
-        String result2;
-        String[] parts = jwt.split("[.]");
-        try {
-            byte[] decodedBytes0 = Base64.decode(parts[0], Base64.URL_SAFE);
-            result0 =  new String(decodedBytes0, StandardCharsets.UTF_8);
-            byte[] decodedBytes1 = Base64.decode(parts[1], Base64.URL_SAFE);
-            result1 =  new String(decodedBytes1, StandardCharsets.UTF_8);
-            byte[] decodedBytes2 = Base64.decode(parts[2], Base64.URL_SAFE);
-            result2 =  new String(decodedBytes2, StandardCharsets.UTF_8);
-        } catch(Exception e) {
-            throw new RuntimeException("Couldnt decode jwt", e);
-        }
-        return result1;
     }
 }

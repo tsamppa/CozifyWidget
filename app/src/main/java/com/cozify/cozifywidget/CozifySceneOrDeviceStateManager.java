@@ -56,7 +56,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
     private String mHubLanIp;
     private String hubApiVersion;
 
-    private CozifyApiReal cozifyAPI = new CozifyApiReal();
+    private CozifyApiReal cozifyAPI = null;
 
     @ControlProcessState private int state = CONTROL_PRCESS_STATE_INIT;
 
@@ -64,30 +64,28 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
         handler = new Handler();
         mAppWidgetId = appWidgetId;
         mContext = context;
+        cozifyAPI = new CozifyApiReal(context);
         loadState();
     }
 
     public void loadState() {
-        currentState = PersistentStorage.getInstance().loadState(mContext, mAppWidgetId);
-        cozifyAPI.loadState(mContext, mAppWidgetId);
-        String hubKey = PersistentStorage.getInstance().loadHubKey(mContext, mAppWidgetId);
-        if (hubKey != null && hubKey.length() > 0) {
-            String hubName = parseHubNameFromToken(hubKey);
-            Log.d("WIDGET-HUBKEY MATCH", String.format("Widget %d controls hub %s", mAppWidgetId, hubName));
-            cozifyAPI.selectToUseHubWithKey(hubKey, new CozifyApiReal.CozifyCallback() {
+        currentState = PersistentStorage.getInstance(mContext).loadDeviceState(mAppWidgetId);
+        desiredState = PersistentStorage.getInstance(mContext).loadDesiredState(mAppWidgetId);
+        cozifyAPI.loadState(mAppWidgetId);
+        if (cozifyAPI.getHubKey() != null) {
+            cozifyAPI.selectToUseHubWithKey(cozifyAPI.getHubKey(), mAppWidgetId, new CozifyApiReal.CozifyCallback() {
                 @Override
                 public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                     connected = success;
-                    cozifyAPI.saveState(mContext, mAppWidgetId);
                 }
             });
+            //Log.d("WIDGET-HUBKEY MATCH", String.format("Widget %d controls hub %s", mAppWidgetId, cozifyAPI.settingsHub.hubName));
         }
     }
 
     private void refreshHubKey() {
-        String hubKey = PersistentStorage.getInstance().loadHubKey(mContext, mAppWidgetId);
-        if (hubKey != null && hubKey.length() > 0) {
-            final String hubName = parseHubNameFromToken(hubKey);
+        if (cozifyAPI.getHubKey() != null) {
+            final String hubName = cozifyAPI.getHubName();
             cozifyAPI.getHubKeys(new CozifyApiReal.JsonCallback() {
                 @Override
                 public void result(boolean success, String message, JSONObject jsonResult) {
@@ -99,12 +97,11 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
                                 String hk = jsonResult.getString(key);
                                 String hn = parseHubNameFromToken(hk);
                                 if (hubName.equals(hn)) {
-                                    cozifyAPI.selectToUseHubWithKey(hk, new CozifyApiReal.CozifyCallback() {
+                                    cozifyAPI.selectToUseHubWithKey(hk, mAppWidgetId, new CozifyApiReal.CozifyCallback() {
                                         @Override
                                         public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                                             if (success) {
                                                 connected = true;
-                                                cozifyAPI.saveState(mContext, mAppWidgetId);
                                             }
                                         }
                                     });
@@ -150,8 +147,8 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
     }
 
     public void saveState() {
-        PersistentStorage.getInstance().saveState(mContext, mAppWidgetId, currentState);
-        cozifyAPI.saveState(mContext, mAppWidgetId);
+        PersistentStorage.getInstance(mContext).saveDeviceState(mAppWidgetId, currentState);
+        PersistentStorage.getInstance(mContext).saveDesiredState(mAppWidgetId, desiredState);
     }
 
     public boolean isReady() {
@@ -248,8 +245,8 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
         return false;
     }
 
-    public void updateCurrentState(String device_id, final CozifyApiReal.CozifyCallback cb) {
-        cozifyAPI.getSceneOrDeviceState(device_id, new CozifyApiReal.CozifyCallback() {
+    public void updateCurrentState(String device_id, boolean refresh, final CozifyApiReal.CozifyCallback cb) {
+        cozifyAPI.getSceneOrDeviceState(device_id, refresh, new CozifyApiReal.CozifyCallback() {
             public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                 if (success) {
                     setCurrentStateFromJsonResponse(jsonResponse);
@@ -257,7 +254,9 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
                     try {
                         if (jsonResponse.has("message")) {
                             String message = jsonResponse.getString("message");
-                            if (message.startsWith("Authentication failed")) {
+                            Log.e("StateManager", String.format("Error: %s (jsonRequest: '%s' jsonResponse: '%s'",
+                                    message, jsonRequest.toString(), jsonResponse.toString()));
+                            if (message.startsWith("Authentication failed") || message.startsWith("Authorization failed")) {
                                 refreshHubKey();
                             }
                         }
@@ -271,7 +270,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
     }
 
     private void updateCurrentStateAndRetryControlAfterDelay() {
-        cozifyAPI.getSceneOrDeviceState(desiredState.id, new CozifyApiReal.CozifyCallback() {
+        cozifyAPI.getSceneOrDeviceState(desiredState.id, true, new CozifyApiReal.CozifyCallback() {
             public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                 if (success) {
                     setCurrentStateFromJsonResponse(jsonResponse);
@@ -306,7 +305,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
     }
 
     private void checkCurrentStateAndSendCommand() {
-        cozifyAPI.getSceneOrDeviceState(currentState.id, new CozifyApiReal.CozifyCallback() {
+        cozifyAPI.getSceneOrDeviceState(currentState.id, true, new CozifyApiReal.CozifyCallback() {
             public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                 if (success) {
                     if (!currentState.reachable) {
@@ -333,7 +332,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
             startTime = System.currentTimeMillis();
         }
 
-        cozifyAPI.getSceneOrDeviceState(id, new CozifyApiReal.CozifyCallback() {
+        cozifyAPI.getSceneOrDeviceState(id, true, new CozifyApiReal.CozifyCallback() {
             public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                 if (success) {
                     setCurrentStateFromJsonResponse(jsonResponse);

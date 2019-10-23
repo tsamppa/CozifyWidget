@@ -8,6 +8,11 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="ButtonNormalTextDouble" parent="ButtonNormalText">
+        <item name="android:width">160dp</item>
+        <item name="android:layout_width">160dp</item>
+    </style>
+
     <style name="ButtonNormalText" parent="@android:style/Widget.Button">
         <item name="android:textColor">@color/icon_color_light_grey</item>
         <item name="android:textSize">14sp</item>
@@ -24,7 +29,13 @@
     </style>
 
     <style name="ButtonNormalTextWithIcon" parent="ButtonNormalText">
-        <item name="android:drawableTop" >@drawable/ic_cozify_logo_notext</item>
+        <item name="android:drawableTop">@drawable/ic_cozify_logo_notext</item>
+        <item name="android:layout_marginTop">0dp</item>
+        <item name="android:layout_marginBottom">0dp</item>
+    </style>
+
+    <style name="ButtonNormalTextWithIconDouble" parent="ButtonNormalTextDouble">
+        <item name="android:drawableTop">@drawable/ic_cozify_logo_notext</item>
         <item name="android:layout_marginTop">0dp</item>
         <item name="android:layout_marginBottom">0dp</item>
     </style>
