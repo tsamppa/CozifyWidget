@@ -8,19 +8,21 @@
     <string name="login_button">Send a password to email above</string>
     <string name="get_devices">Get devices</string>
     <string name="login_first">Login first to list Scenes and Devices</string>
-    <string name="device_name">Shorter label shown on button (optional)</string>
-    <string name="create_button">Create the Widget</string>
+    <string name="device_name">2. Shorter label shown on button (optional)</string>
+    <string name="create_button">&gt;&gt; 4. Create the Widget &lt;&lt;</string>
     <string name="intro_text">This is Cozify Widget for quick control of a Scene or Device directly from the home screen. You need to have a Cozify Smart Home Hub device. Login by entering the email address of your Cozify account to receive a one-time password to the given email address. Then you can create a widget buttons for controlling Scenes and Devices.</string>
     <string name="control_device_status">Status</string>
-    <string name="select_hub_and_device">Select Hub and Target scene or Device</string>
+    <string name="select_hub_and_device">OR Select Hub and Target:</string>
     <string name="controlling_device">Controlling device..</string>
     <string name="login_status">Checking login..</string>
     <string name="test_on">Test ON now</string>
     <string name="test_off">Test OFF now</string>
     <string name="email_address">Email address</string>
-    <string name="tip_select_device_first">Select target device first</string>
+    <string name="tip_select_device_first">OR Select Hub and Target:</string>
     <string name="label">Label</string>
     <string name="small">Small</string>
     <string name="medium">Medium</string>
     <string name="large">Large</string>
+    <string name="select_existing_widget_as_a_template">1. Select existing widget as a template:</string>
+    <string name="select_text_font_size">3. Select text font size:</string>
 </resources>

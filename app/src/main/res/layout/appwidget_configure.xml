@@ -12,6 +12,19 @@
         android:text=""
         android:textSize="12sp" />
     <TextView
+        android:id="@+id/select_template"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/select_existing_widget_as_a_template"
+        android:textSize="18sp" />
+    <Spinner
+        android:id="@+id/spinner_widgets"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/btn_dropdown"
+        android:spinnerMode="dropdown"
+        android:textSize="14sp"/>
+    <TextView
         android:id="@+id/config_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -23,14 +36,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:drawable/btn_dropdown"
-        android:spinnerMode="dropdown"/>
+        android:spinnerMode="dropdown"
+        android:textSize="18sp"/>
 
     <Spinner
         android:id="@+id/spinner_devices"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:drawable/btn_dropdown"
-        android:spinnerMode="dropdown"/>
+        android:spinnerMode="dropdown"
+        android:textSize="18sp"/>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/device_name"
@@ -47,6 +62,12 @@
             android:hint="@string/device_name"
             android:importantForAutofill="no" />
     </com.google.android.material.textfield.TextInputLayout>
+    <TextView
+        android:id="@+id/select_textsize"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/select_text_font_size"
+        android:textSize="18sp" />
 
     <RadioGroup
         android:id="@+id/text_size_radio_group"
@@ -79,19 +100,22 @@
         android:id="@+id/test_control_on_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/test_on" />
+        android:text="@string/test_on"
+        android:textSize="14sp" />
 
     <Button
         android:id="@+id/test_control_off_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/test_off" />
+        android:text="@string/test_off"
+        android:textSize="14sp" />
 
     <Button
         android:id="@+id/create_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/create_button"
-        android:onClick="createWidget"/>
+        android:onClick="createWidget"
+        android:textSize="18sp" />
 
 </LinearLayout>

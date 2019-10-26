@@ -3,6 +3,7 @@ package com.cozify.cozifywidget;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -50,12 +51,14 @@ public class CozifyAppWidgetConfigure extends Activity {
     String selectedHubName;
     String hubLanIp;
     String hubApiVersion;
-    float textSize = 16;
+    float selectedTextSize = 17;
     boolean connected = false;
+    boolean spinnersEnabled = false;
     JSONObject hubkeysJson;
     JSONObject hubNamesJson;
     JSONObject devicesJson;
     ArrayList<String> devicesList;
+    ArrayList<WidgetTemplateSettings> templates;
 
 
     public CozifyAppWidgetConfigure() {
@@ -99,7 +102,13 @@ public class CozifyAppWidgetConfigure extends Activity {
 
         if (pInfo != null) {
             TextView textViewVersion = findViewById(R.id.version);
-            textViewVersion.setText(String.format(Locale.ENGLISH,"Cozify Widgets Version %s (%d)", pInfo.versionName, pInfo.versionCode));
+            int layout = AppWidgetManager.getInstance(this).getAppWidgetInfo(mAppWidgetId).initialLayout;
+            String size = " Creating Single Size Widget";
+            if (layout == R.layout.appwidget_button_double) {
+                size = " Creating Double Size Widget";
+            }
+            textViewVersion.setText(String.format(Locale.ENGLISH,"Cozify Widgets Version %s (%d) - %s",
+                    pInfo.versionName, pInfo.versionCode, size));
         }
         buttonCreate = findViewById(R.id.create_button);
         buttonCreate.setEnabled(false);
@@ -139,6 +148,53 @@ public class CozifyAppWidgetConfigure extends Activity {
         findViewById(R.id.test_control_off_button).setOnClickListener(mOnClickListenerTestOff);
 
         getHubKeys();
+
+        Spinner widgetTemplatesSpinner = findViewById(R.id.spinner_widgets);
+        widgetTemplatesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                if (!spinnersEnabled) return;
+                enableTestButtons(false);
+                buttonCreate.setEnabled(false);
+                devicesList = new ArrayList<>();
+
+                Spinner spinner = findViewById(R.id.spinner_widgets);
+                Object selectedItem = spinner.getSelectedItem();
+                if (selectedItem != null) {
+                    WidgetTemplateSettings selectedTemplate = findTemplate(selectedItem.toString());
+                    if (selectedTemplate != null) {
+                        selectedHubName = selectedTemplate.getHubName();
+                        Spinner spinnerHubs = findViewById(R.id.spinner_hubs);
+                        spinnerHubs.setSelection(((ArrayAdapter)spinnerHubs.getAdapter()).getPosition(selectedHubName));
+                        selectedHubKey = selectedTemplate.getHubKey();
+                        selectedDeviceId = selectedTemplate.getDeviceId();
+                        selectedDeviceName = selectedTemplate.getDeviceName();
+                        Spinner spinnerDevices = findViewById(R.id.spinner_devices);
+                        spinnerDevices.setSelection(((ArrayAdapter)spinnerHubs.getAdapter()).getPosition(selectedDeviceName));
+                        selectedDeviceShortName = selectedTemplate.getDeviceName();
+                        editTextDeviceName = findViewById(R.id.device_name_edit);
+                        editTextDeviceName.setText(selectedDeviceShortName);
+                        selectedTextSize = selectedTemplate.getTextSize();
+                        RadioGroup rg = findViewById(R.id.text_size_radio_group);
+                        if (selectedTextSize > 19) {
+                            rg.check(R.id.text_size_large);
+                        } else if (selectedTextSize < 15) {
+                            rg.check(R.id.text_size_small);
+                        } else {
+                            rg.check(R.id.text_size_medium);
+                        }
+                        enableTestButtons(true);
+                        buttonCreate.setEnabled(true);
+                    }
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+            }
+
+        });
+        populateWidgetTemplateSpinner();
 
         Spinner hubsSpinner = findViewById(R.id.spinner_hubs);
         hubsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -209,17 +265,49 @@ public class CozifyAppWidgetConfigure extends Activity {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 switch(checkedId){
                     case R.id.text_size_small:
-                        textSize = 13;
+                        selectedTextSize = 13;
                         break;
                     case R.id.text_size_medium:
-                        textSize = 17;
+                        selectedTextSize = 17;
                         break;
                     case R.id.text_size_large:
-                        textSize = 20;
+                        selectedTextSize = 22;
                         break;
                 }
             }
         });
+    }
+
+    WidgetTemplateSettings findTemplate(String templateName) {
+        if (templateName == null || templateName.length() < 1)
+            return null;
+        for (WidgetTemplateSettings t: templates) {
+            if (templateName.equals(t.getTemplateName())) {
+                return t;
+            }
+        }
+        return null;
+    }
+
+    void populateWidgetTemplateSpinner() {
+        Spinner items = findViewById(R.id.spinner_widgets);
+        ArrayList<String> widgetsList = new ArrayList<>();
+        templates = new ArrayList<>();
+        setSpinnerItems(items, widgetsList);
+        int[] ids1 = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(this.getPackageName(), CozifyAppWidget.class.getName()));
+        for (int id : ids1) {
+            templates.add(new WidgetTemplateSettings(this, id));
+        }
+        int[] ids2 = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(this.getPackageName(), CozifyAppWidgetDouble.class.getName()));
+        for (int id : ids2) {
+            templates.add(new WidgetTemplateSettings(this, id));
+        }
+        for (WidgetTemplateSettings template: templates) {
+            if (template.init)
+                widgetsList.add(template.getTemplateName());
+        }
+        setSpinnerItems(items, widgetsList);
+
     }
 
     void enableTestButtons(boolean enabled) {
@@ -278,7 +366,7 @@ public class CozifyAppWidgetConfigure extends Activity {
             WidgetSettings settings = new WidgetSettings(context, mAppWidgetId);
             settings.setDeviceId(selectedDeviceId);
             settings.setDeviceName(selectedDeviceShortName);
-            settings.setTextSize(textSize);
+            settings.setTextSize(selectedTextSize);
             ControlState controlState = new ControlState(context, mAppWidgetId);
             controlState.setControlling(false);
             updateCurrentState(selectedDeviceId);
@@ -299,7 +387,7 @@ public class CozifyAppWidgetConfigure extends Activity {
             }
             views.setOnClickPendingIntent(bid, pendingIntent);
             views.setCharSequence(bid, "setText", selectedDeviceShortName);
-            views.setFloat(bid, "setTextSize", textSize);
+            views.setFloat(bid, "setTextSize", selectedTextSize);
 
             appWidgetManager.updateAppWidget(mAppWidgetId, views);
 
@@ -380,6 +468,7 @@ public class CozifyAppWidgetConfigure extends Activity {
     };
 
     void enableSpinners(boolean enable) {
+        spinnersEnabled = enable;
         Spinner ds = findViewById(R.id.spinner_devices);
         ds.setEnabled(enable);
         Spinner hs = findViewById(R.id.spinner_hubs);

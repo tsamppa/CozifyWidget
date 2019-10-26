@@ -19,7 +19,10 @@
         tools:ignore="GoogleAppIndexingWarning"
         android:usesCleartextTraffic="true">
 
-        <receiver android:name="com.cozify.cozifywidget.CozifyAppWidget" android:label="Single">
+        <receiver
+            android:name="com.cozify.cozifywidget.CozifyAppWidget"
+            android:label="Single size"
+            android:exported="true" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -28,7 +31,10 @@
                 android:resource="@xml/widget_provider_info_single" />
         </receiver>
 
-        <receiver android:name="com.cozify.cozifywidget.CozifyAppWidgetDouble" android:label="Double size">
+        <receiver
+            android:name="com.cozify.cozifywidget.CozifyAppWidgetDouble"
+            android:label="Double size"
+            android:exported="true" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -53,7 +59,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="com.cozify.cozifywidget.CozifyAppWidgetConfigure"
+        <activity
+            android:name="com.cozify.cozifywidget.CozifyAppWidgetConfigure"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />

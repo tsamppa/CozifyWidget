@@ -19,6 +19,8 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import org.json.JSONObject;
 
+import java.util.Arrays;
+
 public class CozifyWidgetSetupActivity extends AppCompatActivity {
     static final String TAG = "CozifyWidgetConfigure";
     static final String PREFS_NAME
@@ -143,10 +145,20 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
         });
     }
 
+    static int[] addElement(int[] a, int e) {
+        a  = Arrays.copyOf(a, a.length + 1);
+        a[a.length - 1] = e;
+        return a;
+    }
+
     private void updateAllWidgets() {
         Intent intent = new Intent(this, CozifyAppWidget.class);
         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
         int[] ids = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), CozifyAppWidget.class));
+        int[] ids2 = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(this.getPackageName(), CozifyAppWidgetDouble.class.getName()));
+        for (int id: ids2) {
+            ids = addElement(ids, id);
+        }
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
         sendBroadcast(intent);
     }

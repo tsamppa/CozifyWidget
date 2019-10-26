@@ -35,7 +35,7 @@ public class WidgetSettings {
             if (deviceName != null)
                 json.put("deviceName", deviceName);
             if (textSize != 0)
-                json.put("textSize", textSize);
+                json.put("selectedTextSize", textSize);
             json.put("doubleSize", doubleSize);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -51,8 +51,8 @@ public class WidgetSettings {
                 deviceId = json.getString("deviceId");
             if (json.has("deviceName"))
                 deviceName = json.getString("deviceName");
-            if (json.has("textSize"))
-                textSize = (float)json.getDouble("textSize");
+            if (json.has("selectedTextSize"))
+                textSize = (float)json.getDouble("selectedTextSize");
             if (json.has("doubleSize"))
                 doubleSize = json.getBoolean("doubleSize");
         } catch (JSONException e) {
