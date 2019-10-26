@@ -11,6 +11,7 @@
         android:layout_height="wrap_content"
         android:text=""
         android:textSize="12sp" />
+    <!--
     <TextView
         android:id="@+id/select_template"
         android:layout_width="match_parent"
@@ -24,6 +25,7 @@
         android:background="@android:drawable/btn_dropdown"
         android:spinnerMode="dropdown"
         android:textSize="14sp"/>
+        -->
     <TextView
         android:id="@+id/config_status"
         android:layout_width="match_parent"
@@ -97,25 +99,32 @@
     </RadioGroup>
 
     <Button
-        android:id="@+id/test_control_on_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/test_on"
-        android:textSize="14sp" />
-
-    <Button
-        android:id="@+id/test_control_off_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/test_off"
-        android:textSize="14sp" />
-
-    <Button
         android:id="@+id/create_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/create_button"
         android:onClick="createWidget"
         android:textSize="18sp" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:id="@+id/LinearLayout02"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:gravity="center">
+        <Button
+            android:id="@+id/test_control_on_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/test_on"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/test_control_off_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/test_off"
+            android:textSize="14sp" />
+    </LinearLayout>
 
 </LinearLayout>

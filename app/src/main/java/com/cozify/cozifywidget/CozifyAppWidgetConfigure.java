@@ -3,7 +3,6 @@ package com.cozify.cozifywidget;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -149,6 +148,7 @@ public class CozifyAppWidgetConfigure extends Activity {
 
         getHubKeys();
 
+        /*
         Spinner widgetTemplatesSpinner = findViewById(R.id.spinner_widgets);
         widgetTemplatesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -195,7 +195,7 @@ public class CozifyAppWidgetConfigure extends Activity {
 
         });
         populateWidgetTemplateSpinner();
-
+*/
         Spinner hubsSpinner = findViewById(R.id.spinner_hubs);
         hubsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -288,7 +288,7 @@ public class CozifyAppWidgetConfigure extends Activity {
         }
         return null;
     }
-
+/*
     void populateWidgetTemplateSpinner() {
         Spinner items = findViewById(R.id.spinner_widgets);
         ArrayList<String> widgetsList = new ArrayList<>();
@@ -309,7 +309,7 @@ public class CozifyAppWidgetConfigure extends Activity {
         setSpinnerItems(items, widgetsList);
 
     }
-
+*/
     void enableTestButtons(boolean enabled) {
         findViewById(R.id.test_control_on_button).setEnabled(enabled);
         findViewById(R.id.test_control_off_button).setEnabled(enabled);
