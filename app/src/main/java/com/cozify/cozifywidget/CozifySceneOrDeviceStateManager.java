@@ -252,7 +252,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
                     setCurrentStateFromJsonResponse(jsonResponse);
                 } else {
                     try {
-                        if (jsonResponse.has("message")) {
+                        if (jsonResponse != null && jsonResponse.has("message")) {
                             String message = jsonResponse.getString("message");
                             Log.e("StateManager", String.format("Error: %s (jsonRequest: '%s' jsonResponse: '%s'",
                                     message, jsonRequest.toString(), jsonResponse.toString()));
