@@ -3,6 +3,7 @@ package com.cozify.cozifywidget;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.appwidget.AppWidgetProviderInfo;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
@@ -25,7 +26,11 @@ public class CozifyAppWidget extends AppWidgetProvider {
         Log.d("PENDING DEBUG","PendingIntent at updateAppWidget: "+appWidgetId);
         final WidgetSettings widgetSettings = new WidgetSettings(context, appWidgetId);
         if (widgetSettings.init && widgetSettings.getDeviceId() != null) {
-            int layout = appWidgetManager.getAppWidgetInfo(appWidgetId).initialLayout;
+            int layout = R.layout.appwidget_button;
+            AppWidgetProviderInfo pi = appWidgetManager.getAppWidgetInfo(appWidgetId);
+            if (pi != null) {
+                layout = pi.initialLayout;
+            }
             RemoteViews views = new RemoteViews(context.getPackageName(),
                     layout);
             int bid = R.id.control_button;
@@ -61,7 +66,11 @@ public class CozifyAppWidget extends AppWidgetProvider {
         int resourceForState = ControlActivity.updateDeviceState(widgetSettings.getDeviceName(),
                 controlState.isControlling(), controlState.isArming(), controlState.isArmed(), controlState.isControlling(),
                 stateMgr, widgetSettings.getTextSize(), appWidgetId, appWidgetManager, context.getPackageName(), widgetSettings.getDoubleSize());
-        int layout = appWidgetManager.getAppWidgetInfo(appWidgetId).initialLayout;
+        AppWidgetProviderInfo pi = appWidgetManager.getAppWidgetInfo(appWidgetId);
+        int layout = R.layout.appwidget_button;
+        if (pi != null) {
+            layout = pi.initialLayout;
+        }
         RemoteViews views = new RemoteViews(context.getPackageName(), layout);
         int bid = R.id.control_button;
         if (layout == R.layout.appwidget_button_double) {

@@ -1,6 +1,7 @@
 package com.cozify.cozifywidget;
 
 import android.appwidget.AppWidgetManager;
+import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -313,7 +314,11 @@ public class ControlActivity extends AppCompatActivity {
         int resourceForState = updateDeviceState(widgetSettings.getDeviceName(),
                 controlState.isControlling(), controlState.isArming(), controlState.isArmed(), controlState.isUpdating(),
                 stateMgr, widgetSettings.getTextSize(), mAppWidgetId, appWidgetManager, this.getPackageName(), widgetSettings.getDoubleSize());
-        int layout = appWidgetManager.getAppWidgetInfo(mAppWidgetId).initialLayout;
+        int layout = R.layout.appwidget_button;
+        AppWidgetProviderInfo pi = appWidgetManager.getAppWidgetInfo(mAppWidgetId);
+        if (pi != null) {
+            layout = pi.initialLayout;
+        }
         RemoteViews views = new RemoteViews(this.getPackageName(),
                 layout);
         int bid = R.id.control_button;
@@ -330,7 +335,11 @@ public class ControlActivity extends AppCompatActivity {
                                         float textSize,
                                         int appWidgetId, AppWidgetManager appWidgetManager, String packageName, boolean doubleSize) {
 
-        int layout = appWidgetManager.getAppWidgetInfo(appWidgetId).initialLayout;
+        int layout = R.layout.appwidget_button;
+        AppWidgetProviderInfo pi = appWidgetManager.getAppWidgetInfo(appWidgetId);
+        if (pi != null) {
+            layout = pi.initialLayout;
+        }
         RemoteViews views = new RemoteViews(packageName,
                 layout);
         int bid = R.id.control_button;

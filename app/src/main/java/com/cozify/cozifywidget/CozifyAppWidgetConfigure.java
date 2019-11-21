@@ -3,6 +3,7 @@ package com.cozify.cozifywidget;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
+import android.appwidget.AppWidgetProviderInfo;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -101,7 +102,11 @@ public class CozifyAppWidgetConfigure extends Activity {
 
         if (pInfo != null) {
             TextView textViewVersion = findViewById(R.id.version);
-            int layout = AppWidgetManager.getInstance(this).getAppWidgetInfo(mAppWidgetId).initialLayout;
+            AppWidgetProviderInfo pi = AppWidgetManager.getInstance(this).getAppWidgetInfo(mAppWidgetId);
+            int layout = R.layout.appwidget_button;
+            if (pi != null) {
+                layout = pi.initialLayout;
+            }
             String size = " Creating Single Size Widget";
             if (layout == R.layout.appwidget_button_double) {
                 size = " Creating Double Size Widget";
@@ -378,7 +383,11 @@ public class CozifyAppWidgetConfigure extends Activity {
             PendingIntent pendingIntent;
             pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             //Log.d("PENDING DEBUG","PendingIntent at createWidget: "+mAppWidgetId);
-            int layout = appWidgetManager.getAppWidgetInfo(mAppWidgetId).initialLayout;
+            int layout = R.layout.appwidget_button;
+            AppWidgetProviderInfo pi = appWidgetManager.getAppWidgetInfo(mAppWidgetId);
+            if (pi != null) {
+                layout = pi.initialLayout;
+            }
             RemoteViews views = new RemoteViews(this.getPackageName(),
                     layout);
             int bid = R.id.control_button;

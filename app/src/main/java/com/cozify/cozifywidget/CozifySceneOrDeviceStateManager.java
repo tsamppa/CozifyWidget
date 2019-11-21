@@ -53,8 +53,6 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
     private static final int maxRuntime = 10*60*1000; // 10 minutes
     private int mAppWidgetId;
     private Context mContext;
-    private String mHubLanIp;
-    private String hubApiVersion;
 
     private CozifyApiReal cozifyAPI = null;
 
@@ -252,11 +250,19 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
                     setCurrentStateFromJsonResponse(jsonResponse);
                 } else {
                     try {
-                        if (jsonResponse != null && jsonResponse.has("message")) {
-                            String message = jsonResponse.getString("message");
+                        if (jsonResponse != null) {
+                            String message = "N/A";
+                            if (jsonResponse.has("message")) {
+                                message = jsonResponse.getString("message");
+                            }
+                            if (jsonResponse.has("response")) {
+                                message = jsonResponse.getString("response");
+                            }
                             Log.e("StateManager", String.format("Error: %s (jsonRequest: '%s' jsonResponse: '%s'",
                                     message, jsonRequest.toString(), jsonResponse.toString()));
-                            if (message.startsWith("Authentication failed") || message.startsWith("Authorization failed")) {
+                            if (message.startsWith("Authentication failed")
+                                    || message.startsWith("Authorization failed")
+                                    || message.startsWith("Connection refused")) {
                                 refreshHubKey();
                             }
                         }
