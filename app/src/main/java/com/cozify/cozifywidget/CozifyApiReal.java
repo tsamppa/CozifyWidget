@@ -1,14 +1,12 @@
 package com.cozify.cozifywidget;
 
 import android.content.Context;
-import android.util.Base64;
 import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -87,10 +85,10 @@ public class CozifyApiReal {
             return settingsHub.getApiVer();
         }
 
-        public void selectToUseHubWithKey(String hubKey, int widgetId, final CozifyCallback cbConnected) {
+        public void selectToUseHubWithKey(String hubId, String hubKey, int widgetId, final CozifyCallback cbConnected) {
             loadState(widgetId);
-            settingsHub.setHubKey(hubKey);
-            settingsHub.setHubName(parseHubNameFromToken(hubKey));
+            settingsHub.setHubId(hubId);
+            settingsHub.setHubName(CozifyCloudToken.parseHubNameFromToken(hubKey));
             setHeaders();
             if (localBaseUrl == null || settingsHub.getApiVer() == null) {
                 listHubs(new StringCallback() {
@@ -169,9 +167,9 @@ public class CozifyApiReal {
         }
 
         private void setHeaders() {
-            if (settingsHub != null &&  settingsHub.init && settingsHub.getHubKey() != null) {
-                httpAPI.addHeader("X-Hub-Key", settingsHub.getHubKey());
-                localHttpAPI.addHeader("Authorization", settingsHub.getHubKey());
+            if (getHubKey() != null) {
+                httpAPI.addHeader("X-Hub-Key", getHubKey());
+                localHttpAPI.addHeader("Authorization", getHubKey());
             }
             if (settingsCloud != null && settingsCloud.init && settingsCloud.getCloudToken() != null) {
                 httpAPI.addHeader("Authorization", settingsCloud.getCloudToken());
@@ -389,6 +387,7 @@ public class CozifyApiReal {
                     @Override
                     public void onResponse(int statusCode, JSONObject jsonResult) {
                         if (statusCode == 200) {
+                            settingsCloud.setHubKeys(jsonResult);
                             cb.result(true, "OK: "+statusCode, jsonResult);
                         } else {
                             cb.result(false, extractErrorMessageFromJsonResult(statusCode, jsonResult), jsonResult);
@@ -574,44 +573,22 @@ public class CozifyApiReal {
         }
     }
 
-    public String parseHubNameFromToken(String token) {
-        String hubName = "";
-        try {
-            JSONObject json = new JSONObject(getDecodedJwt(token));
-            hubName = json.getString("hub_name");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return hubName;
-    }
-
-    public String getDecodedJwt(String jwt) {
-        String result0;
-        String result1;
-        String result2;
-        String[] parts = jwt.split("[.]");
-        try {
-            byte[] decodedBytes0 = Base64.decode(parts[0], Base64.URL_SAFE);
-            result0 =  new String(decodedBytes0, StandardCharsets.UTF_8);
-            byte[] decodedBytes1 = Base64.decode(parts[1], Base64.URL_SAFE);
-            result1 =  new String(decodedBytes1, StandardCharsets.UTF_8);
-            byte[] decodedBytes2 = Base64.decode(parts[2], Base64.URL_SAFE);
-            result2 =  new String(decodedBytes2, StandardCharsets.UTF_8);
-        } catch(Exception e) {
-            throw new RuntimeException("Couldnt decode jwt", e);
-        }
-        return result1;
+    public String getHubId() {
+        if (settingsHub == null || !settingsHub.init) return null;
+        return settingsHub.getHubId();
     }
 
     public String getHubKey() {
-        if (settingsHub == null || !settingsHub.init) return null;
-        return settingsHub.getHubKey();
+        if (settingsCloud == null || !settingsCloud.init) return null;
+        String hubId = getHubId();
+        if (hubId != null) return settingsCloud.getHubKey(hubId);
+        return settingsCloud.getHubKeyByHubName(getHubName());
     }
 
     public String getHubName() {
         if (settingsHub == null || !settingsHub.init) return null;
-        if (settingsHub.getHubName() == null && settingsHub.getHubKey() != null) {
-            settingsHub.setHubName(parseHubNameFromToken(settingsHub.getHubKey()));
+        if (settingsHub.getHubName() == null && getHubKey() != null) {
+            settingsHub.setHubName(CozifyCloudToken.parseHubNameFromToken(getHubKey()));
         }
         return settingsHub.getHubName();
     }

@@ -46,10 +46,6 @@ public class WidgetTemplateSettings {
         return cozifyApiSettings.getApiVer();
     }
 
-    public String getHubKey() {
-        return cozifyApiSettings.getHubKey();
-    }
-
     public String getHubName() {
         return cozifyApiSettings.getHubName();
     }

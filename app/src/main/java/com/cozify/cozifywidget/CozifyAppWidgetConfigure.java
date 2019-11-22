@@ -56,6 +56,7 @@ public class CozifyAppWidgetConfigure extends Activity {
     boolean spinnersEnabled = false;
     JSONObject hubkeysJson;
     JSONObject hubNamesJson;
+    JSONObject hubIdsJson;
     JSONObject devicesJson;
     ArrayList<String> devicesList;
     ArrayList<WidgetTemplateSettings> templates;
@@ -215,8 +216,9 @@ public class CozifyAppWidgetConfigure extends Activity {
                     selectedHubName = selectedItem.toString();
                     try {
                         selectedHubKey = hubNamesJson.getString(selectedHubName);
+                        String selectedHubId = hubIdsJson.getString(selectedHubName);
                         if (selectedHubKey != null) {
-                            cozifyAPI.selectToUseHubWithKey(selectedHubKey, mAppWidgetId, new CozifyApiReal.CozifyCallback() {
+                            cozifyAPI.selectToUseHubWithKey(selectedHubId, selectedHubKey, mAppWidgetId, new CozifyApiReal.CozifyCallback() {
                                 @Override
                                 public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                                     connected = success;
@@ -403,7 +405,7 @@ public class CozifyAppWidgetConfigure extends Activity {
             Intent resultValue = new Intent();
             resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
             setResult(RESULT_OK, resultValue);
-            String hubName = cozifyAPI.parseHubNameFromToken(selectedHubKey);
+            String hubName = CozifyCloudToken.parseHubNameFromToken(selectedHubKey);
             ShowMessage("Widget "+mAppWidgetId+" created for controlling "+selectedDeviceShortName +" of HUB "+hubName);
             finish();
         } else {
@@ -553,14 +555,16 @@ public class CozifyAppWidgetConfigure extends Activity {
                 if (success) {
                     hubkeysJson = resultJson;
                     hubNamesJson = new JSONObject();
+                    hubIdsJson = new JSONObject();
                     ArrayList<String> hubs = new ArrayList<>();
                     Iterator<?> keys = hubkeysJson.keys();
                     try {
                         while (keys.hasNext()) {
                             String hubId = (String) keys.next();
                             String hubKey = hubkeysJson.get(hubId).toString();
-                            String hubName = cozifyAPI.parseHubNameFromToken(hubKey);
+                            String hubName = CozifyCloudToken.parseHubNameFromToken(hubKey);
                             hubNamesJson.put(hubName, hubKey);
+                            hubIdsJson.put(hubName, hubId);
                             hubs.add(hubName);
                         }
                     } catch (JSONException e) {

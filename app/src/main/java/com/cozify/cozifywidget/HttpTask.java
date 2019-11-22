@@ -53,7 +53,7 @@ public class HttpTask extends AsyncTask<com.cozify.cozifywidget.HttpRequest, Str
         try {
             urlConnectionHttps = (HttpsURLConnection) url.openConnection();
             if (logRequests) Log.i("HttpsTask", request.getMethodString() + " " + url.toString());
-            if (logRequests) Log.i("HttpsTaskDetails", request.getHeaders().toString() + " " + request.getPostData());
+            if (logRequests) Log.i("HttpsTaskDetails",  " POST DATA: " + request.getPostData() + " HEADERS: " + request.getHeaders().toString());
 
             urlConnectionHttps.setRequestMethod(request.getMethodString());
 
@@ -62,7 +62,7 @@ public class HttpTask extends AsyncTask<com.cozify.cozifywidget.HttpRequest, Str
                     urlConnectionHttps.setRequestProperty(pair.getKey(), pair.getValue());
                 }
             }
-            urlConnectionHttps.setConnectTimeout(5000);
+            urlConnectionHttps.setConnectTimeout(100000);
             urlConnectionHttps.setReadTimeout(100000);
             if (request.getPostData() != null) {
                 urlConnectionHttps.setDoOutput(true);
@@ -81,14 +81,18 @@ public class HttpTask extends AsyncTask<com.cozify.cozifywidget.HttpRequest, Str
             }
             if (logRequests) Log.i("HttpsTask", "Response code:" + responseCode);
             if (logRequests) Log.i("HttpsTask", responseString);
-            response = new com.cozify.cozifywidget.HttpResponse(responseCode, responseString, request.getCallback());
+            response.setResponse(responseString);
+            response.setResponseCode(responseCode);
 
         } catch (Exception e) {
             e.printStackTrace();
+            response.setResponse(e.getMessage());
+            response.setResponseCode(createCodeForExceptionMessage(e.getMessage()));
         } finally {
             if (urlConnectionHttps != null)
                 urlConnectionHttps.disconnect();
         }
+        if (logRequests) Log.i("HttpTaskResponse", response.getResponse() + "(" + response.getResponseCode() + ")");
         return response;
     }
 
@@ -98,7 +102,7 @@ public class HttpTask extends AsyncTask<com.cozify.cozifywidget.HttpRequest, Str
         try {
             urlConnectionHttp = (HttpURLConnection) url.openConnection();
             if (logRequests) Log.i("HttpTask", request.getMethodString() + " " + url.toString());
-            if (logRequests) Log.i("HttpTaskDetails", request.getHeaders().toString() + " " + request.getPostData());
+            if (logRequests) Log.i("HttpTaskDetails",  " POST DATA: " + request.getPostData() + " HEADERS: " + request.getHeaders().toString());
 
             urlConnectionHttp.setRequestMethod(request.getMethodString());
 
@@ -107,7 +111,7 @@ public class HttpTask extends AsyncTask<com.cozify.cozifywidget.HttpRequest, Str
                     urlConnectionHttp.setRequestProperty(pair.getKey(), pair.getValue());
                 }
             }
-            urlConnectionHttp.setConnectTimeout(5000);
+            urlConnectionHttp.setConnectTimeout(100000);
             urlConnectionHttp.setReadTimeout(100000);
             if (request.getPostData() != null) {
                 urlConnectionHttp.setDoOutput(true);
@@ -126,18 +130,31 @@ public class HttpTask extends AsyncTask<com.cozify.cozifywidget.HttpRequest, Str
             }
             if (logRequests) Log.i("HttpTask", "Response code:" + responseCode);
             if (logRequests) Log.i("HttpTask", responseString);
-            response = new com.cozify.cozifywidget.HttpResponse(responseCode, responseString, request.getCallback());
+            response.setResponse(responseString);
+            response.setResponseCode(responseCode);
 
         } catch (Exception e) {
             e.printStackTrace();
+            response.setResponse(e.getMessage());
+            response.setResponseCode(createCodeForExceptionMessage(e.getMessage()));
         } finally {
             if (urlConnectionHttp != null)
                 urlConnectionHttp.disconnect();
         }
+        if (logRequests) Log.i("HttpTaskResponse", response.getResponse() + "(" + response.getResponseCode() + ")");
         return response;
     }
 
-
+    private int createCodeForExceptionMessage(String message) {
+        int code = -1;
+        if (message != null) {
+            if (message.equals("Connection refused"))
+                code = 401;
+            if (message.equals("Authentication failed"))
+                code = 401;
+        }
+        return code;
+    }
 
     private String readStream(InputStream in) {
         BufferedReader reader = null;

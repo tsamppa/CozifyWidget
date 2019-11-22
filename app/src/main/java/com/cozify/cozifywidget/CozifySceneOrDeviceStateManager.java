@@ -71,7 +71,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
         desiredState = PersistentStorage.getInstance(mContext).loadDesiredState(mAppWidgetId);
         cozifyAPI.loadState(mAppWidgetId);
         if (cozifyAPI.getHubKey() != null) {
-            cozifyAPI.selectToUseHubWithKey(cozifyAPI.getHubKey(), mAppWidgetId, new CozifyApiReal.CozifyCallback() {
+            cozifyAPI.selectToUseHubWithKey(cozifyAPI.getHubId(), cozifyAPI.getHubKey(), mAppWidgetId, new CozifyApiReal.CozifyCallback() {
                 @Override
                 public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                     connected = success;
@@ -90,12 +90,12 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
                     if (success) {
                         Iterator<String> iter = jsonResult.keys();
                         while (iter.hasNext()) {
-                            String key = iter.next();
+                            String hubId = iter.next();
                             try {
-                                String hk = jsonResult.getString(key);
-                                String hn = parseHubNameFromToken(hk);
+                                String hubKey = jsonResult.getString(hubId);
+                                String hn = parseHubNameFromToken(hubKey);
                                 if (hubName.equals(hn)) {
-                                    cozifyAPI.selectToUseHubWithKey(hk, mAppWidgetId, new CozifyApiReal.CozifyCallback() {
+                                    cozifyAPI.selectToUseHubWithKey(hubId, hubKey, mAppWidgetId, new CozifyApiReal.CozifyCallback() {
                                         @Override
                                         public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                                             if (success) {

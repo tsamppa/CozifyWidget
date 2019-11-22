@@ -8,8 +8,8 @@ import org.json.JSONObject;
 public class CozifyApiSettings {
     public boolean init = false;
     private String apiver = null;
-    private String hubKey = null;
     private String hubName = null;
+    private String hubId = null;
     private String hubLanIp = null;
     private Context context;
     private int widgetId;
@@ -31,12 +31,12 @@ public class CozifyApiSettings {
         try {
             if (apiver != null)
                 json.put("apiver", apiver);
-            if (hubKey != null)
-                json.put("hubKey", hubKey);
             if (hubName != null)
                 json.put("hubName", hubName);
             if (hubLanIp != null)
                 json.put("hubLanIp", hubLanIp);
+            if (hubId != null)
+                json.put("hubId", hubId);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -49,12 +49,12 @@ public class CozifyApiSettings {
             JSONObject json = new JSONObject(jsonString);
             if (json.has("apiver"))
                 apiver = json.getString("apiver");
-            if (json.has("hubKey"))
-                hubKey = json.getString("hubKey");
             if (json.has("hubName"))
                 hubName = json.getString("hubName");
             if (json.has("hubLanIp"))
                 hubLanIp = json.getString("hubLanIp");
+            if (json.has("hubId"))
+                hubLanIp = json.getString("hubId");
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -65,10 +65,6 @@ public class CozifyApiSettings {
         return apiver;
     }
 
-    public String getHubKey() {
-        return hubKey;
-    }
-
     public String getHubName() {
         return hubName;
     }
@@ -77,13 +73,12 @@ public class CozifyApiSettings {
         return hubLanIp;
     }
 
-    public boolean setApiVer(String apiVer) {
-        this.apiver = apiVer;
-        return save();
+    public String getHubId() {
+        return hubId;
     }
 
-    public boolean setHubKey(String hubKey) {
-        this.hubKey = hubKey;
+    public boolean setApiVer(String apiVer) {
+        this.apiver = apiVer;
         return save();
     }
 
@@ -93,7 +88,12 @@ public class CozifyApiSettings {
     }
 
     public boolean setHubLanIp(String hubLanIp) {
-        this.hubLanIp= hubLanIp;
+        this.hubLanIp = hubLanIp;
+        return save();
+    }
+
+    public boolean setHubId(String hubId) {
+        this.hubId = hubId;
         return save();
     }
 
