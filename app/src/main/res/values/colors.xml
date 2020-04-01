@@ -4,8 +4,8 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="icon_color_active_blue">#FF9090FF</color>
-    <color name="icon_color_armed">#EEFF9999</color>
+    <color name="icon_color_armed">#FF7777</color>
     <color name="icon_color_off_grey">#485455</color>
-    <color name="icon_color_warning_yellow">#C0C000</color>
-    <color name="icon_color_light_grey">#DDDDDD</color>
+    <color name="icon_color_warning_yellow">#C0b000</color>
+    <color name="icon_color_light_grey">#BBBBBB</color>
 </resources>

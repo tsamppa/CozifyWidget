@@ -45,16 +45,14 @@
         android:id="@+id/login_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/login_button"
-        android:visibility="invisible"/>
+        android:text="@string/login_button"/>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
-        android:textColorHint="@android:color/black"
-        android:visibility="invisible">
+        android:textColorHint="@android:color/black">
 
         <EditText
             android:id="@+id/appwidget_pw"

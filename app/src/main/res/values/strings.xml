@@ -2,10 +2,9 @@
     <string name="app_name">Cozify Scene and Device Control</string>
     <string name="appwidget_text">Scene or Device</string>
     <string name="add_widget">Cozify Control</string>
-    <string name="password_from_email">Give password from email</string>
-    <string name="ah_pw_email">Give password from email</string>
+    <string name="password_from_email">2. Check email and copy the password here</string>
     <string name="login_email">someone@email.com</string>
-    <string name="login_button">Send a password to email above</string>
+    <string name="login_button">1. Send a password to email above</string>
     <string name="get_devices">Get devices</string>
     <string name="login_first">Login first to list Scenes and Devices</string>
     <string name="device_name">2. Give a shorter label shown on button (optional)</string>

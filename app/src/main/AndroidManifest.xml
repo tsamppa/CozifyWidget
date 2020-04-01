@@ -21,7 +21,7 @@
 
         <receiver
             android:name="com.cozify.cozifywidget.CozifyAppWidget"
-            android:label="Single size"
+            android:label="Cozify Single Size"
             android:exported="true" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -33,7 +33,7 @@
 
         <receiver
             android:name="com.cozify.cozifywidget.CozifyAppWidgetDouble"
-            android:label="Double size"
+            android:label="Cozify Double Size"
             android:exported="true" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
