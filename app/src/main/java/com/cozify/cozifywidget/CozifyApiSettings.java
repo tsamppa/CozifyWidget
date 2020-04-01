@@ -54,7 +54,7 @@ public class CozifyApiSettings {
             if (json.has("hubLanIp"))
                 hubLanIp = json.getString("hubLanIp");
             if (json.has("hubId"))
-                hubLanIp = json.getString("hubId");
+                hubId = json.getString("hubId");
         } catch (JSONException e) {
             e.printStackTrace();
         }
