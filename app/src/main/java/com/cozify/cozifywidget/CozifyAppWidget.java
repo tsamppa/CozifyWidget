@@ -45,6 +45,8 @@ public class CozifyAppWidget extends AppWidgetProvider {
                 final CozifySceneOrDeviceStateManager stateMgr = new CozifySceneOrDeviceStateManager(context, appWidgetId);
                 if (controlState.shouldUpdate()) {
                     controlState.setUpdating(true);
+                    updateIcon(context, appWidgetId, widgetSettings, controlState,
+                            stateMgr, appWidgetManager);
                     stateMgr.updateCurrentState(widgetSettings.getDeviceId(), false, new CozifyApiReal.CozifyCallback() {
                         @Override
                         public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
@@ -89,6 +91,7 @@ public class CozifyAppWidget extends AppWidgetProvider {
             //Log.d("Widget:"+appWidgetId, "Updating widget in AppWidgetProvider.");
             updateAppWidget(context, appWidgetManager, appWidgetId);
         }
+
     }
 
     @Override

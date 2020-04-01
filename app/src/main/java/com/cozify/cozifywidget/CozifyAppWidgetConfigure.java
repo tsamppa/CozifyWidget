@@ -272,13 +272,13 @@ public class CozifyAppWidgetConfigure extends Activity {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 switch(checkedId){
                     case R.id.text_size_small:
-                        selectedTextSize = 13;
+                        selectedTextSize = 14;
                         break;
                     case R.id.text_size_medium:
-                        selectedTextSize = 17;
+                        selectedTextSize = 20;
                         break;
                     case R.id.text_size_large:
-                        selectedTextSize = 22;
+                        selectedTextSize = 24;
                         break;
                 }
             }

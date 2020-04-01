@@ -125,7 +125,23 @@ public class ControlActivity extends AppCompatActivity {
         }
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, other_ids);
         sendBroadcast(intent);
+        updateAllOtherWidgetsDouble();
     }
+
+    private void updateAllOtherWidgetsDouble() {
+        Intent intent = new Intent(this, CozifyAppWidgetDouble.class);
+        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        int[] ids = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), CozifyAppWidgetDouble.class));
+        int[] other_ids = new int[0];
+        for (int i = 0; i < ids.length; i++) {
+            if (ids[i] != mAppWidgetId) {
+                other_ids = addElement(other_ids, ids[i]);
+            }
+        }
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, other_ids);
+        sendBroadcast(intent);
+    }
+
 
     private void ShowMessage(String message) {
         setStatusMessage(message);
