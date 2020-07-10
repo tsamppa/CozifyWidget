@@ -285,6 +285,8 @@ public class CozifyAppWidgetConfigure extends Activity {
 
     void enableCapabilities(String selectedDeviceName) {
         boolean on_off = hasDeviceCapability(selectedDeviceName, "ON_OFF");
+        if (selectedDeviceName.contains("Group:")) on_off = true;
+        if (selectedDeviceName.contains("Scene:")) on_off = true;
         Switch s_onoff = (Switch) findViewById(R.id.switch_device_capability_on_off);
         s_onoff.setChecked(on_off);
         s_onoff.setEnabled(on_off);
@@ -709,7 +711,9 @@ public class CozifyAppWidgetConfigure extends Activity {
                         while (keys.hasNext()) {
                             String sceneName = (String) keys.next();
                             String sceneId = resultJson.get(sceneName).toString();
-                            devicesJson.put("Scene: "+sceneName, sceneId);
+                            JSONObject scene = new JSONObject();
+                            scene.put("id",sceneId);
+                            devicesJson.put("Scene: "+sceneName, scene);
                             devicesList.add("Scene: "+sceneName);
                         }
                     } catch (JSONException e) {
@@ -746,8 +750,10 @@ public class CozifyAppWidgetConfigure extends Activity {
                     try {
                         while (keys.hasNext()) {
                             String groupName = (String) keys.next();
-                            String sceneId = resultJson.get(groupName).toString();
-                            devicesJson.put("Group: "+groupName, sceneId);
+                            String groupId = resultJson.get(groupName).toString();
+                            JSONObject gr = new JSONObject();
+                            gr.put("id",groupId);
+                            devicesJson.put("Group: "+groupName, gr);
                             devicesList.add("Group: "+groupName);
                         }
                     } catch (JSONException e) {
