@@ -49,19 +49,21 @@
         android:visibility="visible"
         app:srcCompat="@android:drawable/stat_notify_sync" />
 
+
     <TextView
         android:id="@+id/control_button_measurement"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="8dp"
+        android:layout_margin="12dp"
+        android:autoSizeMaxTextSize="100sp"
+        android:autoSizeMinTextSize="22sp"
+        android:autoSizeStepGranularity="2sp"
+        android:autoSizeTextType="uniform"
         android:elevation="4dp"
         android:gravity="center"
+        android:maxLines="2"
         android:text="@android:string/unknownName"
-        android:textColor="#FFFFFF"
-        app:autoSizeMaxTextSize="100sp"
-        app:autoSizeMinTextSize="22sp"
-        app:autoSizeStepGranularity="2sp"
-        app:autoSizeTextType="uniform" />
+        android:textColor="#FFFFFF" />
 
     <TextView
         android:id="@+id/control_button_device_name"

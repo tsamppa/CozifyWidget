@@ -130,7 +130,7 @@ public class CozifyAppWidgetConfigure extends Activity {
         buttonCreate = findViewById(R.id.create_button);
         buttonCreate.setEnabled(false);
         if (cozifyAPI.getCloudToken() == null) {
-            setStatus(String.format(Locale.ENGLISH, "Error in setting cannot connect to cloud. Please re-login."));
+            setStatus("Error in setting cannot connect to cloud. Please re-login.");
             Intent intent = new Intent(this, CozifyWidgetSetupActivity.class);
             startActivity(intent);
             return;
@@ -396,8 +396,8 @@ public class CozifyAppWidgetConfigure extends Activity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-     return false;
-}
+        return false;
+    }
 
     boolean hasDeviceCapability(String deviceName, String capability) {
         JSONArray caps = getDeviceCapabilitiesForName(deviceName);

@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -38,7 +39,8 @@ public class CozifyAppWidget extends AppWidgetProvider {
                 bid = R.id.control_button_double;
                 int width = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
                 int textSize = getTextSizeForWidth(width);
-                views.setFloat(R.id.control_button_measurement, "setTextSize", textSize);
+                if (Build.VERSION.SDK_INT < 25)
+                    views.setFloat(R.id.control_button_measurement, "setTextSize", textSize);
                 if (textSize < 11) {
                     views.setInt(R.id.widget_button_refresh, "setVisibility", View.GONE);
                 } else {

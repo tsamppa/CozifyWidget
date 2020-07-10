@@ -15,6 +15,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Arrays;
@@ -119,9 +121,9 @@ public class ControlActivity extends AppCompatActivity {
         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
         int[] ids = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), CozifyAppWidget.class));
         int[] other_ids = new int[0];
-        for (int i = 0; i < ids.length; i++) {
-            if (ids[i] != mAppWidgetId) {
-                other_ids = addElement(other_ids, ids[i]);
+        for (int id : ids) {
+            if (id != mAppWidgetId) {
+                other_ids = addElement(other_ids, id);
             }
         }
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, other_ids);
@@ -134,9 +136,9 @@ public class ControlActivity extends AppCompatActivity {
         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
         int[] ids = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), CozifyAppWidgetDouble.class));
         int[] other_ids = new int[0];
-        for (int i = 0; i < ids.length; i++) {
-            if (ids[i] != mAppWidgetId) {
-                other_ids = addElement(other_ids, ids[i]);
+        for (int id : ids) {
+            if (id != mAppWidgetId) {
+                other_ids = addElement(other_ids, id);
             }
         }
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, other_ids);
@@ -347,19 +349,33 @@ public class ControlActivity extends AppCompatActivity {
         Log.d("ResourceForState", String.format("%s : %s (%d)", why, getResources().getResourceEntryName(resourceForState), resourceForState));
     }
 
+    public static boolean hasArrayString(JSONArray array, String str) {
+        try {
+            for (int i = 0; i<array.length();i++) {
+                if (array.getString(i).equals(str)) {
+                    return true;
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public static int updateDeviceState(WidgetSettings widgetSettings, ControlState controlState,
                                         CozifySceneOrDeviceStateManager stateMgr,
                                         int appWidgetId, AppWidgetManager appWidgetManager, String packageName) {
 
         String device_name = widgetSettings.getDeviceName();
-        String measurement = stateMgr.getMeasurementString(widgetSettings.getSelectedCapabilities());
+        JSONArray capabilities = widgetSettings.getSelectedCapabilities();
+        String measurement = stateMgr.getMeasurementString(capabilities);
         String age = stateMgr.getMeasurementAge();
         CozifySceneOrDeviceState s = stateMgr.getCurrentState();
         boolean isSensor = false;
         boolean isControllable = false;
         if (s != null) {
             isSensor = s.isSensor() && !s.isOnOff();
-            isControllable = s.isOnOff();
+            isControllable = hasArrayString(capabilities, "ON_OFF");
         }
 
         int layout = R.layout.appwidget_button;
