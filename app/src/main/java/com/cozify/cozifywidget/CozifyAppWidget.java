@@ -1,29 +1,29 @@
 package com.cozify.cozifywidget;
 
-import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import org.json.JSONObject;
+
 
 /**
  * Implementation of App Widget functionality.
  */
 public class CozifyAppWidget extends AppWidgetProvider {
 
-    static void updateAppWidget(final Context context, final AppWidgetManager appWidgetManager,
-                                final int appWidgetId) {
+    public static String ACTION_WIDGET_CONFIG_BUTTON_PRESSED = "ActionReceiverConfigButtonPressed";
+    public static String ACTION_WIDGET_REFRESH_BUTTON_PRESSED = "ActionReceiverRefreshButtonPressed";
 
-        // Create an Intent to launch CozifyWidgetSetupActivity
-        Intent intent = new Intent(context, ControlActivity.class);
-        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, appWidgetId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        Log.d("PENDING DEBUG","PendingIntent at updateAppWidget: "+appWidgetId);
+    static void updateAppWidget(final Context context, final AppWidgetManager appWidgetManager,
+                                final int appWidgetId, final Bundle options) {
+
         final WidgetSettings widgetSettings = new WidgetSettings(context, appWidgetId);
         if (widgetSettings.init && widgetSettings.getDeviceId() != null) {
             int layout = R.layout.appwidget_button;
@@ -36,8 +36,19 @@ public class CozifyAppWidget extends AppWidgetProvider {
             int bid = R.id.control_button;
             if (layout == R.layout.appwidget_button_double) {
                 bid = R.id.control_button_double;
+                int width = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
+                int textSize = getTextSizeForWidth(width);
+                views.setFloat(R.id.control_button_measurement, "setTextSize", textSize);
+                if (textSize < 11) {
+                    views.setInt(R.id.widget_button_refresh, "setVisibility", View.GONE);
+                } else {
+                    views.setInt(R.id.widget_button_refresh, "setVisibility", View.VISIBLE);
+                    views.setOnClickPendingIntent(R.id.widget_button_refresh, CozifyAppWidgetConfigure.createPendingIntentForWidgetClick(context, appWidgetId));
+                }
+                views.setOnClickPendingIntent(R.id.widget_button_config, CozifyAppWidgetConfigure.createPendingIntentForConfigClick(context, appWidgetId));
+                views.setOnClickPendingIntent(R.id.control_button_measurement, CozifyAppWidgetConfigure.createPendingIntentForWidgetClick(context, appWidgetId));
             }
-            views.setOnClickPendingIntent(bid, pendingIntent);
+            views.setOnClickPendingIntent(bid, CozifyAppWidgetConfigure.createPendingIntentForWidgetClick(context, appWidgetId));
             appWidgetManager.updateAppWidget(appWidgetId, views);
 
             final ControlState controlState = new ControlState(context, appWidgetId);
@@ -62,12 +73,14 @@ public class CozifyAppWidget extends AppWidgetProvider {
             }
         }
     }
+    private static int getTextSizeForWidth(int width) {
+        return (width / 5) + 2;
+    }
 
     private static void updateIcon(Context context, int appWidgetId, WidgetSettings widgetSettings, ControlState controlState,
                             CozifySceneOrDeviceStateManager stateMgr, AppWidgetManager appWidgetManager) {
-        int resourceForState = ControlActivity.updateDeviceState(widgetSettings.getDeviceName(),
-                controlState.isControlling(), controlState.isArming(), controlState.isArmed(), controlState.isControlling(),
-                stateMgr, widgetSettings.getTextSize(), appWidgetId, appWidgetManager, context.getPackageName(), widgetSettings.getDoubleSize());
+        int resourceForState = ControlActivity.updateDeviceState(widgetSettings, controlState,
+                stateMgr, appWidgetId, appWidgetManager, context.getPackageName());
         AppWidgetProviderInfo pi = appWidgetManager.getAppWidgetInfo(appWidgetId);
         int layout = R.layout.appwidget_button;
         if (pi != null) {
@@ -89,14 +102,55 @@ public class CozifyAppWidget extends AppWidgetProvider {
         // There may be multiple widgets active, so update all of them
         for (int appWidgetId : appWidgetIds) {
             //Log.d("Widget:"+appWidgetId, "Updating widget in AppWidgetProvider.");
-            updateAppWidget(context, appWidgetManager, appWidgetId);
+            Bundle options = appWidgetManager.getAppWidgetOptions(appWidgetId);
+            updateAppWidget(context, appWidgetManager, appWidgetId, options);
         }
 
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        super.onReceive(context, intent);
+        if (null != intent) {
+            String action = intent.getAction();
+            if (action!= null) {
+                try {
+                    if (action.equals(ACTION_WIDGET_CONFIG_BUTTON_PRESSED)) {
+                        Log.i("onReceive", ACTION_WIDGET_CONFIG_BUTTON_PRESSED);
+                        Intent configIntent = new Intent(context,
+                                CozifyAppWidgetConfigure.class);
+
+                        int appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
+                        Bundle extras = intent.getExtras();
+                        if (extras != null) {
+                            appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+                        }
+                        if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+                            appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+                        }
+                        configIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+                        configIntent.setClassName(context.getPackageName(), CozifyAppWidgetConfigure.class.getName());
+                        configIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        context.startActivity(configIntent);
+
+                    } else if (action.equals(ACTION_WIDGET_REFRESH_BUTTON_PRESSED)) {
+                        Log.i("onReceive", ACTION_WIDGET_REFRESH_BUTTON_PRESSED);
+                    } else {
+                        super.onReceive(context, intent);
+                    }
+                } catch (NullPointerException e) {
+                    super.onReceive(context, intent);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onAppWidgetOptionsChanged(Context context,
+                                          AppWidgetManager appWidgetManager,
+                                          int appWidgetId,
+                                          Bundle newOptions) {
+        updateAppWidget(context, appWidgetManager, appWidgetId, newOptions);
+        super.onAppWidgetOptionsChanged(context, appWidgetManager, appWidgetId, newOptions);
     }
 
     @Override

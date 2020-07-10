@@ -7,13 +7,16 @@ import android.util.Log;
 
 import androidx.annotation.IntDef;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class CozifySceneOrDeviceStateManager implements Runnable {
     private CozifySceneOrDeviceState currentState = null;
@@ -139,7 +142,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
             byte[] decodedBytes2 = Base64.decode(parts[2], Base64.URL_SAFE);
             result2 =  new String(decodedBytes2, StandardCharsets.UTF_8);
         } catch(Exception e) {
-            throw new RuntimeException("Couldnt decode jwt", e);
+            throw new RuntimeException("Could not decode jwt", e);
         }
         return result1;
     }
@@ -377,10 +380,40 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
         }
     }
 
-    public String getMeasurementString() {
+    public String getMeasurementAge() {
+        long millis = 0;
+        if (currentState != null){
+            millis = System.currentTimeMillis() - currentState.timestamp;
+        }
+        return formatTimeStringSinceFromMs(millis);
+    }
+
+    public String formatTimeStringSinceFromMs(long millis) {
+        long secs = millis / 1000;
+        if (secs < 60) {
+            return "";
+        } else if (secs < 100) {
+            return String.format("%d secs ago", secs);
+        } else if (millis < 60*60*2) {
+            return String.format("%d mins ago", secs/60);
+        } else if (millis < 60*60*24*2) {
+            return String.format("%d hours ago", secs/60/60);
+        }
+        return String.format("%d days ago", secs/60/60/24);
+    }
+
+    public String getMeasurementString(JSONArray selectedCapabilities) {
         String measurement = null;
-        if (currentState != null && currentState.isSensor()) {
-            measurement = currentState.getMeasurementsString();
+        try {
+            if (currentState != null && currentState.isSensor()) {
+                List<String> wishlist = new ArrayList<String>();
+                for (int i = 0; i < selectedCapabilities.length(); i++) {
+                    wishlist.add(selectedCapabilities.getString(i));
+                }
+                measurement = currentState.getMeasurementsString(wishlist);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
         return measurement;
     }

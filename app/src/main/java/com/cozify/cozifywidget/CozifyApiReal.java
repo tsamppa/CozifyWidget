@@ -47,6 +47,10 @@ public class CozifyApiReal {
             setHeaders();
         }
 
+        public void saveHubKeysToCloudSettings(JSONObject hubKeys) {
+            settingsCloud.setHubKeys(hubKeys);
+        }
+
         public interface JsonCallback {
             void result(boolean success, String status, JSONObject resultJson);
         }
@@ -287,7 +291,11 @@ public class CozifyApiReal {
                                         for (int i = 0 ; i < device_capabilities.length(); i++) {
                                             String dc = device_capabilities.get(i).toString();
                                             if (Arrays.asList(capabilities).contains(dc)) {
-                                                devicesJson.put(deviceName,deviceKey);
+                                                JSONObject json = new JSONObject();
+                                                json.put("id", deviceKey);
+                                                json.put("capabilities", device_capabilities);
+                                                devicesJson.put(deviceName, json);
+                                                break;
                                             }
                                         }
                                     }
@@ -587,7 +595,7 @@ public class CozifyApiReal {
 
     public String getHubName() {
         if (settingsHub == null || !settingsHub.init) return null;
-        if (settingsHub.getHubName() == null && getHubKey() != null) {
+        if (settingsHub.getHubName() == null && getHubId() != null) {
             settingsHub.setHubName(CozifyCloudToken.parseHubNameFromToken(getHubKey()));
         }
         return settingsHub.getHubName();

@@ -1,17 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="160dp"
-    android:layout_height="80dp"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="1dp"
+    android:layout_marginStart="0dp"
+    android:layout_marginTop="0dp"
+    android:layout_marginEnd="0dp"
+    android:layout_marginBottom="0dp"
+    android:background="#60606060"
     android:orientation="vertical"
-    android:padding="@dimen/widget_margin">
+    android:padding="1dp">
 
     <Button
         android:id="@+id/control_button_double"
-        android:contentDescription="@string/app_name"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
+        android:layout_gravity="center"
+        android:layout_margin="16dp"
+        android:visibility="invisible"
+        tools:text="@android:string/unknownName" />
+
+    <ImageButton
+        android:id="@+id/widget_button_config"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_gravity="top|end"
+        android:backgroundTint="#00FFFFFF"
+        android:contentDescription="@string/configure_button_decription"
+        android:elevation="8dp"
+        android:foreground="@android:drawable/ic_menu_preferences"
+        android:translationZ="2dp"
+        app:srcCompat="@android:drawable/ic_menu_preferences" />
+
+    <ImageButton
+        android:id="@+id/widget_button_refresh"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_gravity="bottom|end"
+        android:backgroundTint="#00FFFFFF"
+        android:contentDescription="@string/refresh_button_decription"
+        android:elevation="8dp"
+        android:foreground="@android:drawable/stat_notify_sync"
+        android:translationZ="3dp"
+        android:visibility="visible"
+        app:srcCompat="@android:drawable/stat_notify_sync" />
+
+    <TextView
+        android:id="@+id/control_button_measurement"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:layout_margin="0dp"
-        android:text="@string/appwidget_text"
-        style="@style/ButtonNormalTextWithIconDouble" />
-</LinearLayout>
+        android:layout_margin="12dp"
+        android:elevation="2dp"
+        android:gravity="center|center_horizontal|center_vertical"
+        android:lineSpacingMultiplier="0.8"
+        android:text="@android:string/unknownName"
+        android:textColor="#FFFFFF"
+        android:textSize="30sp"
+        app:autoSizeMaxTextSize="100sp"
+        app:autoSizeMinTextSize="10sp"
+        app:autoSizeStepGranularity="2sp"
+        app:autoSizeTextType="uniform" />
+
+    <TextView
+        android:id="@+id/control_button_device_name"
+        android:layout_width="match_parent"
+        android:layout_height="22dp"
+        android:layout_gravity="center|top"
+        android:layout_marginStart="4dp"
+        android:elevation="2dp"
+        android:gravity="start|top"
+        android:text="@android:string/unknownName"
+        android:textColor="#FFFFFF"
+        android:textSize="13sp"
+        android:translationZ="1dp" />
+
+    <TextView
+        android:id="@+id/widget_button_updated_since"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_gravity="bottom|center"
+        android:gravity="bottom|center"
+        android:textColor="#FFFFFF" />
+
+</FrameLayout>

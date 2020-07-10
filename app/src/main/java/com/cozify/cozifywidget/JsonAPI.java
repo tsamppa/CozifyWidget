@@ -1,5 +1,7 @@
 package com.cozify.cozifywidget;
 
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -152,7 +154,15 @@ public class JsonAPI {
                         e2.printStackTrace();
                     }
                 }
-                jsonCallback.onResponse(r.getResponseCode(), json);
+                int code = r.getResponseCode();
+                if (200 != code) {
+                    try {
+                        json.put("errorCode", code);
+                    } catch (JSONException e2) {
+                        Log.d("JSONException while putting HTTP ERROR CODE",e2.getMessage() + " code: "+ code);
+                    }
+                }
+                jsonCallback.onResponse(code, json);
             }
         };
     }

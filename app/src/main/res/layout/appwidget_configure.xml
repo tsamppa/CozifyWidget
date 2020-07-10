@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -49,8 +50,90 @@
         android:spinnerMode="dropdown"
         android:textSize="18sp"/>
 
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center">
+
+            <Switch
+                android:id="@+id/switch_device_capability_on_off"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|center_vertical"
+                android:layout_margin="3dp"
+                android:enabled="false"
+                android:text="@string/capability_label_on_off" />
+
+            <Switch
+                android:id="@+id/switch_device_capability_temperature"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:layout_margin="3dp"
+                android:enabled="false"
+                android:gravity="center_vertical|end"
+                android:text="@string/capability_label_temperature" />
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center">
+
+            <Switch
+                android:id="@+id/switch_device_capability_humidity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|center_vertical"
+                android:layout_margin="3dp"
+                android:enabled="false"
+                android:text="@string/capability_label_humidity" />
+
+            <Switch
+                android:id="@+id/switch_device_capability_co2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:layout_margin="3dp"
+                android:enabled="false"
+                android:gravity="center_vertical|end"
+                android:text="@string/capability_label_co2" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center">
+
+            <Switch
+                android:id="@+id/switch_device_capability_lux"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|center_vertical"
+                android:layout_margin="3dp"
+                android:enabled="false"
+                android:text="@string/capability_label_lux" />
+
+            <Switch
+                android:id="@+id/switch_device_capability_watt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:layout_margin="3dp"
+                android:enabled="false"
+                android:gravity="center_vertical|end"
+                android:text="@string/capability_label_watt" />
+        </TableRow>
+
+    </TableLayout>
+
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/device_name"
+        android:id="@+id/control_button_device_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:contentDescription="@string/label"
@@ -64,39 +147,6 @@
             android:hint="@string/device_name"
             android:importantForAutofill="no" />
     </com.google.android.material.textfield.TextInputLayout>
-    <TextView
-        android:id="@+id/select_textsize"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/select_text_font_size"
-        android:textSize="18sp" />
-
-    <RadioGroup
-        android:id="@+id/text_size_radio_group"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal" >
-
-        <RadioButton
-            android:id="@+id/text_size_small"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="@string/small" />
-        <RadioButton
-            android:id="@+id/text_size_medium"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="@string/medium" />
-        <RadioButton
-            android:id="@+id/text_size_large"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="@string/large" />
-    </RadioGroup>
 
     <Button
         android:id="@+id/create_button"
@@ -112,8 +162,10 @@
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:gravity="center">
+
         <Button
             android:id="@+id/test_control_on_button"
+            style="@style/Widget.AppCompat.Button.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/test_on"
@@ -121,6 +173,7 @@
 
         <Button
             android:id="@+id/test_control_off_button"
+            style="@style/Widget.AppCompat.Button.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/test_off"

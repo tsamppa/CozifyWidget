@@ -11,12 +11,34 @@
     <style name="ButtonNormalTextDouble" parent="ButtonNormalText">
         <item name="android:width">160dp</item>
         <item name="android:layout_width">160dp</item>
+        <item name="android:height">120dp</item>
+        <item name="android:layout_height">120dp</item>
     </style>
 
+    <style name="ButtonDouble" parent="ButtonNormal">
+        <item name="android:width">160dp</item>
+        <item name="android:layout_width">160dp</item>
+        <item name="android:height">120dp</item>
+        <item name="android:layout_height">120dp</item>
+    </style>
+
+
     <style name="ButtonNormalText" parent="@android:style/Widget.Button">
-        <item name="android:textColor">@color/icon_color_light_grey</item>
+        <item name="android:textColor">#BBBBBBBB</item>
         <item name="android:textSize">14sp</item>
         <item name="android:lineSpacingMultiplier">0.7</item>
+        <item name="android:layout_marginTop">-4dp</item>
+        <item name="android:layout_marginLeft">0dp</item>
+        <item name="android:layout_marginRight">0dp</item>
+        <item name="android:background">@drawable/appwidget_dark_bg_clickable</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+        <item name="android:selectable">true</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="ButtonNormal" parent="@android:style/Widget.Button">
         <item name="android:layout_marginTop">-4dp</item>
         <item name="android:layout_marginLeft">0dp</item>
         <item name="android:layout_marginRight">0dp</item>

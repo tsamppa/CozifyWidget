@@ -21,7 +21,7 @@
 
         <receiver
             android:name="com.cozify.cozifywidget.CozifyAppWidget"
-            android:label="Cozify Single Size"
+            android:label="Cozify Small Size"
             android:exported="true" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -33,10 +33,12 @@
 
         <receiver
             android:name="com.cozify.cozifywidget.CozifyAppWidgetDouble"
-            android:label="Cozify Double Size"
+            android:label="Cozify Big Size"
             android:exported="true" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="ActionReceiverConfigButtonPressed" />
+                <action android:name="ActionReceiverRefreshButtonPressed" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"

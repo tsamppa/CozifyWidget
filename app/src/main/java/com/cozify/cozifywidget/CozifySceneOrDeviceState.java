@@ -216,12 +216,13 @@ public class CozifySceneOrDeviceState {
         return new CozifyCommand(path, commandString);
     }
 
-    public String getMeasurementsString() {
+    public String getMeasurementsString(List<String> selectedCapabilities) {
         String measurement = null;
-        if (capabilities.contains("CO2")) {
+
+        if (capabilities.contains("CO2") && selectedCapabilities.contains("CO2")) {
             measurement = String.format(Locale.ENGLISH, "%.0f", co2);
         }
-        if (capabilities.contains("HUMIDITY")) {
+        if (capabilities.contains("HUMIDITY") && selectedCapabilities.contains("HUMIDITY")) {
             if (measurement != null) {
                 measurement += "\n";
             } else {
@@ -229,15 +230,15 @@ public class CozifySceneOrDeviceState {
             }
             measurement += String.format(Locale.ENGLISH, "%.0f %%", humidity);
         }
-        if (capabilities.contains("TEMPERATURE")) {
+        if (capabilities.contains("TEMPERATURE") && selectedCapabilities.contains("TEMPERATURE")) {
             if (measurement != null) {
                 measurement += "\n";
             } else {
                 measurement = "";
             }
-            measurement += String.format(Locale.ENGLISH, "%.1f C", temperature);
+            measurement += String.format(Locale.ENGLISH, "%.1f °C", temperature);
         }
-        if (capabilities.contains("LUX")) {
+        if (capabilities.contains("LUX") && selectedCapabilities.contains("LUX")) {
             if (measurement != null) {
                 measurement += "\n";
             } else {
@@ -245,7 +246,7 @@ public class CozifySceneOrDeviceState {
             }
             measurement += String.format(Locale.ENGLISH, "%d lx", lux);
         }
-        if (capabilities.contains("MEASURE_POWER")) {
+        if (capabilities.contains("MEASURE_POWER") && selectedCapabilities.contains("MEASURE_POWER")) {
             if (measurement != null) {
                 measurement += "\n";
             } else {

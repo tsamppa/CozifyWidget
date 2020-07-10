@@ -2,6 +2,7 @@ package com.cozify.cozifywidget;
 
 import android.content.Context;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -13,30 +14,33 @@ public class WidgetSettings {
     private boolean doubleSize = false;
     private Context context;
     private int widgetId;
+    private JSONArray selectedCapabilities;
 
     public WidgetSettings(Context context, int widgetId) {
+        this.selectedCapabilities = new JSONArray();
         this.context = context.getApplicationContext();
         this.widgetId = widgetId;
         String json = PersistentStorage.getInstance(context).loadWidgetSettings(widgetId);
-        init = fromJsonString(json);
+        this.init = fromJsonString(json);
     }
 
     private boolean save() {
-        init = PersistentStorage.getInstance(context).saveWidgetSettings(widgetId, toJsonString());
-        return init;
+        this.init = PersistentStorage.getInstance(context).saveWidgetSettings(widgetId, toJsonString());
+        return this.init;
     }
 
 
     public String toJsonString() {
         JSONObject json = new JSONObject();
         try {
-            if (deviceId != null)
-                json.put("deviceId", deviceId);
-            if (deviceName != null)
-                json.put("deviceName", deviceName);
-            if (textSize != 0)
-                json.put("selectedTextSize", textSize);
-            json.put("doubleSize", doubleSize);
+            if (this.deviceId != null)
+                json.put("deviceId", this.deviceId);
+            if (this.deviceName != null)
+                json.put("deviceName", this.deviceName);
+            if (this.textSize != 0)
+                json.put("selectedTextSize", this.textSize);
+            json.put("doubleSize", this.doubleSize);
+            json.put("selectedCapabilities", this.selectedCapabilities);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -48,13 +52,16 @@ public class WidgetSettings {
         try {
             JSONObject json = new JSONObject(jsonString);
             if (json.has("deviceId"))
-                deviceId = json.getString("deviceId");
+                this.deviceId = json.getString("deviceId");
             if (json.has("deviceName"))
-                deviceName = json.getString("deviceName");
+                this.deviceName = json.getString("deviceName");
             if (json.has("selectedTextSize"))
-                textSize = (float)json.getDouble("selectedTextSize");
+                this.textSize = (float)json.getDouble("selectedTextSize");
             if (json.has("doubleSize"))
-                doubleSize = json.getBoolean("doubleSize");
+                this.doubleSize = json.getBoolean("doubleSize");
+            if (json.has("selectedCapabilities"))
+                this.selectedCapabilities = json.getJSONArray("selectedCapabilities");
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -63,7 +70,7 @@ public class WidgetSettings {
 
     public String getDeviceId() {
         if (!init) return null;
-        return deviceId;
+        return this.deviceId;
     }
 
     public boolean setDeviceId(String deviceId) {
@@ -73,7 +80,7 @@ public class WidgetSettings {
 
     public String getDeviceName() {
         if (!init) return null;
-        return deviceName;
+        return this.deviceName;
     }
 
     public boolean setDeviceName(String deviceName) {
@@ -96,7 +103,16 @@ public class WidgetSettings {
     }
 
     public boolean getDoubleSize() {
-        return doubleSize;
+        return this.doubleSize;
+    }
+
+    public boolean setSelectedCapabilities(JSONArray caps) {
+        this.selectedCapabilities = caps;
+        return save();
+    }
+
+    public JSONArray getSelectedCapabilities() {
+        return this.selectedCapabilities;
     }
 
 }

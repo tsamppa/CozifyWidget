@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProviderInfo;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -16,19 +17,22 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.RadioGroup;
 import android.widget.RemoteViews;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.textfield.TextInputLayout;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
@@ -61,6 +65,12 @@ public class CozifyAppWidgetConfigure extends Activity {
     ArrayList<String> devicesList;
     ArrayList<WidgetTemplateSettings> templates;
 
+    boolean selectedDeviceCapability_on_off = false;
+    boolean selectedDeviceCapability_temperature = false;
+    boolean selectedDeviceCapability_co2 = false;
+    boolean selectedDeviceCapability_humidity = false;
+    boolean selectedDeviceCapability_lux = false;
+    boolean selectedDeviceCapability_watt = false;
 
     public CozifyAppWidgetConfigure() {
         super();
@@ -81,7 +91,9 @@ public class CozifyAppWidgetConfigure extends Activity {
         if (extras != null) {
             mAppWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         }
-
+        if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+            mAppWidgetId = configIntent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+        }
         Intent resultValue = new Intent();
         resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
         setResult(RESULT_CANCELED, resultValue);
@@ -112,20 +124,20 @@ public class CozifyAppWidgetConfigure extends Activity {
             if (layout == R.layout.appwidget_button_double) {
                 size = " Creating Double Size Widget";
             }
-            textViewVersion.setText(String.format(Locale.ENGLISH,"Cozify Widgets Version %s (%d) - %s",
+            textViewVersion.setText(String.format(Locale.ENGLISH, "Cozify Widgets Version %s (%d) - %s",
                     pInfo.versionName, pInfo.versionCode, size));
         }
         buttonCreate = findViewById(R.id.create_button);
         buttonCreate.setEnabled(false);
         if (cozifyAPI.getCloudToken() == null) {
-            setStatus(String.format(Locale.ENGLISH,"Error in setting cannot connect to cloud. Please re-login."));
+            setStatus(String.format(Locale.ENGLISH, "Error in setting cannot connect to cloud. Please re-login."));
             Intent intent = new Intent(this, CozifyWidgetSetupActivity.class);
             startActivity(intent);
             return;
         }
         // Find the Device Name EditText
         editTextDeviceName = findViewById(R.id.device_name_edit);
-        textInputLayoutDeviceName = findViewById(R.id.device_name);
+        textInputLayoutDeviceName = findViewById(R.id.control_button_device_name);
         editTextDeviceName.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -152,56 +164,57 @@ public class CozifyAppWidgetConfigure extends Activity {
         findViewById(R.id.test_control_on_button).setOnClickListener(mOnClickListenerTestOn);
         findViewById(R.id.test_control_off_button).setOnClickListener(mOnClickListenerTestOff);
 
+        Switch switch_on_off = (Switch) findViewById(R.id.switch_device_capability_on_off);
+        switch_on_off.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                selectedDeviceCapability_on_off = isChecked;
+            }
+        });
+
+        Switch switch_temp = (Switch) findViewById(R.id.switch_device_capability_temperature);
+        switch_temp.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                selectedDeviceCapability_temperature = isChecked;
+            }
+        });
+
+        Switch switch_hum = (Switch) findViewById(R.id.switch_device_capability_humidity);
+        switch_hum.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                selectedDeviceCapability_humidity = isChecked;
+            }
+        });
+
+        Switch switch_co2 = (Switch) findViewById(R.id.switch_device_capability_co2);
+        switch_co2.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                selectedDeviceCapability_co2 = isChecked;
+            }
+        });
+
+        Switch switch_lux = (Switch) findViewById(R.id.switch_device_capability_lux);
+        switch_lux.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                selectedDeviceCapability_lux = isChecked;
+            }
+        });
+
+        Switch switch_watt = (Switch) findViewById(R.id.switch_device_capability_watt);
+        switch_watt.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                selectedDeviceCapability_watt = isChecked;
+            }
+        });
+
+
         getHubKeys();
 
-        /*
-        Spinner widgetTemplatesSpinner = findViewById(R.id.spinner_widgets);
-        widgetTemplatesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-                if (!spinnersEnabled) return;
-                enableTestButtons(false);
-                buttonCreate.setEnabled(false);
-                devicesList = new ArrayList<>();
-
-                Spinner spinner = findViewById(R.id.spinner_widgets);
-                Object selectedItem = spinner.getSelectedItem();
-                if (selectedItem != null) {
-                    WidgetTemplateSettings selectedTemplate = findTemplate(selectedItem.toString());
-                    if (selectedTemplate != null) {
-                        selectedHubName = selectedTemplate.getHubName();
-                        Spinner spinnerHubs = findViewById(R.id.spinner_hubs);
-                        spinnerHubs.setSelection(((ArrayAdapter)spinnerHubs.getAdapter()).getPosition(selectedHubName));
-                        selectedHubKey = selectedTemplate.getHubKey();
-                        selectedDeviceId = selectedTemplate.getDeviceId();
-                        selectedDeviceName = selectedTemplate.getDeviceName();
-                        Spinner spinnerDevices = findViewById(R.id.spinner_devices);
-                        spinnerDevices.setSelection(((ArrayAdapter)spinnerHubs.getAdapter()).getPosition(selectedDeviceName));
-                        selectedDeviceShortName = selectedTemplate.getDeviceName();
-                        editTextDeviceName = findViewById(R.id.device_name_edit);
-                        editTextDeviceName.setText(selectedDeviceShortName);
-                        selectedTextSize = selectedTemplate.getTextSize();
-                        RadioGroup rg = findViewById(R.id.text_size_radio_group);
-                        if (selectedTextSize > 19) {
-                            rg.check(R.id.text_size_large);
-                        } else if (selectedTextSize < 15) {
-                            rg.check(R.id.text_size_small);
-                        } else {
-                            rg.check(R.id.text_size_medium);
-                        }
-                        enableTestButtons(true);
-                        buttonCreate.setEnabled(true);
-                    }
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parentView) {
-            }
-
-        });
-        populateWidgetTemplateSpinner();
-*/
         Spinner hubsSpinner = findViewById(R.id.spinner_hubs);
         hubsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -227,7 +240,7 @@ public class CozifyAppWidgetConfigure extends Activity {
                                         getDevices();
                                     } else {
                                         String message = parseMessageFromJsonResponse(jsonResponse);
-                                        setStatus(status + ": "+ message);
+                                        setStatus(status + ": " + message);
                                     }
                                 }
                             });
@@ -241,12 +254,13 @@ public class CozifyAppWidgetConfigure extends Activity {
             @Override
             public void onNothingSelected(AdapterView<?> parentView) {
                 enableTestButtons(false);
+                disableCapabilities();
             }
 
         });
 
-        Spinner devicessSpinner = findViewById(R.id.spinner_devices);
-        devicessSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        Spinner devicesSpinner = findViewById(R.id.spinner_devices);
+        devicesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 Spinner spinner = findViewById(R.id.spinner_devices);
@@ -255,6 +269,7 @@ public class CozifyAppWidgetConfigure extends Activity {
                     selectedDeviceName = selectedItem.toString();
                     selectedDeviceId = getDeviceIdForName(selectedDeviceName);
                     enableTestButtons(true);
+                    enableCapabilities(selectedDeviceName);
                     buttonCreate.setEnabled(true);
                 }
             }
@@ -262,61 +277,81 @@ public class CozifyAppWidgetConfigure extends Activity {
             @Override
             public void onNothingSelected(AdapterView<?> parentView) {
                 enableTestButtons(false);
+                disableCapabilities();
             }
         });
 
-        RadioGroup rg = findViewById(R.id.text_size_radio_group);
-
-        rg.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
-        {
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                switch(checkedId){
-                    case R.id.text_size_small:
-                        selectedTextSize = 14;
-                        break;
-                    case R.id.text_size_medium:
-                        selectedTextSize = 20;
-                        break;
-                    case R.id.text_size_large:
-                        selectedTextSize = 24;
-                        break;
-                }
-            }
-        });
     }
 
-    WidgetTemplateSettings findTemplate(String templateName) {
-        if (templateName == null || templateName.length() < 1)
-            return null;
-        for (WidgetTemplateSettings t: templates) {
-            if (templateName.equals(t.getTemplateName())) {
-                return t;
-            }
-        }
-        return null;
-    }
-/*
-    void populateWidgetTemplateSpinner() {
-        Spinner items = findViewById(R.id.spinner_widgets);
-        ArrayList<String> widgetsList = new ArrayList<>();
-        templates = new ArrayList<>();
-        setSpinnerItems(items, widgetsList);
-        int[] ids1 = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(this.getPackageName(), CozifyAppWidget.class.getName()));
-        for (int id : ids1) {
-            templates.add(new WidgetTemplateSettings(this, id));
-        }
-        int[] ids2 = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(this.getPackageName(), CozifyAppWidgetDouble.class.getName()));
-        for (int id : ids2) {
-            templates.add(new WidgetTemplateSettings(this, id));
-        }
-        for (WidgetTemplateSettings template: templates) {
-            if (template.init)
-                widgetsList.add(template.getTemplateName());
-        }
-        setSpinnerItems(items, widgetsList);
+    void enableCapabilities(String selectedDeviceName) {
+        boolean on_off = hasDeviceCapability(selectedDeviceName, "ON_OFF");
+        Switch s_onoff = (Switch) findViewById(R.id.switch_device_capability_on_off);
+        s_onoff.setChecked(on_off);
+        s_onoff.setEnabled(on_off);
 
+        boolean co2 = hasDeviceCapability(selectedDeviceName, "CO2");
+        Switch s_co2 = (Switch) findViewById(R.id.switch_device_capability_co2);
+        s_co2.setChecked(co2);
+        s_co2.setEnabled(co2);
+
+        boolean temp = hasDeviceCapability(selectedDeviceName, "TEMPERATURE");
+        Switch s_temp = (Switch) findViewById(R.id.switch_device_capability_temperature);
+        s_temp.setChecked(temp);
+        s_temp.setEnabled(temp);
+
+        boolean hum = hasDeviceCapability(selectedDeviceName, "HUMIDITY");
+        Switch s_hum = (Switch) findViewById(R.id.switch_device_capability_humidity);
+        s_hum.setChecked(hum);
+        s_hum.setEnabled(hum);
+
+        boolean lux = hasDeviceCapability(selectedDeviceName, "LUX");
+        Switch s_lux = (Switch) findViewById(R.id.switch_device_capability_lux);
+        s_lux.setChecked(lux);
+        s_lux.setEnabled(lux);
+
+        boolean watt = hasDeviceCapability(selectedDeviceName, "MEASURE_POWER");
+        Switch s_watt = (Switch) findViewById(R.id.switch_device_capability_watt);
+        s_watt.setChecked(watt);
+        s_watt.setEnabled(watt);
     }
-*/
+
+    void disableCapabilities() {
+        findViewById(R.id.switch_device_capability_on_off).setSelected(false);
+        findViewById(R.id.switch_device_capability_on_off).setEnabled(false);
+
+        findViewById(R.id.switch_device_capability_co2).setSelected(false);
+        findViewById(R.id.switch_device_capability_co2).setEnabled(false);
+
+        findViewById(R.id.switch_device_capability_temperature).setSelected(false);
+        findViewById(R.id.switch_device_capability_temperature).setEnabled(false);
+
+        findViewById(R.id.switch_device_capability_humidity).setSelected(false);
+        findViewById(R.id.switch_device_capability_humidity).setEnabled(false);
+
+        findViewById(R.id.switch_device_capability_lux).setSelected(false);
+        findViewById(R.id.switch_device_capability_lux).setEnabled(false);
+
+        findViewById(R.id.switch_device_capability_watt).setSelected(false);
+        findViewById(R.id.switch_device_capability_watt).setEnabled(false);
+    }
+
+    JSONArray getSelectedCapabilities() {
+        JSONArray caps = new JSONArray();
+        if (selectedDeviceCapability_on_off)
+            caps.put("ON_OFF");
+        if (selectedDeviceCapability_co2)
+            caps.put("CO2");
+        if (selectedDeviceCapability_temperature)
+            caps.put("TEMPERATURE");
+        if (selectedDeviceCapability_humidity)
+            caps.put("HUMIDITY");
+        if (selectedDeviceCapability_lux)
+            caps.put("LUX");
+        if (selectedDeviceCapability_watt)
+            caps.put("MEASURE_POWER");
+        return caps;
+    }
+
     void enableTestButtons(boolean enabled) {
         findViewById(R.id.test_control_on_button).setEnabled(enabled);
         findViewById(R.id.test_control_off_button).setEnabled(enabled);
@@ -334,12 +369,42 @@ public class CozifyAppWidgetConfigure extends Activity {
     String getDeviceIdForName(String deviceName) {
         String id = "";
         try {
-            id = (String) devicesJson.get(deviceName);
+            id = devicesJson.getJSONObject(deviceName).getString("id");
         } catch (JSONException e) {
             e.printStackTrace();
         }
         return id;
     }
+
+    JSONArray getDeviceCapabilitiesForName(String deviceName) {
+        JSONArray caps = new JSONArray();
+        try {
+            caps = devicesJson.getJSONObject(deviceName).getJSONArray("capabilities");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return caps;
+    }
+
+    boolean hasArrayString(JSONArray array, String str) {
+        try {
+            for (int i = 0; i<array.length();i++) {
+                if (array.getString(i).equals(str)) {
+                    return true;
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+     return false;
+}
+
+    boolean hasDeviceCapability(String deviceName, String capability) {
+        JSONArray caps = getDeviceCapabilitiesForName(deviceName);
+        boolean contains = hasArrayString(caps, capability);
+        return contains;
+    }
+
 
     private void revertToLocalHubConnection() {
         cozifyAPI.listHubs(new CozifyApiReal.StringCallback() {
@@ -355,6 +420,23 @@ public class CozifyAppWidgetConfigure extends Activity {
                 }
             }
         });
+    }
+
+    public static PendingIntent createPendingIntentForWidgetClick(Context context, int appWidgetId) {
+
+        Intent intent = new Intent(context.getApplicationContext(), ControlActivity.class);
+        intent.setAction(Long.toString(System.currentTimeMillis()));
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context.getApplicationContext(), appWidgetId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return pendingIntent;
+    }
+
+    public static PendingIntent createPendingIntentForConfigClick(Context context, int appWidgetId) {
+        Intent configIntent = new Intent(context, CozifyAppWidget.class)
+                .setAction(CozifyAppWidget.ACTION_WIDGET_CONFIG_BUTTON_PRESSED);
+        configIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+        PendingIntent configPI = PendingIntent.getBroadcast(context, appWidgetId, configIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return configPI;
     }
 
     public void createWidget(View w) {
@@ -374,17 +456,12 @@ public class CozifyAppWidgetConfigure extends Activity {
             settings.setDeviceId(selectedDeviceId);
             settings.setDeviceName(selectedDeviceShortName);
             settings.setTextSize(selectedTextSize);
+            JSONArray selectedCaps = getSelectedCapabilities();
+            settings.setSelectedCapabilities(selectedCaps);
             ControlState controlState = new ControlState(context, mAppWidgetId);
             controlState.setControlling(false);
             updateCurrentState(selectedDeviceId);
 
-            // Make sure we pass back the original appWidgetId
-            Intent intent = new Intent(this, ControlActivity.class);
-            intent.setAction(Long.toString(System.currentTimeMillis()));
-            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
-            PendingIntent pendingIntent;
-            pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            //Log.d("PENDING DEBUG","PendingIntent at createWidget: "+mAppWidgetId);
             int layout = R.layout.appwidget_button;
             AppWidgetProviderInfo pi = appWidgetManager.getAppWidgetInfo(mAppWidgetId);
             if (pi != null) {
@@ -395,10 +472,13 @@ public class CozifyAppWidgetConfigure extends Activity {
             int bid = R.id.control_button;
             if (layout == R.layout.appwidget_button_double) {
                 bid = R.id.control_button_double;
+                views.setOnClickPendingIntent(R.id.widget_button_config, createPendingIntentForConfigClick(context, mAppWidgetId));
+                views.setOnClickPendingIntent(R.id.widget_button_refresh, createPendingIntentForWidgetClick(context, mAppWidgetId));
+                views.setOnClickPendingIntent(R.id.control_button_measurement, createPendingIntentForWidgetClick(context, mAppWidgetId));
             }
-            views.setOnClickPendingIntent(bid, pendingIntent);
+            views.setOnClickPendingIntent(bid, createPendingIntentForWidgetClick(context, mAppWidgetId));
             views.setCharSequence(bid, "setText", selectedDeviceShortName);
-            views.setFloat(bid, "setTextSize", selectedTextSize);
+            //views.setFloat(bid, "setTextSize", selectedTextSize);
 
             appWidgetManager.updateAppWidget(mAppWidgetId, views);
 
@@ -409,6 +489,7 @@ public class CozifyAppWidgetConfigure extends Activity {
             ShowMessage("Widget "+mAppWidgetId+" created for controlling "+selectedDeviceShortName +" of HUB "+hubName);
             finish();
         } else {
+            disableCapabilities();
             String error = "Please select device";
             ShowErrorMessage(error, "selectedDeviceId.length() <= 0 or null: ");
             if (textInputLayoutDeviceName != null) {
@@ -416,6 +497,24 @@ public class CozifyAppWidgetConfigure extends Activity {
                 textInputLayoutDeviceName.setError(error);
             }
         }
+    }
+
+    static int[] addElement(int[] a, int e) {
+        a  = Arrays.copyOf(a, a.length + 1);
+        a[a.length - 1] = e;
+        return a;
+    }
+
+    private void updateAllWidgets() {
+        Intent intent = new Intent(this, CozifyAppWidget.class);
+        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        int[] ids = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), CozifyAppWidget.class));
+        int[] ids2 = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(this.getPackageName(), CozifyAppWidgetDouble.class.getName()));
+        for (int id: ids2) {
+            ids = addElement(ids, id);
+        }
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+        sendBroadcast(intent);
     }
 
     private void updateCurrentState(String device_id) {
@@ -489,6 +588,7 @@ public class CozifyAppWidgetConfigure extends Activity {
     private void getDevices() {
         setStatus("Wait while fetching list of devices..");
         enableSpinners(false);
+        disableCapabilities();
         String[] capabilities = {"ON_OFF", "TEMPERATURE", "HUMIDITY", "CO2"};
         resetDevicesSpinner();
         cozifyAPI.getDevices(capabilities, new CozifyApiReal.JsonCallback() {
@@ -510,7 +610,7 @@ public class CozifyAppWidgetConfigure extends Activity {
                         String message = parseMessageFromJsonResponse(resultJson);
                         setStatus("ERROR in requesting devices: " + message);
                     } else {
-                        setStatus("ERROR in requesting devices: " + status);
+                        setStatus("ERROR in requesting devices (no respons): " + status);
                     }
                     if (status.contains("408")) {
                         revertToLocalHubConnection();
@@ -549,6 +649,7 @@ public class CozifyAppWidgetConfigure extends Activity {
 
     private void getHubKeys() {
         enableSpinners(false);
+        disableCapabilities();
         cozifyAPI.getHubKeys(new CozifyApiReal.JsonCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson) {
@@ -580,7 +681,9 @@ public class CozifyAppWidgetConfigure extends Activity {
 
                 } else {
                     setStatus("Connecting to Cozify cloud failed: " + status);
-                    // TODO: Forward user to login
+                    Intent intent = new Intent(getBaseContext(),
+                            CozifyWidgetSetupActivity.class);
+                    startActivity(intent);
                 }
             }
         });

@@ -71,6 +71,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
 
     @BeforeClass
     public static void prepare() {
+        assert (device!=null);
         removeWidget("Scene or Device");
     }
 
@@ -153,22 +154,24 @@ public class CozifyWidgetSetupActivityTestOnOff {
         assertThat(p, is(drawableName));
     }
 
-    public static void removeWidget(UiObject2 widget) {
+    public static void removeWidget(UiObject2 widget, UiDevice device) {
         Rect r = widget.getVisibleBounds();
         Point c = new Point(r.centerX(), r.centerY());
         Point[] pa = new Point[3];
         pa[0] = c;
         pa[1] = c;
+        assertThat(device, notNullValue());
         pa[2] = new Point(device.getDisplayWidth()/2, 120);
         device.swipe(pa, 150);
     }
 
     public static void removeWidget(String widgetName) {
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        assertThat(device, notNullValue());
         device.pressHome();
         UiObject2 widget = device.findObject(By.textContains(widgetName));
         while (widget != null) {
-            removeWidget(widget);
+            removeWidget(widget, device);
             widget = device.findObject(By.textContains(widgetName));
         }
     }
@@ -396,7 +399,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
                 allOf(withId(R.id.device_name_edit),
                         childAtPosition(
                                 childAtPosition(
-                                        allOf(withId(R.id.device_name), withContentDescription("Label")),
+                                        allOf(withId(R.id.control_button_device_name), withContentDescription("Label")),
                                         0),
                                 0),
                         isDisplayed()));

@@ -24,4 +24,13 @@
     <string name="large">Large</string>
     <string name="select_existing_widget_as_a_template">1. Select existing widget as a template:</string>
     <string name="select_text_font_size">3. Select text font size:</string>
+    <string name="configure_button_decription">Configure</string>
+    <string name="refresh_button_decription">Refresh</string>
+    <string name="updated_since">2 min ago</string>
+    <string name="capability_label_on_off">On / Off</string>
+    <string name="capability_label_temperature">Temperature</string>
+    <string name="capability_label_humidity">Humidity</string>
+    <string name="capability_label_co2">CO2</string>
+    <string name="capability_label_lux">Lux</string>
+    <string name="capability_label_watt">Watt</string>
 </resources>

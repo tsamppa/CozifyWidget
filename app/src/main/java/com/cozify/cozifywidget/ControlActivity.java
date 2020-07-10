@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -45,7 +46,7 @@ public class ControlActivity extends AppCompatActivity {
             finish();
             return;
         }
-        Log.d("CLICK", "WidgetID:"+mAppWidgetId);
+        Log.d("CLICK", "WidgetID:" + mAppWidgetId);
         if (stateMgr == null) {
             stateMgr = new CozifySceneOrDeviceStateManager(this, mAppWidgetId);
         }
@@ -108,7 +109,7 @@ public class ControlActivity extends AppCompatActivity {
     }
 
     static int[] addElement(int[] a, int e) {
-        a  = Arrays.copyOf(a, a.length + 1);
+        a = Arrays.copyOf(a, a.length + 1);
         a[a.length - 1] = e;
         return a;
     }
@@ -146,12 +147,12 @@ public class ControlActivity extends AppCompatActivity {
     private void ShowMessage(String message) {
         setStatusMessage(message);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-        Log.i("Widget:"+mAppWidgetId, message);
+        Log.i("Widget:" + mAppWidgetId, message);
     }
 
     private void ShowErrorMessage(String errorMessage, String details) {
         ShowMessage(errorMessage);
-        Log.e("Widget: "+mAppWidgetId+" ERROR details:", details);
+        Log.e("Widget: " + mAppWidgetId + " ERROR details:", details);
     }
 
     private boolean isArmed() {
@@ -212,7 +213,7 @@ public class ControlActivity extends AppCompatActivity {
 
         widgetSettings = new WidgetSettings(context, mAppWidgetId);
         if (!widgetSettings.init || widgetSettings.getDeviceId() == null) {
-            ShowErrorMessage("Configuration issue","Stored device ID not found (null). Please remove and recreate the device widget");
+            ShowErrorMessage("Configuration issue", "Stored device ID not found (null). Please remove and recreate the device widget");
             return false;
         }
         return true;
@@ -327,9 +328,9 @@ public class ControlActivity extends AppCompatActivity {
     private void displayDeviceState(String why) {
         final Context context = ControlActivity.this;
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
-        int resourceForState = updateDeviceState(widgetSettings.getDeviceName(),
-                controlState.isControlling(), controlState.isArming(), controlState.isArmed(), controlState.isUpdating(),
-                stateMgr, widgetSettings.getTextSize(), mAppWidgetId, appWidgetManager, this.getPackageName(), widgetSettings.getDoubleSize());
+        int resourceForState = updateDeviceState(widgetSettings,
+                controlState,
+                stateMgr, mAppWidgetId, appWidgetManager, this.getPackageName());
         int layout = R.layout.appwidget_button;
         AppWidgetProviderInfo pi = appWidgetManager.getAppWidgetInfo(mAppWidgetId);
         if (pi != null) {
@@ -341,51 +342,86 @@ public class ControlActivity extends AppCompatActivity {
         if (layout == R.layout.appwidget_button_double) {
             bid = R.id.control_button_double;
         }
-        views.setContentDescription(bid,  context.getResources().getResourceEntryName(resourceForState));
+        views.setContentDescription(bid, context.getResources().getResourceEntryName(resourceForState));
         appWidgetManager.updateAppWidget(mAppWidgetId, views);
         Log.d("ResourceForState", String.format("%s : %s (%d)", why, getResources().getResourceEntryName(resourceForState), resourceForState));
     }
 
-    public static int updateDeviceState(String device_name, boolean isControlling, boolean isArming, boolean isArmed, boolean isUpdating,
+    public static int updateDeviceState(WidgetSettings widgetSettings, ControlState controlState,
                                         CozifySceneOrDeviceStateManager stateMgr,
-                                        float textSize,
-                                        int appWidgetId, AppWidgetManager appWidgetManager, String packageName, boolean doubleSize) {
+                                        int appWidgetId, AppWidgetManager appWidgetManager, String packageName) {
+
+        String device_name = widgetSettings.getDeviceName();
+        String measurement = stateMgr.getMeasurementString(widgetSettings.getSelectedCapabilities());
+        String age = stateMgr.getMeasurementAge();
+        CozifySceneOrDeviceState s = stateMgr.getCurrentState();
+        boolean isSensor = false;
+        boolean isControllable = false;
+        if (s != null) {
+            isSensor = s.isSensor() && !s.isOnOff();
+            isControllable = s.isOnOff();
+        }
 
         int layout = R.layout.appwidget_button;
         AppWidgetProviderInfo pi = appWidgetManager.getAppWidgetInfo(appWidgetId);
         if (pi != null) {
             layout = pi.initialLayout;
         }
-        RemoteViews views = new RemoteViews(packageName,
-                layout);
-        int bid = R.id.control_button;
-        if (layout == R.layout.appwidget_button_double) {
-            bid = R.id.control_button_double;
-        }
-        views.setBoolean(bid, "setEnabled", !(isControlling || isArming || isUpdating));
-        String measurement = stateMgr.getMeasurementString();
-        CozifySceneOrDeviceState s = stateMgr.getCurrentState();
-        boolean isSensor = false;
-        if (s != null) {
-            isSensor = s.isSensor() && !s.isOnOff();
-        }
-        int resourceForState = getDeviceResourceForState(stateMgr.isReachable(), stateMgr.isOn(), isArmed, isArming, isControlling, isSensor, isUpdating);
-        views.setInt(bid, "setBackgroundResource", resourceForState);
 
+        int resourceForState = getDeviceResourceForState(stateMgr.isReachable(), stateMgr.isOn(),
+                controlState.isArmed(), controlState.isArming(), controlState.isControlling(), isSensor, controlState.isUpdating());
+
+        RemoteViews views = new RemoteViews(packageName, layout);
+        if (layout == R.layout.appwidget_button_double) {
+            UpdateLayoutDouble(views, isControllable, resourceForState, device_name, measurement, age, controlState, widgetSettings);
+        } else {
+            UpdateLayout(views, isControllable,resourceForState, device_name, measurement, controlState, widgetSettings);
+        }
+
+        appWidgetManager.updateAppWidget(appWidgetId, views);
+        return resourceForState;
+    }
+
+    private static void UpdateLayout(RemoteViews views, boolean isControllable, int resourceForState, String device_name, String measurement, ControlState controlState, WidgetSettings widgetSettings) {
+        int bid = R.id.control_button;
+        views.setInt(bid, "setBackgroundResource", resourceForState);
+        views.setBoolean(bid, "setEnabled", !(controlState.isControlling() || controlState.isArming() || controlState.isUpdating()));
         if (measurement != null) {
             String label = measurement;
-                if (device_name != null) {
-                    label = measurement + "\n" + device_name;
-                }
-                views.setCharSequence(bid, "setText", label);
-                views.setFloat(bid, "setTextSize", textSize);
+            if (device_name != null) {
+                label = measurement + "\n" + device_name;
+            }
+            views.setCharSequence(bid, "setText", label);
+            views.setFloat(bid, "setTextSize", widgetSettings.getTextSize());
         } else {
             if (device_name != null) {
                 views.setCharSequence(bid, "setText", device_name);
             }
         }
-        appWidgetManager.updateAppWidget(appWidgetId, views);
-        return resourceForState;
+    }
+
+    private static void UpdateLayoutDouble(RemoteViews views, boolean isControllable, int resourceForState, String device_name, String measurement, String age, ControlState controlState, WidgetSettings widgetSettings) {
+        int bid = R.id.control_button_double;
+        if (isControllable) {
+            views.setInt(bid, "setVisibility", View.VISIBLE);
+        } else {
+            views.setInt(bid, "setVisibility", View.GONE);
+        }
+        views.setInt(bid, "setBackgroundResource", resourceForState);
+        views.setBoolean(bid, "setEnabled", !(controlState.isControlling() || controlState.isArming() || controlState.isUpdating()));
+        views.setCharSequence(bid, "setText", "");
+        if (device_name != null) {
+            views.setCharSequence(R.id.control_button_device_name, "setText", device_name);
+        }
+        if (measurement != null) {
+            views.setInt(R.id.widget_button_refresh, "setVisibility", View.VISIBLE);
+            views.setCharSequence(R.id.control_button_measurement, "setText", measurement);
+            views.setCharSequence(R.id.widget_button_updated_since, "setText", age);
+        } else {
+            views.setInt(R.id.widget_button_refresh, "setVisibility", View.GONE);
+            views.setCharSequence(R.id.control_button_measurement, "setText", "");
+            views.setCharSequence(R.id.widget_button_updated_since, "setText", "");
+        }
     }
 
     private void startControl() {
