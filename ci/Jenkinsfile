@@ -8,7 +8,7 @@ pipeline {
   stages {
     stage('Cloning Git') {
       steps {
-        git([url: 'https://github.com/tsamppa/CozifyWidget', branch: 'master', credentialsId: 'tsamppa-github-user-token'])
+        git([url: 'https://github.com/tsamppa/CozifyWidget.git', branch: 'master', credentialsId: 'tsamppa-github-user-token'])
 
       }
     }
