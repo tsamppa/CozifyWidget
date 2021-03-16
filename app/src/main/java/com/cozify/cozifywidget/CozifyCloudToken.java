@@ -19,6 +19,28 @@ public class CozifyCloudToken {
         return hubName;
     }
 
+    static public String parseHubIdFromToken(String token) {
+        String hubId = "";
+        try {
+            JSONObject json = new JSONObject(getDecodedJwt(token));
+            hubId = json.getString("hub_id");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return hubId;
+    }
+
+    static public JSONObject parseHubTokenToJson(String token) {
+        JSONObject json =  new JSONObject();
+        try {
+            json = new JSONObject(getDecodedJwt(token));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return json;
+    }
+
+
     static public String getDecodedJwt(String jwt) {
         String result0;
         String result1;

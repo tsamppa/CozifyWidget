@@ -1,7 +1,5 @@
 package com.cozify.cozifywidget;
 
-import android.appwidget.AppWidgetManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,13 +17,7 @@ import com.google.android.material.textfield.TextInputLayout;
 
 import org.json.JSONObject;
 
-import java.util.Arrays;
-
 public class CozifyWidgetSetupActivity extends AppCompatActivity {
-    static final String TAG = "CozifyWidgetConfigure";
-    static final String PREFS_NAME
-            = "com.cozify.android.apis.appwidget.CozifyWidgetProvider";
-    static final String PREF_PREFIX_KEY = "prefix_";
 
     private CozifyApiReal cozifyAPI = new CozifyApiReal(this);
 
@@ -145,24 +137,6 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
         });
     }
 
-    static int[] addElement(int[] a, int e) {
-        a  = Arrays.copyOf(a, a.length + 1);
-        a[a.length - 1] = e;
-        return a;
-    }
-
-    private void updateAllWidgets() {
-        Intent intent = new Intent(this, CozifyAppWidget.class);
-        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-        int[] ids = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), CozifyAppWidget.class));
-        int[] ids2 = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(this.getPackageName(), CozifyAppWidgetDouble.class.getName()));
-        for (int id: ids2) {
-            ids = addElement(ids, id);
-        }
-        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
-        sendBroadcast(intent);
-    }
-
     private void getHubKeys() {
         textViewStatus.setText("Checking connection..");
         buttonLogin.setEnabled(false);
@@ -173,11 +147,12 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
                 if (success) {
                     final Context context = CozifyWidgetSetupActivity.this;
                     Toast.makeText(context, "Connected to Cozify. You can now create widgets.", Toast.LENGTH_SHORT).show();
-                    updateAllWidgets();
-                    Intent resultValue = new Intent();
-                    setResult(RESULT_OK, resultValue);
+                    Intent myIntent = new Intent(CozifyWidgetSetupActivity.this,
+                            CozifyAppWidgetConnectedActivity.class);
+                    startActivity(myIntent);
                     finish();
                 } else {
+                    textViewStatus.setText(message);
                     enableEmailLogin();
                 }
             }

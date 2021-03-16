@@ -19,7 +19,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_margin="5dp"
-        android:text="@string/login_status" />
+        android:text="@string/login_status"
+        android:textColor="#3F51B5"
+        android:textStyle="italic" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/email_layout"
@@ -59,8 +61,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:hint="@string/password_from_email"
+            android:contentDescription="@string/password_from_email"
             android:inputType="text"
+            android:labelFor="@+id/password"
             tools:ignore="Autofill" />
     </com.google.android.material.textfield.TextInputLayout>
+    <TextView
+        android:id="@+id/login_info2"
+        android:layout_width="match_parent"
+        android:layout_margin="10dp"
+        android:layout_height="match_parent"
+        android:text="@string/login_help_text"
+        android:textSize="16sp" />
 </LinearLayout>

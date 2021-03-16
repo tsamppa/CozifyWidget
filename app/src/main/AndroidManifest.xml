@@ -3,11 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.cozify.cozifywidget">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-    <supports-screens android:smallScreens="true"
-        android:normalScreens="true"
-        android:largeScreens="true"
-        android:xlargeScreens="true"/>
     <application
         android:allowBackup="true"
         android:fullBackupContent="@xml/backup_descriptor"
@@ -16,60 +11,80 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        tools:ignore="GoogleAppIndexingWarning"
-        android:usesCleartextTraffic="true">
-
-        <receiver
-            android:name="com.cozify.cozifywidget.CozifyAppWidget"
-            android:label="Cozify Small Size"
-            android:exported="true" >
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_provider_info_single" />
-        </receiver>
-
-        <receiver
-            android:name="com.cozify.cozifywidget.CozifyAppWidgetDouble"
-            android:label="Cozify Big Size"
-            android:exported="true" >
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="ActionReceiverConfigButtonPressed" />
-                <action android:name="ActionReceiverRefreshButtonPressed" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/widget_provider_info_double" />
-        </receiver>
-
+        android:usesCleartextTraffic="true"
+        tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name="com.cozify.cozifywidget.ControlActivity"
-            android:theme="@style/Theme.AppCompat.Translucent" >
+            android:name=".TroubleshooterDetailsActivity"
+            android:label="@string/title_activity_troubleshooter_details"
+            android:parentActivityName=".TroubleshooterRootActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="TroubleshooterRootActivity" />
+        </activity>
+        <activity
+            android:name=".TroubleshooterRootActivity"
+            android:label="@string/title_activity_troubleshooter_root"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".CozifyAppWidgetConnectedActivity" />
+        <activity
+            android:name=".ControlActivity"
+            android:theme="@style/Theme.AppCompat.Translucent">
             <intent-filter>
                 <action android:name="com.cozify.cozifywidget.WIDGET_BUTTON" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name="com.cozify.cozifywidget.CozifyWidgetSetupActivity">
+        <activity android:name=".CozifyWidgetSetupActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
-            android:name="com.cozify.cozifywidget.CozifyAppWidgetConfigure"
+            android:name=".CozifyAppWidgetConfigure"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
 
+        <receiver
+            android:name=".CozifyAppWidgetDouble"
+            android:exported="true"
+            android:label="Cozify Big Size">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="ActionReceiverConfigButtonPressed" />
+                <action android:name="ActionReceiverRefreshButtonPressed" />
+            </intent-filter>
 
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_provider_info_double" />
+        </receiver>
+        <receiver
+            android:name=".CozifyAppWidget"
+            android:exported="true"
+            android:label="Cozify Small Size">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_provider_info_single" />
+        </receiver>
     </application>
+
+    <supports-screens
+        android:largeScreens="true"
+        android:normalScreens="true"
+        android:smallScreens="true"
+        android:xlargeScreens="true" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
 
 </manifest>

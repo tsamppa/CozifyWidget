@@ -74,7 +74,7 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
         desiredState = PersistentStorage.getInstance(mContext).loadDesiredState(mAppWidgetId);
         cozifyAPI.loadState(mAppWidgetId);
         if (cozifyAPI.getHubKey() != null) {
-            cozifyAPI.selectToUseHubWithKey(cozifyAPI.getHubId(), cozifyAPI.getHubKey(), mAppWidgetId, new CozifyApiReal.CozifyCallback() {
+            cozifyAPI.selectToUseHubWithKey(cozifyAPI.getHubKey(), mAppWidgetId, new CozifyApiReal.CozifyCallback() {
                 @Override
                 public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                     connected = success;
@@ -98,7 +98,8 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
                                 String hubKey = jsonResult.getString(hubId);
                                 String hn = parseHubNameFromToken(hubKey);
                                 if (hubName.equals(hn)) {
-                                    cozifyAPI.selectToUseHubWithKey(hubId, hubKey, mAppWidgetId, new CozifyApiReal.CozifyCallback() {
+                                    cozifyAPI.setApiVersion(null); // Reset to refresh it
+                                    cozifyAPI.selectToUseHubWithKey(hubKey, mAppWidgetId, new CozifyApiReal.CozifyCallback() {
                                         @Override
                                         public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                                             if (success) {
@@ -256,16 +257,24 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
                         if (jsonResponse != null) {
                             String message = "N/A";
                             if (jsonResponse.has("message")) {
-                                message = jsonResponse.getString("message");
+                                String msg = jsonResponse.getString("message");
+                                if (msg.length() > 0) {
+                                    message = msg;
+                                }
                             }
                             if (jsonResponse.has("response")) {
                                 message = jsonResponse.getString("response");
                             }
-                            Log.e("StateManager", String.format("Error: %s (jsonRequest: '%s' jsonResponse: '%s'",
-                                    message, jsonRequest.toString(), jsonResponse.toString()));
+                            int errorCode = 0;
+                            if (jsonResponse.has("errorCode")) {
+                                errorCode = jsonResponse.getInt("errorCode");
+                            }
+                            Log.e("StateManager", String.format("Error: %s STATUS: %s (jsonRequest: '%s' jsonResponse: '%s'",
+                                    message, status, jsonRequest.toString(), jsonResponse.toString()));
                             if (message.startsWith("Authentication failed")
                                     || message.startsWith("Authorization failed")
-                                    || message.startsWith("Connection refused")) {
+                                    || message.startsWith("Connection refused")
+                                    || errorCode == 401) {
                                 refreshHubKey();
                             }
                         }
@@ -394,9 +403,9 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
             return "";
         } else if (secs < 100) {
             return String.format("%d secs ago", secs);
-        } else if (millis < 60*60*2) {
+        } else if (secs < 60*60*2) {
             return String.format("%d mins ago", secs/60);
-        } else if (millis < 60*60*24*2) {
+        } else if (secs < 60*60*24*2) {
             return String.format("%d hours ago", secs/60/60);
         }
         return String.format("%d days ago", secs/60/60/24);

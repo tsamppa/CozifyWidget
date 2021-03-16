@@ -8,10 +8,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.Map;
 
 public class CozifyApiReal {
 
@@ -25,8 +23,6 @@ public class CozifyApiReal {
         private CozifyCloudSettings settingsCloud;
 
         private boolean remoteConnection = true;
-        private Map<String, CozifySceneOrDeviceState> deviceStates = new HashMap<>();
-        private long deviceStateTimestamp = 0;
 
         public CozifyApiReal(Context context) {
             this.context = context;
@@ -38,7 +34,7 @@ public class CozifyApiReal {
 
         public void loadState(int widgetId) {
             settingsHub = new CozifyApiSettings(context, widgetId);
-            setHubLanIp(settingsHub.getHubLanIp());
+            setHubLanIpIfIdMatches(settingsHub.getHubLanIp());
             loadCloudSettings();
         }
 
@@ -66,13 +62,39 @@ public class CozifyApiReal {
             Log.i(method, data);
         }
 
-        public void setHubLanIp(String hubLanIp) {
-            settingsHub.setHubLanIp(hubLanIp);
-            if (hubLanIp != null && hubLanIp.length() > 0) {
-                localBaseUrl = "http://" + hubLanIp + ":8893/";
-            } else {
-                localBaseUrl = null;
+        public void setHubLanIpIfIdMatches(final String hubLanIp) {
+            // check if multiple IPs given
+            if (hubLanIp == null || hubLanIp.length() < 1) {
+                settingsHub.setHubLanIp("");
+                return;
             }
+            String[] hubs = hubLanIp.split("[,]");
+            // find the correct hub with matchig ID
+            // split string and for each
+            for (final String h : hubs) {
+                final String hub = h.replaceAll("\"", "");
+                getLanHubVersion(hub, new JsonCallback() {
+                    @Override
+                    public void result(boolean success, String status, JSONObject resultJson) {
+                        if (success) {
+                            settingsHub.setHubConnectedTime();
+                            try {
+                                String hid = resultJson.getString("hubId");
+                                if (settingsHub.getHubId().equals(hid)) { // check that the hub matches
+                                    settingsHub.setHubLanIp(hub);
+                                    setApiVersion(parseApiVersionFromJson(resultJson));
+                                    localBaseUrl = "http://" + hub + ":8893/";
+                                }
+                                return;
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                });
+            }
+            settingsHub.setHubLanIp("");
+            localBaseUrl = null;
         }
 
         public void setCloudToken(String cloudToken) {
@@ -89,39 +111,39 @@ public class CozifyApiReal {
             return settingsHub.getApiVer();
         }
 
-        public void selectToUseHubWithKey(String hubId, String hubKey, int widgetId, final CozifyCallback cbConnected) {
+        public void selectToUseHubWithKey(String hubKey, int widgetId, final CozifyCallback cbConnected) {
             loadState(widgetId);
-            settingsHub.setHubId(hubId);
+            settingsHub.setHubId(CozifyCloudToken.parseHubIdFromToken(hubKey));
             settingsHub.setHubName(CozifyCloudToken.parseHubNameFromToken(hubKey));
             setHeaders();
-            if (localBaseUrl == null || settingsHub.getApiVer() == null) {
+            if (getApiVersion() == null) {
                 listHubs(new StringCallback() {
                     @Override
                     public void result(boolean success, String status, String resultString) {
                         if (success) {
+                            settingsHub.setHubConnectedTime();
                             if (resultString.length() > 2) {
                                 String hubLanIp = resultString.substring(2, resultString.length() - 2);
-                                setHubLanIp(hubLanIp);
+                                setHubLanIpIfIdMatches(hubLanIp);
                             } else {
-                                setHubLanIp("");
+                                setHubLanIpIfIdMatches("");
                             }
-                            if (settingsHub.getApiVer() == null) {
-                                getHubVersion(new JsonCallback() {
-                                    @Override
-                                    public void result(boolean success, String status, JSONObject resultJson) {
-                                        if (success) {
-                                            setApiVersion(parseApiVersionFromJson(resultJson));
-                                            if (cbConnected != null)
-                                                cbConnected.result(true, "Connected successfully", resultJson, null);
-                                        } else {
-                                            if (cbConnected != null)
-                                                cbConnected.result(false, "Connection failed", resultJson, null);
-                                        }
+
+                            getHubVersion(new JsonCallback() {
+                                @Override
+                                public void result(boolean success, String status, JSONObject resultJson) {
+                                    if (success) {
+                                        settingsHub.setHubConnectedTime();
+                                        setApiVersion(parseApiVersionFromJson(resultJson));
+                                        if (cbConnected != null)
+                                            cbConnected.result(true, "Connected successfully", resultJson, null);
+                                    } else {
+                                        if (cbConnected != null)
+                                            cbConnected.result(false, "Connection failed", resultJson, null);
                                     }
-                                });
-                            } else {
-                                cbConnected.result(true, "Connected successfully", createJsonMesageFromString(resultString), null);
-                            }
+                                }
+                            });
+
                         } else {
                             if (cbConnected != null)
                                 cbConnected.result(false, "Connection failed", null, null);
@@ -144,7 +166,7 @@ public class CozifyApiReal {
         }
 
         public String parseApiVersionFromJson(JSONObject resultJson) {
-            String hubApiVersion = "1.12";
+            String hubApiVersion = "1.14";
             try {
                 String version = resultJson.get("version").toString();
                 String[] s = version.split("[.]");
@@ -155,19 +177,25 @@ public class CozifyApiReal {
             return hubApiVersion;
         }
 
-        public void connectLocally() {
+        public boolean connectLocally() {
             if (localBaseUrl != null && localBaseUrl.length() > 0) {
                 remoteConnection = false;
+                return true;
             }
+            Log.e("CozifyApi", "Cannot connect locally due to missing localBaseUrl");
+            return false;
         }
 
         public void connectRemotely() {
             remoteConnection = true;
         }
 
-        public void toggleConnectType() {
-            if (remoteConnection) connectLocally();
-            else connectRemotely();
+        public boolean toggleConnectType() {
+            if (remoteConnection) {
+                return connectLocally();
+            }
+            connectRemotely();
+            return true;
         }
 
         private void setHeaders() {
@@ -240,6 +268,7 @@ public class CozifyApiReal {
                         @Override
                         public void onResponse(int statusCode, String stringResult) {
                             if (statusCode == 200) {
+                                settingsHub.setHubConnectedTime();
                                 try {
                                     if (stringResult != null && !stringResult.equals("null")) {
                                         stringResult = stringResult.startsWith("[") ? stringResult.substring(1) : stringResult;
@@ -322,6 +351,7 @@ public class CozifyApiReal {
                     @Override
                     public void onResponse(int statusCode, JSONObject jsonResult) {
                         if (statusCode == 200) {
+                            settingsHub.setHubConnectedTime();
                             JSONObject devicesJson = new JSONObject();
                             Iterator<?> keys = jsonResult.keys();
                             try {
@@ -354,6 +384,7 @@ public class CozifyApiReal {
                     @Override
                     public void onResponse(int statusCode, JSONObject jsonResult) {
                         if (statusCode == 200) {
+                            settingsHub.setHubConnectedTime();
                             JSONObject scenesJson = new JSONObject();
                             Iterator<?> keys = jsonResult.keys();
                             try {
@@ -376,12 +407,48 @@ public class CozifyApiReal {
         );
     }
 
+    public void getRulesRaw(final JsonCallback cb) {
+        String url = completeUrl("/rules");
+        getHttpAPI().get(url, new JsonAPI.JsonCallback() {
+                    @Override
+                    public void onResponse(int statusCode, JSONObject jsonResult) {
+                        if (statusCode == 200) {
+                            settingsHub.setHubConnectedTime();
+                            cb.result(true, "OK "+statusCode, jsonResult);
+                        } else {
+                            cb.result(false, extractErrorMessageFromJsonResult(statusCode, jsonResult), jsonResult);
+                        }
+                    }
+                }
+        );
+    }
+
+    public void getDevicesRaw(final JsonCallback cb) {
+        String url = completeUrl("/devices");
+        getHttpAPI().get(url, new JsonAPI.JsonCallback() {
+                    @Override
+                    public void onResponse(int statusCode, JSONObject jsonResult) {
+                        if (statusCode == 200) {
+                            settingsHub.setHubConnectedTime();
+                            cb.result(true, "OK "+statusCode, jsonResult);
+                        } else {
+                            cb.result(false, "Status code " + statusCode, jsonResult);
+                        }
+                    }
+                }
+        );
+    }
+
     private String extractErrorMessageFromJsonResult(int statusCode, JSONObject jsonResult) {
         String error = String.format(Locale.ENGLISH, "Status code: %d", statusCode);
         try {
             if (jsonResult.has("message")) {
                 error = jsonResult.getString("message");
-                error += String.format(Locale.ENGLISH, "(%d)", statusCode);
+                error += String.format(Locale.ENGLISH, " (%d)", statusCode);
+            }
+            if (jsonResult.has("response")) {
+                error = jsonResult.getString("response");
+                error += String.format(Locale.ENGLISH, " (%d)", statusCode);
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -395,7 +462,7 @@ public class CozifyApiReal {
                     @Override
                     public void onResponse(int statusCode, JSONObject jsonResult) {
                         if (statusCode == 200) {
-                            settingsCloud.setHubKeys(jsonResult);
+                            saveHubKeysToCloudSettings(jsonResult);
                             cb.result(true, "OK: "+statusCode, jsonResult);
                         } else {
                             cb.result(false, extractErrorMessageFromJsonResult(statusCode, jsonResult), jsonResult);
@@ -413,7 +480,7 @@ public class CozifyApiReal {
                         if (statusCode == 200) {
                             cb.result(true, "OK: "+statusCode, result);
                         } else {
-                            cb.result(false, "Status code: "+statusCode, result);
+                            cb.result(false, result + String.format(Locale.ENGLISH, " (%d)", statusCode), result);
                         }
                     }
                 }
@@ -435,7 +502,20 @@ public class CozifyApiReal {
         );
     }
 
-
+    public void getLanHubVersion(String hubLanIp, final JsonCallback cb) {
+        String url = "http://" + hubLanIp + ":8893/hub";
+        httpAPI.get(url, new JsonAPI.JsonCallback() {
+                    @Override
+                    public void onResponse(int statusCode, JSONObject jsonResult) {
+                        if (statusCode == 200) {
+                            cb.result(true, "OK: "+statusCode, jsonResult);
+                        } else {
+                            cb.result(false, extractErrorMessageFromJsonResult(statusCode, jsonResult), jsonResult);
+                        }
+                    }
+                }
+        );
+    }
 
     public void confirmPassword(String pw, final String email_address, final StringCallback cb) {
         String url = "https://api.cozify.fi/ui/0.2/user/emaillogin";
@@ -476,22 +556,14 @@ public class CozifyApiReal {
     }
 
     public void getSceneOrDeviceState(final String device_id, boolean refresh, final CozifyCallback cb) {
+        long ts = 0;
         if (!refresh) {
-            if (deviceStates.containsKey(device_id)) {
-                long delay = System.currentTimeMillis() - deviceStateTimestamp;
-                if (delay < 30000) {
-                    try {
-                        CozifySceneOrDeviceState deviceState = deviceStates.get(device_id);
-                        if (deviceState != null) {
-                            cb.result(true, "OK, CACHE HIT", deviceState.toJson(), null);
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
+            long delay = System.currentTimeMillis() - settingsHub.getLastDeviceStateTimestamp();
+            if (delay < 40000) {
+                ts = settingsHub.getLastDeviceStateTimestamp();
             }
         }
-        final String command = "/hub/poll?ts="+deviceStateTimestamp;
+        final String command = "/hub/poll?ts="+ts;
         String url = completeUrl(command);
         final JSONObject request = new JSONObject();
         try {
@@ -503,49 +575,60 @@ public class CozifyApiReal {
                     @Override
                     public void onResponse(int statusCode, JSONObject result) {
                         if (statusCode == 200) {
+                            settingsHub.setHubConnectedTime();
                             parsePoll(request, device_id, statusCode, result, cb);
                         } else {
                             // Retry once after switching connection type
-                            toggleConnectType();
-                            String url2 = completeUrl(command);
-                            getHttpAPI().get(url2, new JsonAPI.JsonCallback() {
-                                        @Override
-                                        public void onResponse(int statusCode, JSONObject jsonResult) {
-                                            if (statusCode == 200) {
-                                                parsePoll(request, device_id, statusCode, jsonResult, cb);
-                                            } else {
-                                                cb.result(false, extractErrorMessageFromJsonResult(statusCode, jsonResult), jsonResult, request);
+                            if (toggleConnectType()) {
+                                String url2 = completeUrl(command);
+                                getHttpAPI().get(url2, new JsonAPI.JsonCallback() {
+                                            @Override
+                                            public void onResponse(int statusCode, JSONObject jsonResult) {
+                                                if (statusCode == 200) {
+                                                    parsePoll(request, device_id, statusCode, jsonResult, cb);
+                                                } else {
+                                                    cb.result(false, extractErrorMessageFromJsonResult(statusCode, jsonResult), jsonResult, request);
+                                                }
                                             }
                                         }
-                                    }
-                            );
+                                );
+                            } else { // local connection failed
+                                cb.result(false, "Connection failed for polling device sate:" + statusCode, result, request);
+                            }
                         }
                     }
                 }
         );
     }
 
-    private void parsePoll(final JSONObject request, final String device_id, int statusCode, JSONObject result, final CozifyCallback cb) {
+    private JSONObject findDeviceStateFromPoll(String device_id, JSONObject pollData) {
+        if (pollData == null) return null;
         try {
             JSONObject stateJson = null;
-            long timestamp = result.getLong("timestamp");
-            boolean fullPoll = result.getBoolean("full");
-            if (fullPoll) {
-                deviceStateTimestamp = timestamp;
-            }
-            JSONArray polls = result.getJSONArray("polls");
+            JSONObject trimmedPollDataForCache = new JSONObject();
+            long timestamp = pollData.getLong("timestamp");
+            trimmedPollDataForCache.put("timestamp", timestamp); // Create cache only with essential data
+            boolean fullPoll = pollData.getBoolean("full");
+            trimmedPollDataForCache.put("full", fullPoll); // Create cache only with essential data
+            JSONArray polls = pollData.getJSONArray("polls");
+            JSONArray trimmedPolls = new JSONArray();
             for (int i = 0; i < polls.length(); i++) {
                 JSONObject p = polls.getJSONObject(i);
+                JSONObject op = new JSONObject();
                 String type = p.getString("type");
+                op.put("type", type);
                 JSONObject targets = null;
                 if (type.equals("DEVICE_DELTA")) {
                     targets = p.getJSONObject("devices");
+                    op.put("devices", targets);
                 }
                 if (type.equals("SCENE_DELTA")) {
                     targets = p.getJSONObject("scenes");
+                    op.put("scenes", targets);
                 }
                 if (type.equals("GROUP_DELTA")) {
                     targets = p.getJSONObject("groups");
+                    op.put("groups", targets);
                 }
                 if (targets != null) {
                     Iterator<?> ds = targets.keys();
@@ -554,31 +637,43 @@ public class CozifyApiReal {
                         JSONObject target = targets.getJSONObject(k3);
                         CozifySceneOrDeviceState state = new CozifySceneOrDeviceState();
                         state.fromPollData(target, timestamp);
-                        deviceStates.put(state.id, state);
                         if (device_id.equals(state.id)) {
                             stateJson = state.toJson();
                         }
                     }
+                    trimmedPolls.put(op);
                 }
             }
-            if (stateJson == null) {
-                CozifySceneOrDeviceState deviceState = deviceStates.get(device_id);
-                if (deviceState != null) {
-                    stateJson = deviceState.toJson();
-                } else {
-                    cb.result(false, "ERROR: Could not find device state ", request, request);
-                    return;
-                }
+            trimmedPollDataForCache.put("polls", trimmedPolls); // Create cache only with essential data
+
+            // Update cache
+            if (fullPoll) {
+                settingsHub.setLastDeviceStateTimestamp();
+                settingsHub.setLastPollDataJson(trimmedPollDataForCache);
             }
-            if (stateJson != null)
-                trafficLog("getSceneOrDeviceState", request.toString() + " : " + stateJson.toString());
-            else
-                trafficLog("getSceneOrDeviceState", request.toString());
-            cb.result(true, "OK " + statusCode, stateJson, request);
+
+            return stateJson;
         } catch (JSONException e) {
             e.printStackTrace();
-            cb.result(false, "Exception:" + e.getMessage(), null, request);
+            return null;
         }
+    }
+
+    private void parsePoll(final JSONObject request, final String device_id, int statusCode, JSONObject result, final CozifyCallback cb) {
+        JSONObject stateJson = findDeviceStateFromPoll(device_id, result);
+        if (stateJson == null) {
+            stateJson = findDeviceStateFromPoll(device_id, settingsHub.getLastPollDataJson());
+            if (stateJson != null) {
+                cb.result(true, "OK (CACHED) " + statusCode, stateJson, request);
+                return;
+            }
+        }
+        if (stateJson == null) {
+            cb.result(false, "ERROR: Could not find device state ", result, request);
+            return;
+        }
+        trafficLog("getSceneOrDeviceState", request.toString() + " : " + stateJson.toString());
+        cb.result(true, "OK " + statusCode, stateJson, request);
     }
 
     public String getHubId() {

@@ -73,6 +73,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
     public static void prepare() {
         assert (device!=null);
         removeWidget("Scene or Device");
+        removeWidget("Unknown");
     }
 
     @Before
@@ -163,6 +164,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
         assertThat(device, notNullValue());
         pa[2] = new Point(device.getDisplayWidth()/2, 120);
         device.swipe(pa, 150);
+        sleep(1000);
     }
 
     public static void removeWidget(String widgetName) {
@@ -230,12 +232,12 @@ public class CozifyWidgetSetupActivityTestOnOff {
 
 
     @Test
-    public void c1_cozifyWidgetSetupActivityTestIconStatesSingle() {
+    public void c1_cozifyWidgetSetupActivityTestIconStatesSmallWidget() {
         testIconStates(false);
     }
 
     @Test
-    public void c1_cozifyWidgetSetupActivityTestIconStatesDouble() {
+    public void c1_cozifyWidgetSetupActivityTestIconStatesBigWidget() {
         testIconStates(true);
     }
 
@@ -469,12 +471,14 @@ public class CozifyWidgetSetupActivityTestOnOff {
 
 
     private void selectFontSize(String fontSize) {
-        if (fontSize.equals("Small"))
+        return;
+/*        if (fontSize.equals("Small"))
             onView(allOf(withId(R.id.text_size_small), withText(fontSize), isDisplayed())).perform(click());
         if (fontSize.equals("Medium"))
             onView(allOf(withId(R.id.text_size_medium), withText(fontSize), isDisplayed())).perform(click());
         if (fontSize.equals("Large"))
             onView(allOf(withId(R.id.text_size_large), withText(fontSize), isDisplayed())).perform(click());
+ */
     }
 
     private static Matcher<View> childAtPosition(

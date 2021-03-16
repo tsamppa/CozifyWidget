@@ -145,7 +145,11 @@ public class JsonAPI {
             public void onResponse(com.cozify.cozifywidget.HttpResponse r) {
                 JSONObject json = null;
                 try {
-                    json = new JSONObject(r.getResponse());
+                    String rsp = r.getResponse();
+                    if (rsp != null)
+                        json = new JSONObject(rsp);
+                    else
+                        json = new JSONObject();
                 } catch (JSONException e) {
                     try {
                         json = new JSONObject();

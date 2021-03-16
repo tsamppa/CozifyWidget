@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".CozifyAppWidgetConnectedActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="15pt"
+            android:text="Well done! Connected to hub.\n\nNext step is to create Widgets to the Android Home screens:\n1.  Press and hold an empty space and selecti Widgets in the popup menu.\n2. Find 'Cozify Widgets' in the list and press and hold again until the list disappears. \n3. Drop the widget in desired location on the screen.\n\nYou have two options: larger widget to show numeric data from sensors and smaller button for control activities. \nWith several widgets you can build dashboards. \nRemove a widget with a long press and by selecting delete."
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/button_ready_close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:onClick="onButtonSetupComplete"
+            android:text="@string/close_setup_button_text"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/textView_troubleshooterHelp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15pt"
+            android:layout_marginTop="20pt"
+            android:layout_marginEnd="15pt"
+            android:text="@string/help_open_troubleshooter"
+            android:visibility="invisible" />
+
+        <TextView
+            android:id="@+id/troubleshooter_hub_select_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10pt"
+            android:layout_marginTop="5pt"
+            android:layout_marginEnd="10pt"
+            android:layout_marginBottom="5pt"
+            android:text=""
+            android:textColor="#3F51B5" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10pt"
+            android:layout_marginEnd="10pt"
+            android:orientation="horizontal"
+            android:visibility="invisible">
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <Button
+                    android:id="@+id/button_open_troubleshooter"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:onClick="onButtonOpenTroubleshooter" />
+
+                <ImageView
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/next"
+                    android:scaleType="fitXY"
+                    android:src="@android:drawable/ic_menu_view"
+                    app:srcCompat="@android:drawable/ic_menu_view" />
+            </FrameLayout>
+
+            <Spinner
+                android:id="@+id/spinner_hubs_for_troubleshooter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@android:drawable/btn_dropdown"
+                android:spinnerMode="dropdown"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

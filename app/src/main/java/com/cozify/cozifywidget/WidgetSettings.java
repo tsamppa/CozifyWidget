@@ -115,4 +115,12 @@ public class WidgetSettings {
         return this.selectedCapabilities;
     }
 
+    public boolean hasMeasurement() {
+        boolean hasMeasurement = this.selectedCapabilities.toString().contains("\"CO2\"") ||
+                this.selectedCapabilities.toString().contains("\"TEMPERATURE\"") ||
+                this.selectedCapabilities.toString().contains("\"LUX\"") ||
+                this.selectedCapabilities.toString().contains("\"HUMIDITY\"");
+        return hasMeasurement;
+    }
+
 }

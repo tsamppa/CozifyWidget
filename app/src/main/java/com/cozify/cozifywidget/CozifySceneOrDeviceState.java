@@ -118,27 +118,28 @@ public class CozifySceneOrDeviceState {
                 }
             }
             if (pollData.has("state")) {
-                if (pollData.getJSONObject("state").has("reachable")) {
-                    this.reachable = pollData.getJSONObject("state").getBoolean("reachable");
+                JSONObject state = pollData.getJSONObject("state");
+                if (state.has("reachable") && !(state.isNull("reachable"))) {
+                    this.reachable = state.getBoolean("reachable");
                 }
 
-                if (capabilities.contains("ON_OFF")) {
-                    this.isOn = pollData.getJSONObject("state").getBoolean("isOn");
+                if (capabilities.contains("ON_OFF") && state.has("isOn") && !(state.isNull("isOn"))) {
+                    this.isOn = state.getBoolean("isOn");
                 }
-                if (capabilities.contains("TEMPERATURE")) {
-                    temperature = pollData.getJSONObject("state").getDouble("temperature");
+                if (capabilities.contains("TEMPERATURE") && state.has("temperature") && !(state.isNull("temperature"))) {
+                    temperature = state.getDouble("temperature");
                 }
-                if (capabilities.contains("HUMIDITY")) {
-                    humidity = pollData.getJSONObject("state").getDouble("humidity");
+                if (capabilities.contains("HUMIDITY") && state.has("humidity") && !(state.isNull("humidity"))) {
+                    humidity = state.getDouble("humidity");
                 }
-                if (capabilities.contains("CO2")) {
-                    co2 = pollData.getJSONObject("state").getDouble("co2Ppm");
+                if (capabilities.contains("CO2") && state.has("co2Ppm") && !(state.isNull("co2Ppm"))) {
+                    co2 = state.getDouble("co2Ppm");
                 }
-                if (capabilities.contains("LUX")) {
-                    lux = pollData.getJSONObject("state").getInt("lux");
+                if (capabilities.contains("LUX") && state.has("lux") && !(state.isNull("lux"))) {
+                    lux = state.getInt("lux");
                 }
-                if (capabilities.contains("MEASURE_POWER")) {
-                    watt = pollData.getJSONObject("state").getDouble("activePower");
+                if (capabilities.contains("MEASURE_POWER") && state.has("activePower") && !(state.isNull("activePower"))) {
+                    watt = state.getDouble("activePower");
                 }
             }
             if (pollData.has("room")) {

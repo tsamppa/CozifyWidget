@@ -33,4 +33,18 @@
     <string name="capability_label_co2">CO2</string>
     <string name="capability_label_lux">Lux</string>
     <string name="capability_label_watt">Watt</string>
+    <string name="login_help_text">Then type in or copy-paste the password from the email in the field above.</string>
+    <string name="connected_next_step_info">Well done! Connected.\nNext step is to create Widgets to the Android Home screens. This is done by pressing and holding an empty space and selecting Widgets in the popup menu. Then find Cozify Widgets in the list and press and hold again until the list disappears and you an drop the widget in desired location on the screen. You have two options: larger widget to show numeric data from sensors and smaller button for control activities. With several widgets you can build dashboards. Remove a widget with a long press and by selecting delete.</string>
+    <string name="close_setup_button_text">Close and start creating Widgets</string>
+    <string name="title_activity_troubleshooter_root">Troubleshooter</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="title_activity_troubleshooter_details">TroubleshooterDetailsActivity</string>
+    <string name="help_open_troubleshooter">If you are encountering problems with the logic of your rules, please select a Hub and click the button below to open helper.</string>
 </resources>

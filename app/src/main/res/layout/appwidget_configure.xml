@@ -12,21 +12,7 @@
         android:layout_height="wrap_content"
         android:text=""
         android:textSize="12sp" />
-    <!--
-    <TextView
-        android:id="@+id/select_template"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/select_existing_widget_as_a_template"
-        android:textSize="18sp" />
-    <Spinner
-        android:id="@+id/spinner_widgets"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:drawable/btn_dropdown"
-        android:spinnerMode="dropdown"
-        android:textSize="14sp"/>
-        -->
+
     <TextView
         android:id="@+id/config_status"
         android:layout_width="match_parent"
