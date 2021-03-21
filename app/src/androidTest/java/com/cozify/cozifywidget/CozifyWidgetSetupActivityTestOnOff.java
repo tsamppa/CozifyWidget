@@ -71,6 +71,8 @@ public class CozifyWidgetSetupActivityTestOnOff {
 
     @BeforeClass
     public static void prepare() {
+        if (device == null)
+            device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         assert (device!=null);
         removeWidget("Scene or Device");
         removeWidget("Unknown");
@@ -78,7 +80,8 @@ public class CozifyWidgetSetupActivityTestOnOff {
 
     @Before
     public void startMainActivityFromHomeScreen() {
-        device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        if (device == null)
+            device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         monitor = InstrumentationRegistry.getInstrumentation().addMonitor("com.cozify.cozifywidget.CozifyAppWidgetConfigure", null, false);
     }
 

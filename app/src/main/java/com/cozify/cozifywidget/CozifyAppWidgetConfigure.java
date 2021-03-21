@@ -443,7 +443,7 @@ public class CozifyAppWidgetConfigure extends Activity {
     }
 
     private static int getTextSizeForWidth(int width) {
-        return (width / 5) + 2;
+        return (width / 5)+1;
     }
 
     static public void setupWidgetButton(final Context context, final AppWidgetManager appWidgetManager,
@@ -462,7 +462,7 @@ public class CozifyAppWidgetConfigure extends Activity {
             int textSize = getTextSizeForWidth(width);
             if (Build.VERSION.SDK_INT < 25)
                 views.setFloat(R.id.control_button_measurement, "setTextSize", textSize);
-            if (textSize > 11 && widgetSettings.hasMeasurement()) {
+            if (textSize > 14 && widgetSettings.hasMeasurement()) {
                 views.setInt(R.id.widget_button_refresh, "setVisibility", View.VISIBLE);
                 views.setOnClickPendingIntent(R.id.widget_button_refresh, CozifyAppWidgetConfigure.createPendingIntentForWidgetClick(context, appWidgetId));
             } else {
@@ -548,7 +548,6 @@ public class CozifyAppWidgetConfigure extends Activity {
             settings.setSelectedCapabilities(selectedCaps);
             ControlState controlState = new ControlState(context, mAppWidgetId);
             controlState.setControlling(false);
-            updateCurrentState(selectedDeviceId);
 
             Bundle options = appWidgetManager.getAppWidgetOptions(mAppWidgetId);
             updateAppWidget(context, appWidgetManager, mAppWidgetId, options);

@@ -426,15 +426,14 @@ public class ControlActivity extends AppCompatActivity {
         views.setInt(bid, "setBackgroundResource", resourceForState);
         views.setBoolean(bid, "setEnabled", !(controlState.isControlling() || controlState.isArming() || controlState.isUpdating()));
         views.setCharSequence(bid, "setText", "");
+
         if (device_name != null) {
             views.setCharSequence(R.id.control_button_device_name, "setText", device_name);
         }
         if (measurement != null) {
-            views.setInt(R.id.widget_button_refresh, "setVisibility", View.VISIBLE);
             views.setCharSequence(R.id.control_button_measurement, "setText", measurement);
             views.setCharSequence(R.id.widget_button_updated_since, "setText", age);
         } else {
-            views.setInt(R.id.widget_button_refresh, "setVisibility", View.GONE);
             views.setCharSequence(R.id.control_button_measurement, "setText", "");
             views.setCharSequence(R.id.widget_button_updated_since, "setText", "");
         }

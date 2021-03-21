@@ -72,7 +72,7 @@ public class CozifyApiReal {
             // find the correct hub with matchig ID
             // split string and for each
             for (final String h : hubs) {
-                final String hub = h.replaceAll("\"", "");
+                final String hub = h.replaceAll("[\" ]", "");
                 getLanHubVersion(hub, new JsonCallback() {
                     @Override
                     public void result(boolean success, String status, JSONObject resultJson) {
