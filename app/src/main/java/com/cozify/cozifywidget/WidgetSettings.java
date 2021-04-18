@@ -25,7 +25,8 @@ public class WidgetSettings {
     }
 
     private boolean save() {
-        this.init = PersistentStorage.getInstance(context).saveWidgetSettings(widgetId, toJsonString());
+        PersistentStorage.getInstance(context).saveWidgetSettings(widgetId, toJsonString());
+        this.init = true;
         return this.init;
     }
 
@@ -64,6 +65,7 @@ public class WidgetSettings {
 
         } catch (JSONException e) {
             e.printStackTrace();
+            return false;
         }
         return true;
     }

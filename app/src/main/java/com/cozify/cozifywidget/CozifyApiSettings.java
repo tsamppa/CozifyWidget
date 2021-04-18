@@ -25,7 +25,8 @@ public class CozifyApiSettings {
     }
 
     private boolean save() {
-        init = PersistentStorage.getInstance(context).saveApiSettings(widgetId, toJsonString());
+        PersistentStorage.getInstance(context).saveApiSettings(widgetId, toJsonString());
+        init = true;
         return init;
     }
 
@@ -72,6 +73,7 @@ public class CozifyApiSettings {
 
         } catch (JSONException e) {
             e.printStackTrace();
+            return false;
         }
         return true;
     }

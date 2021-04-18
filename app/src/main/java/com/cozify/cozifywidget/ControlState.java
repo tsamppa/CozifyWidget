@@ -23,7 +23,8 @@ public class ControlState {
     }
 
     private boolean save() {
-        init = PersistentStorage.getInstance(context).saveControlState(widgetId, toJsonString());
+        PersistentStorage.getInstance(context).saveControlState(widgetId, toJsonString());
+        init = true;
         return init;
     }
 
@@ -64,6 +65,7 @@ public class ControlState {
                 armedForDesiredState = json.getBoolean("armedForDesiredState");
         } catch (JSONException e) {
             e.printStackTrace();
+            return false;
         }
         return true;
     }

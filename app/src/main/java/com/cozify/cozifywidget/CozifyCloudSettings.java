@@ -22,7 +22,8 @@ public class CozifyCloudSettings {
     }
 
     private boolean save() {
-        init = PersistentStorage.getInstance(context).saveCloudSettings(toJsonString());
+        PersistentStorage.getInstance(context).saveCloudSettings(toJsonString());
+        init = true;
         return init;
     }
 
@@ -57,6 +58,7 @@ public class CozifyCloudSettings {
             }
         } catch (JSONException e) {
             e.printStackTrace();
+            return false;
         }
         return true;
     }

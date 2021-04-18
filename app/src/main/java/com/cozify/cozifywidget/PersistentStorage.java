@@ -11,7 +11,7 @@ public class PersistentStorage {
             = "com.cozify.android.apis.appwidget.CozifyWidgetProvider";
     static final String PREF_PREFIX_KEY = "prefix_";
 
-    private Context context;
+    private final Context context;
     private static PersistentStorage ourInstance = null;
     public static PersistentStorage getInstance(Context context) {
         if (ourInstance == null)
@@ -23,52 +23,48 @@ public class PersistentStorage {
         this.context = context.getApplicationContext();
     }
 
-    public boolean saveCloudSettings(String settings) {
+    public void saveCloudSettings(String settings) {
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
         prefs.putString(PREF_PREFIX_KEY + "cloudSettings", settings);
-        return prefs.commit();
+        prefs.apply();
     }
 
     public String loadCloudSettings() {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        String settingsStr = prefs.getString(PREF_PREFIX_KEY + "cloudSettings", null);
-        return settingsStr;
+        return prefs.getString(PREF_PREFIX_KEY + "cloudSettings", null);
     }
 
-    public boolean saveApiSettings(int appWidgetId, String settings) {
+    public void saveApiSettings(int appWidgetId, String settings) {
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
         prefs.putString(PREF_PREFIX_KEY + "apiSettings_" + appWidgetId, settings);
-        return prefs.commit();
+        prefs.apply();
     }
 
     public String loadApiSettings(int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        String settingsStr = prefs.getString(PREF_PREFIX_KEY + "apiSettings_" + appWidgetId, null);
-        return settingsStr;
+        return prefs.getString(PREF_PREFIX_KEY + "apiSettings_" + appWidgetId, null);
     }
 
-    public boolean saveWidgetSettings(int appWidgetId, String state) {
+    public void saveWidgetSettings(int appWidgetId, String state) {
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
         prefs.putString(PREF_PREFIX_KEY + "widgetSettings_" + appWidgetId, state);
-        return prefs.commit();
+        prefs.apply();
     }
 
     public String loadWidgetSettings(int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        String settingsStr = prefs.getString(PREF_PREFIX_KEY + "widgetSettings_" + appWidgetId, null);
-        return settingsStr;
+        return prefs.getString(PREF_PREFIX_KEY + "widgetSettings_" + appWidgetId, null);
     }
 
-    public boolean saveControlState(int appWidgetId, String state) {
+    public void saveControlState(int appWidgetId, String state) {
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
         prefs.putString(PREF_PREFIX_KEY + "controlState_" + appWidgetId, state);
-        return prefs.commit();
+        prefs.apply();
     }
 
     public String loadControlState(int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        String settingsStr = prefs.getString(PREF_PREFIX_KEY + "controlState_" + appWidgetId, null);
-        return settingsStr;
+        return prefs.getString(PREF_PREFIX_KEY + "controlState_" + appWidgetId, null);
     }
 
 
@@ -82,17 +78,16 @@ public class PersistentStorage {
         return null;
     }
 
-    public boolean saveDeviceState(int appWidgetId, CozifySceneOrDeviceState state) {
-        if (state == null) return false;
+    public void saveDeviceState(int appWidgetId, CozifySceneOrDeviceState state) {
+        if (state == null) return;
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
         try {
             String strState = state.toJson().toString();
             prefs.putString(PREF_PREFIX_KEY + "state_" + appWidgetId, strState);
-            return prefs.commit();
+            prefs.apply();
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return false;
     }
 
     public CozifySceneOrDeviceState loadDesiredState(int appWidgetId) {
@@ -105,16 +100,15 @@ public class PersistentStorage {
         return null;
     }
 
-    public boolean saveDesiredState(int appWidgetId, CozifySceneOrDeviceState state) {
-        if (state == null) return false;
+    public void saveDesiredState(int appWidgetId, CozifySceneOrDeviceState state) {
+        if (state == null) return;
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
         try {
             String strState = state.toJson().toString();
             prefs.putString(PREF_PREFIX_KEY + "desiredState_" + appWidgetId, strState);
-            return prefs.commit();
+            prefs.apply();
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return false;
     }
 }
