@@ -40,6 +40,11 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
         buttonLogin = findViewById(R.id.login_button);
         textInputLayoutEmail = findViewById(R.id.email_layout);
 
+        // Find the Password  EditText
+        editTextPw = findViewById(R.id.appwidget_pw);
+        textInputLayoutPw = findViewById(R.id.password);
+        textInputLayoutPw.setEnabled(false);
+
         // Login automatically with saved credentials or show the Login screen
         if (!checkAccess()) {
             enableEmailLogin();
@@ -70,10 +75,6 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
         // Bind the action for the save button.
         buttonLogin.setOnClickListener(mOnClickListenerLogin);
 
-        // Find the Password  EditText
-        editTextPw = findViewById(R.id.appwidget_pw);
-        textInputLayoutPw = findViewById(R.id.password);
-        textInputLayoutPw.setEnabled(false);
         editTextPw.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -98,15 +99,22 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
         });
     }
 
-    private void showEmailFields() {
-        textInputLayoutEmail.setVisibility(View.VISIBLE);
+    private void promptForEmail() {
+        textInputLayoutEmail.setEnabled(true);
         textInputLayoutEmail.requestFocus();
-        buttonLogin.setVisibility(View.VISIBLE);
+        textInputLayoutEmail.setErrorEnabled(true);
+        textInputLayoutEmail.setError("Please enter login email");
+        textViewStatus.setText("Please enter login email");
+        buttonLogin.setEnabled(true);
     }
 
-    private void showPasswordField() {
+    private void promptForPassword() {
+        textInputLayoutEmail.setEnabled(false);
+        editTextPw.setVisibility(View.VISIBLE);
         textInputLayoutPw.setVisibility(View.VISIBLE);
+        textInputLayoutPw.setEnabled(true);
         textInputLayoutPw.requestFocus();
+        editTextPw.setSelection(0);
     }
 
 
@@ -132,6 +140,7 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
                     getHubKeys();
                 } else {
                     textViewStatus.setText(message);
+                    promptForEmail();
                 }
             }
         });
@@ -140,10 +149,10 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
     private void getHubKeys() {
         textViewStatus.setText("Checking connection..");
         buttonLogin.setEnabled(false);
+        textInputLayoutEmail.setEnabled(false);
         cozifyAPI.getHubKeys(new CozifyApiReal.JsonCallback() {
             @Override
             public void result(boolean success, String message, JSONObject jsonResult) {
-                buttonLogin.setEnabled(true);
                 if (success) {
                     final Context context = CozifyWidgetSetupActivity.this;
                     Toast.makeText(context, "Connected to Cozify. You can now create widgets.", Toast.LENGTH_SHORT).show();
@@ -153,6 +162,7 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
                     finish();
                 } else {
                     textViewStatus.setText(message);
+                    buttonLogin.setEnabled(true);
                     enableEmailLogin();
                 }
             }
@@ -161,7 +171,7 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
 
     private void enableEmailLogin() {
         listHubs();
-        showEmailFields();
+        promptForEmail();
     }
 
     View.OnClickListener mOnClickListenerLogin = new View.OnClickListener() {
@@ -178,20 +188,16 @@ public class CozifyWidgetSetupActivity extends AppCompatActivity {
                     @Override
                     public void result(boolean success, String message, String result) {
                         if (success) {
-                            showPasswordField();
-                            textInputLayoutEmail.setErrorEnabled(false);
-                            textInputLayoutPw.setEnabled(true);
-                            editTextPw.setSelection(0);
+                            promptForPassword();
                             textViewStatus.setText("Check your email for the temporary password.");
                         } else {
+                            promptForEmail();
                             textViewStatus.setText(message + ": " + result);
                         }
                     }
                 });
             } else {
-                textInputLayoutEmail.setErrorEnabled(true);
-                textInputLayoutEmail.setError("Please enter login email");
-                textViewStatus.setText("Please enter login email");
+                promptForEmail();
             }
         }
     };

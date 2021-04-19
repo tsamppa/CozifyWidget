@@ -1,22 +1,22 @@
 <resources>
-    <string name="app_name">Cozify Scene and Device Control</string>
+    <string name="app_name" translatable="false">Cozify Widgets</string>
     <string name="appwidget_text">Scene or Device</string>
-    <string name="add_widget">Cozify Control</string>
-    <string name="password_from_email">2. Check email and copy the password here</string>
-    <string name="login_email">someone@email.com</string>
-    <string name="login_button">1. Send a password to email above</string>
+    <string name="add_widget" translatable="false">Cozify Widget</string>
+    <string name="password_from_email">3. Check email and copy the password here</string>
+    <string name="login_email" translatable="false">someone@email.com</string>
+    <string name="login_button">2. Send one-time password</string>
     <string name="get_devices">Get devices</string>
     <string name="login_first">Login first to list Scenes and Devices</string>
     <string name="device_name">2. Give a shorter label shown on button (optional)</string>
-    <string name="create_button">&gt;&gt; 4. Create the Widget &lt;&lt;</string>
-    <string name="intro_text">This is Cozify Widget for quick control of a Scene or Device directly from the home screen. You need to have a Cozify Smart Home Hub device. Login by entering the email address of your Cozify account to receive a one-time password to the given email address. Then you can create a widget buttons for controlling Scenes and Devices.</string>
+    <string name="create_button">&gt;&gt; 4. Create Widget &lt;&lt;</string>
+    <string name="intro_text">This is Cozify Widget for quick control of a Scene or Device directly from the home screen. You need to have a Cozify Smart Home Hub device. Login with your Cozify account to receive a one-time password. After login you can start creating widgets to your home screen.</string>
     <string name="control_device_status">Status</string>
     <string name="select_hub_and_device">1. Select Hub and Target:</string>
     <string name="controlling_device">Controlling device..</string>
     <string name="login_status">Checking login..</string>
     <string name="test_on">Test ON now</string>
     <string name="test_off">Test OFF now</string>
-    <string name="email_address">Email address</string>
+    <string name="email_address">1. Email address</string>
     <string name="tip_select_device_first">1. Select Hub and Target:</string>
     <string name="label">Label</string>
     <string name="small">Small</string>
@@ -27,14 +27,14 @@
     <string name="configure_button_decription">Configure</string>
     <string name="refresh_button_decription">Refresh</string>
     <string name="updated_since">2 min ago</string>
-    <string name="capability_label_on_off">On / Off</string>
+    <string name="capability_label_on_off" translatable="false">On / Off</string>
     <string name="capability_label_temperature">Temperature</string>
     <string name="capability_label_humidity">Humidity</string>
     <string name="capability_label_co2">CO2</string>
     <string name="capability_label_lux">Lux</string>
     <string name="capability_label_watt">Watt</string>
     <string name="login_help_text">Then type in or copy-paste the password from the email in the field above.</string>
-    <string name="connected_next_step_info">Well done! Connected.\nNext step is to create Widgets to the Android Home screens. This is done by pressing and holding an empty space and selecting Widgets in the popup menu. Then find Cozify Widgets in the list and press and hold again until the list disappears and you an drop the widget in desired location on the screen. You have two options: larger widget to show numeric data from sensors and smaller button for control activities. With several widgets you can build dashboards. Remove a widget with a long press and by selecting delete.</string>
+    <string name="connected_next_step_info">Well done! Connected to Cozify.\n\nNext step is to create Widgets to the Android Home screens:\n1.  Press and hold an empty space and select "Widgets" in the popup menu.\n2.  Find "Cozify Widgets" in the list and press and hold again until the list disappears.\n3.  Drop the widget in desired location on the screen.\n\nYou have two options: larger widget to show numeric data from sensors and smaller button for control activities.\nWith several widgets you can build dashboards.\nRemove a widget with a long press and by selecting delete.</string>
     <string name="close_setup_button_text">Close and start creating Widgets</string>
     <string name="title_activity_troubleshooter_root">Troubleshooter</string>
     <!-- Strings used for fragments for navigation -->
@@ -47,4 +47,5 @@
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="title_activity_troubleshooter_details">TroubleshooterDetailsActivity</string>
     <string name="help_open_troubleshooter">If you are encountering problems with the logic of your rules, please select a Hub and click the button below to open helper.</string>
+    <string name="logout_label">Logout</string>
 </resources>

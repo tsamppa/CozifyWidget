@@ -161,4 +161,10 @@ public class CozifyAppWidgetConnectedActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
     }
+
+    public void onButtonLogout(View view) {
+        cozifyAPI.setCloudToken(null);
+        Intent i = new Intent(this, CozifyWidgetSetupActivity.class);
+        startActivity(i);
+    }
 }

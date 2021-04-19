@@ -20,17 +20,17 @@
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         android:textColorHint="@android:color/black"
-        android:visibility="invisible">
+        android:visibility="visible">
 
         <EditText
             android:id="@+id/email_edit"
-            android:hint="@string/email_address"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:minHeight="48dp"
             android:layout_margin="10dp"
             android:autofillHints="Email"
-            android:inputType="textEmailAddress" />
+            android:hint="@string/email_address"
+            android:inputType="textEmailAddress"
+            android:minHeight="48dp" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -55,6 +55,7 @@
             android:hint="@string/password_from_email"
             android:inputType="text"
             android:labelFor="@+id/password"
+            android:visibility="invisible"
             tools:ignore="Autofill" />
     </com.google.android.material.textfield.TextInputLayout>
 

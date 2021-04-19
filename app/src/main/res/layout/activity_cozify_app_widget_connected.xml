@@ -16,7 +16,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="15pt"
-            android:text="Well done! Connected to hub.\n\nNext step is to create Widgets to the Android Home screens:\n1.  Press and hold an empty space and selecti Widgets in the popup menu.\n2. Find 'Cozify Widgets' in the list and press and hold again until the list disappears. \n3. Drop the widget in desired location on the screen.\n\nYou have two options: larger widget to show numeric data from sensors and smaller button for control activities. \nWith several widgets you can build dashboards. \nRemove a widget with a long press and by selecting delete."
+            android:text="@string/connected_next_step_info"
             android:textSize="18sp" />
 
         <Button
@@ -27,6 +27,15 @@
             android:onClick="onButtonSetupComplete"
             android:text="@string/close_setup_button_text"
             android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="8dp"
+            android:onClick="onButtonLogout"
+            android:text="@string/logout_label" />
 
         <TextView
             android:id="@+id/textView_troubleshooterHelp"

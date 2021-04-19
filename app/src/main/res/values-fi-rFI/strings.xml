@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="appwidget_text">Teema tai laite</string>
+    <string name="password_from_email">3. Kopioi sähköpostiisi lähetetty salasana tähän</string>
+    <string name="login_button">2. Lähetä kertakäyttöinen salasana</string>
+    <string name="get_devices">Hae laitteet</string>
+    <string name="login_first">Kirjaudu ennenkuin voit nähdä Teemat ja Laitteet</string>
+    <string name="device_name">2. Anna lyhennetty nimi näytettäväksi napissa</string>
+    <string name="create_button">&gt;&gt; 4. Luo Widget &lt;&lt;</string>
+    <string name="intro_text">Tämä on Cozify Widget jonka avulla voit nähdä mittaustietoja ja ohjata teemoja ja laitteita suoraan Androidin kotiruudulta. Käyttöön tarvitset Cozify Smart Home Hub laitteen. Kirjaudu sisään sähköpostiosoitteellasi ja saat kertakäyttöisen salasana. Kirjautumisen jälkeen voit alkaa luomaan widgettejä Androidin ruudulle.</string>
+    <string name="control_device_status">Tila</string>
+    <string name="select_hub_and_device">1. Valitse Hubi ja kohde</string>
+    <string name="controlling_device">Ohjataan laitetta..</string>
+    <string name="login_status">Tarkistetaan kirjautumista..</string>
+    <string name="test_on">Kokeile ON nyt</string>
+    <string name="test_off">Kokeile OFF nyt</string>
+    <string name="email_address">1. Sähköpostiosoite</string>
+    <string name="tip_select_device_first">1. Valitse Hubi ja kohde ensin</string>
+    <string name="label">Nimike</string>
+    <string name="small">Pieni</string>
+    <string name="medium">Keskikoko</string>
+    <string name="large">Suuri</string>
+    <string name="select_existing_widget_as_a_template">1. Valitse olemassaoleva Widgetti pohjaksi:</string>
+    <string name="select_text_font_size">3. Valitse fonttikoko</string>
+    <string name="configure_button_decription">Asetukset</string>
+    <string name="refresh_button_decription">Päivitä</string>
+    <string name="updated_since">2 min sitten</string>
+    <string name="capability_label_temperature">Lämpötila</string>
+    <string name="capability_label_humidity">Ilmankosteus</string>
+    <string name="capability_label_co2">CO2</string>
+    <string name="capability_label_lux">Lux</string>
+    <string name="capability_label_watt">Watt</string>
+    <string name="login_help_text">Kirjoita tai kopioi sähköpostiin lähetetty salasana</string>
+    <string name="connected_next_step_info">Yhteys muodostettu!\n\nSeuraavaksi voit luoda Widgettejä Androidin ruudulle seuraavsti:\n1.  Valitse ruudulta tyhjä paikka ja paina sitä pitkään kunnes esiin tulee valikko.\n2.  Etsi "Cozify Widgets" pienoisohjelmien listalta ja paina ikonia pitkään kunnes valikko katoaa alta.\n3.  Pudota Widget haluamaasi kohtaan ruudulla.\n\nVoit valita joko suuremman mittausuloksille soveltuvan Widgetin tai pienemmän ohjauksiin soveltuvan Widgetin.\nUsealla widgetillä voit muodostaa kokonaisia ohjausnäkymiä.\nWidgetti poistetaan painamalla sitä pitkään ja valitsemalla "Poista".</string>
+    <string name="close_setup_button_text">Sulje ja aloita Widgettien luonti</string>
+    <string name="title_activity_troubleshooter_root">Vianmääritys</string>
+    <string name="first_fragment_label">Eka fragmentti</string>
+    <string name="second_fragment_label">Toinen Fragmentti</string>
+    <string name="next">Seuraava</string>
+    <string name="previous">Edellinen</string>
+    <string name="hello_first_fragment">Moi ensimmäinen fragmentti</string>
+    <string name="hello_second_fragment">Hello toinen fragmentti. Arg: %1$s</string>
+    <string name="title_activity_troubleshooter_details">Vianmääritys tiedot</string>
+    <string name="help_open_troubleshooter">Jos sinulla on engelmia Cozify sääntöjen kanssa, voit valita alta Hubin ja avata vianmäärityksen työkaluja.</string>
+    <string name="logout_label">Kirjaudu ulos</string>
+</resources>
