@@ -44,7 +44,6 @@ import static androidx.test.espresso.action.ViewActions.pressImeActionButton;
 import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -165,7 +164,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
         pa[0] = c;
         pa[1] = c;
         assertThat(device, notNullValue());
-        pa[2] = new Point(device.getDisplayWidth()/2, 120);
+        pa[2] = new Point(device.getDisplayWidth()/2, 100);
         device.swipe(pa, 150);
         sleep(1000);
     }
@@ -224,7 +223,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
     @Test
     public void c1_cozifyWidgetSetupActivityTestNetworkLost() {
         String name = "Bad internet";
-        UiObject2 widget1 = createAndConfigWidgetAndSetOn(name, "Samppa's Hub", "Test Device", "Small", true, false);
+        UiObject2 widget1 = createAndConfigWidgetAndSetOn(name, "Samppa's Hub", "Test Device", true, false);
         checkIcon(name, "appwidget_button_clickable_on");
         enableNetwork(false);
         clickWaitArmControl(widget1);
@@ -241,7 +240,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
 
     @Test
     public void c1_cozifyWidgetSetupActivityTestIconStatesBigWidget() {
-        testIconStates(true);
+        //testIconStates(true);
     }
 
     private void testIconStates(boolean doubleSize) {
@@ -249,7 +248,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
         String name = "ICON";
         removeWidget(name);
 
-        UiObject2 widget = createAndConfigWidgetAndSetOn(name, "Samppa's Hub", "Test Device", "Small", true, doubleSize);
+        UiObject2 widget = createAndConfigWidgetAndSetOn(name, "Samppa's Hub", "Test Device", true, doubleSize);
         sleep(3000);
         checkIcon(name, "appwidget_button_clickable_on");
         widget.click();
@@ -280,12 +279,12 @@ public class CozifyWidgetSetupActivityTestOnOff {
     @Test
     public void c1_cozifyWidgetSetupActivityTestLongName() {
         String name = "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
-        UiObject2 widget1 = createAndConfigWidget(name, "Samppa's Hub", "Test Device", "Small", false);
-        UiObject2 widget2 = createAndConfigWidget(name, "Samppa's Hub", "Test Device", "Medium", false);
-        UiObject2 widget3 = createAndConfigWidget(name, "Samppa's Hub", "Test Device", "Large", false);
-        UiObject2 widget1d = createAndConfigWidget(name, "Samppa's Hub", "Test Device", "Small", true);
-        UiObject2 widget2d = createAndConfigWidget(name, "Samppa's Hub", "Test Device", "Medium", true);
-        UiObject2 widget3d = createAndConfigWidget(name, "Samppa's Hub", "Test Device", "Large", true);
+        UiObject2 widget1 = createAndConfigWidget(name, "Samppa's Hub", "Test Device", false);
+        UiObject2 widget2 = createAndConfigWidget(name, "Samppa's Hub", "Test Device", false);
+        UiObject2 widget3 = createAndConfigWidget(name, "Samppa's Hub", "Test Device", false);
+        UiObject2 widget1d = createAndConfigWidget(name, "Samppa's Hub", "Test Device", true);
+        UiObject2 widget2d = createAndConfigWidget(name, "Samppa's Hub", "Test Device", true);
+        UiObject2 widget3d = createAndConfigWidget(name, "Samppa's Hub", "Test Device", true);
         clickWaitArmControl(widget1);
         clickWaitArmControl(widget2);
         clickWaitArmControl(widget3);
@@ -298,14 +297,14 @@ public class CozifyWidgetSetupActivityTestOnOff {
     @Test
     public void c1_cozifyWidgetSetupActivityTestScreenshot() {
         removeWidget("Bathroom");
-        UiObject2 widget1 = createAndConfigWidget("HOME ALARM", "Samppa's Hub", "Test Device", "Medium", false);
-        UiObject2 widget2 = createAndConfigWidget("A/C", "Samppa's Hub", "Test Device", "Large", false);
-        UiObject2 widget3 = createAndConfigWidget("NIGHT", "Samppa's Hub", "Test Device", "Medium", false);
-        UiObject2 widget4 = createAndConfigWidget("Bathroom", "Samppa's Hub", "Test Sensor", "Small", false);
-        UiObject2 widget1d = createAndConfigWidget("HOME ALARM", "Samppa's Hub", "Test Device", "Medium", true);
-        UiObject2 widget2d = createAndConfigWidget("A/C", "Samppa's Hub", "Test Device", "Large", true);
-        UiObject2 widget3d = createAndConfigWidget("NIGHT", "Samppa's Hub", "Test Device", "Medium", true);
-        UiObject2 widget4d = createAndConfigWidget("Bathroom", "Samppa's Hub", "Test Sensor", "Small", true);
+        UiObject2 widget1 = createAndConfigWidget("HOME ALARM", "Samppa's Hub", "Test Device", false);
+        UiObject2 widget2 = createAndConfigWidget("A/C", "Samppa's Hub", "Test Device", false);
+        UiObject2 widget3 = createAndConfigWidget("NIGHT", "Samppa's Hub", "Test Device", false);
+        UiObject2 widget4 = createAndConfigWidget("Bathroom", "Samppa's Hub", "Test Sensor", false);
+        UiObject2 widget1d = createAndConfigWidget("HOME ALARM", "Samppa's Hub", "Test Device", true);
+        UiObject2 widget2d = createAndConfigWidget("A/C", "Samppa's Hub", "Test Device", true);
+        UiObject2 widget3d = createAndConfigWidget("NIGHT", "Samppa's Hub", "Test Device", true);
+        UiObject2 widget4d = createAndConfigWidget("Bathroom", "Samppa's Hub", "Test Sensor", true);
         clickAndWait(widget1);
         clickAndWait(widget2);
         clickAndWait(widget3);
@@ -330,19 +329,19 @@ public class CozifyWidgetSetupActivityTestOnOff {
 
     @Test
     public void c2_cozifyWidgetSetupActivityTestCreateAllTypes() {
-        UiObject2 widget1 = createAndConfigWidgetAndSetOn("T Scene", "Samppa's Hub", "Scene: Test Scene", "Medium", true, false);
+        UiObject2 widget1 = createAndConfigWidgetAndSetOn("T Scene", "Samppa's Hub", "Scene: Test Scene", true, false);
         sleep(1000);
-        UiObject2 widget2 = createAndConfigWidget("T Device", "Samppa's Hub", "Test Device", "Medium", false);
+        UiObject2 widget2 = createAndConfigWidget("T Device", "Samppa's Hub", "Test Device", false);
         sleep(1000);
-        UiObject2 widget3 = createAndConfigWidget("T TEMP", "Samppa's Hub", "Test Sensor", "Medium", false);
+        UiObject2 widget3 = createAndConfigWidget("T TEMP", "Samppa's Hub", "Test Sensor", false);
         sleep(1000);
-        UiObject2 widget4 = createAndConfigWidget("T Group", "Samppa's Hub", "Group: Test Group", "Medium", false);
+        UiObject2 widget4 = createAndConfigWidget("T Group", "Samppa's Hub", "Group: Test Group", false);
         sleep(1000);
-        UiObject2 widget5 = createAndConfigWidget("T LUX", "Samppa's Hub", "Keittiön liik", "Medium", false);
+        UiObject2 widget5 = createAndConfigWidget("T LUX", "Samppa's Hub", "Keittiön liik", false);
         sleep(1000);
-        UiObject2 widget6 = createAndConfigWidget("T WATT", "Samppa's Hub", "Kiertovesipumppu", "Medium", false);
+        UiObject2 widget6 = createAndConfigWidget("T WATT", "Samppa's Hub", "Kiertovesipumppu", false);
         sleep(1000);
-        UiObject2 widget7 = createAndConfigWidget("T HUM", "Samppa's Hub", "Kylppäri kosteus", "Medium", false);
+        UiObject2 widget7 = createAndConfigWidget("T HUM", "Samppa's Hub", "Kylppäri kosteus", false);
         sleep(3000);
         widget1.click();
         widget2.click();
@@ -372,7 +371,7 @@ public class CozifyWidgetSetupActivityTestOnOff {
     @Test
     public void c4_cozifyWidgetSetupActivityTestCreate3() {
         for (int i = 3; i < 12; i++) {
-            createAndConfigWidget("T" + i, "Samppa's Hub", "Test Device", "Medium", false);
+            createAndConfigWidget("T" + i, "Samppa's Hub", "Test Device", false);
         }
         clickAll();
         clickAll();
@@ -402,11 +401,6 @@ public class CozifyWidgetSetupActivityTestOnOff {
     private void setWidgetName(String widgetName) {
         ViewInteraction editText = onView(
                 allOf(withId(R.id.device_name_edit),
-                        childAtPosition(
-                                childAtPosition(
-                                        allOf(withId(R.id.control_button_device_name), withContentDescription("Label")),
-                                        0),
-                                0),
                         isDisplayed()));
         assertThat(editText, notNullValue());
         device.waitForIdle();
@@ -451,15 +445,13 @@ public class CozifyWidgetSetupActivityTestOnOff {
         return widget;
     }
 
-    private UiObject2 createAndConfigWidget(String widgetName, String hubName, String deviceName, String fontSize, boolean doubleSize) {
+    private UiObject2 createAndConfigWidget(String widgetName, String hubName, String deviceName, boolean doubleSize) {
         createAndPrepareWidget(widgetName, hubName, deviceName, doubleSize);
-        selectFontSize(fontSize);
         return returnCreatedWidget(widgetName);
     }
 
-    private UiObject2 createAndConfigWidgetAndSetOn(String widgetName, String hubName, String deviceName, String fontSize, boolean on, boolean doubleSize) {
+    private UiObject2 createAndConfigWidgetAndSetOn(String widgetName, String hubName, String deviceName, boolean on, boolean doubleSize) {
         createAndPrepareWidget(widgetName, hubName, deviceName, doubleSize);
-        selectFontSize(fontSize);
         if (on) {
             testOnButton();
         } else {
@@ -470,18 +462,6 @@ public class CozifyWidgetSetupActivityTestOnOff {
         widget.click();
         sleep(10000);
         return widget;
-    }
-
-
-    private void selectFontSize(String fontSize) {
-        return;
-/*        if (fontSize.equals("Small"))
-            onView(allOf(withId(R.id.text_size_small), withText(fontSize), isDisplayed())).perform(click());
-        if (fontSize.equals("Medium"))
-            onView(allOf(withId(R.id.text_size_medium), withText(fontSize), isDisplayed())).perform(click());
-        if (fontSize.equals("Large"))
-            onView(allOf(withId(R.id.text_size_large), withText(fontSize), isDisplayed())).perform(click());
- */
     }
 
     private static Matcher<View> childAtPosition(
