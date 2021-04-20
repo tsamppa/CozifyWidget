@@ -34,7 +34,7 @@ public class CozifyApiReal {
 
         public void loadState(int widgetId) {
             settingsHub = new CozifyApiSettings(context, widgetId);
-            setHubLanIpIfIdMatches(settingsHub.getHubLanIp());
+//            setHubLanIpIfIdMatches(settingsHub.getHubLanIp());
             loadCloudSettings();
         }
 
@@ -64,7 +64,7 @@ public class CozifyApiReal {
 
         public void setHubLanIpIfIdMatches(final String hubLanIp) {
             // check if multiple IPs given
-            if (hubLanIp == null || hubLanIp.length() < 1) {
+/*            if (hubLanIp == null || hubLanIp.length() < 1) {
                 settingsHub.setHubLanIp("");
                 return;
             }
@@ -92,7 +92,7 @@ public class CozifyApiReal {
                         }
                     }
                 });
-            }
+            }*/
             settingsHub.setHubLanIp("");
             localBaseUrl = null;
         }
@@ -122,12 +122,12 @@ public class CozifyApiReal {
                     public void result(boolean success, String status, String resultString) {
                         if (success) {
                             settingsHub.setHubConnectedTime();
-                            if (resultString.length() > 2) {
-                                String hubLanIp = resultString.substring(2, resultString.length() - 2);
-                                setHubLanIpIfIdMatches(hubLanIp);
-                            } else {
-                                setHubLanIpIfIdMatches("");
-                            }
+//                            if (resultString.length() > 2) {
+//                                String hubLanIp = resultString.substring(2, resultString.length() - 2);
+//                                setHubLanIpIfIdMatches(hubLanIp);
+//                            } else {
+//                                setHubLanIpIfIdMatches("");
+//                            }
 
                             getHubVersion(new JsonCallback() {
                                 @Override
@@ -191,9 +191,9 @@ public class CozifyApiReal {
         }
 
         public boolean toggleConnectType() {
-            if (remoteConnection) {
+/*            if (remoteConnection) {
                 return connectLocally();
-            }
+            }*/
             connectRemotely();
             return true;
         }

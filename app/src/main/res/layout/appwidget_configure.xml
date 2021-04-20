@@ -118,6 +118,15 @@
 
     </TableLayout>
 
+    <Switch
+        android:id="@+id/switch_safe_control"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_margin="3dp"
+        android:enabled="true"
+        android:text="@string/label_safe_control" />
+
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/control_button_device_name"
         android:layout_width="match_parent"

@@ -15,6 +15,7 @@ public class WidgetSettings {
     private Context context;
     private int widgetId;
     private JSONArray selectedCapabilities;
+    private boolean safeControl = true;
 
     public WidgetSettings(Context context, int widgetId) {
         this.selectedCapabilities = new JSONArray();
@@ -42,6 +43,7 @@ public class WidgetSettings {
                 json.put("selectedTextSize", this.textSize);
             json.put("doubleSize", this.doubleSize);
             json.put("selectedCapabilities", this.selectedCapabilities);
+            json.put("safeControl", this.safeControl);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -62,6 +64,8 @@ public class WidgetSettings {
                 this.doubleSize = json.getBoolean("doubleSize");
             if (json.has("selectedCapabilities"))
                 this.selectedCapabilities = json.getJSONArray("selectedCapabilities");
+            if (json.has("safeControl"))
+                this.safeControl = json.getBoolean("safeControl");
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -125,4 +129,12 @@ public class WidgetSettings {
         return hasMeasurement;
     }
 
+    public boolean setSafeControl(boolean safe) {
+        this.safeControl = safe;
+        return save();
+    }
+
+    public boolean getSafeControl() {
+        return this.safeControl;
+    }
 }

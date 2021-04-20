@@ -48,4 +48,5 @@
     <string name="title_activity_troubleshooter_details">TroubleshooterDetailsActivity</string>
     <string name="help_open_troubleshooter">If you are encountering problems with the logic of your rules, please select a Hub and click the button below to open helper.</string>
     <string name="logout_label">Logout</string>
+    <string name="label_safe_control">Safe control</string>
 </resources>

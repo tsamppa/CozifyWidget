@@ -66,6 +66,7 @@ public class CozifyAppWidgetConfigure extends Activity {
     ArrayList<String> devicesList;
 
     boolean selectedDeviceCapability_on_off = false;
+    boolean selectedSafeControl = false;
     boolean selectedDeviceCapability_temperature = false;
     boolean selectedDeviceCapability_co2 = false;
     boolean selectedDeviceCapability_humidity = false;
@@ -171,6 +172,15 @@ public class CozifyAppWidgetConfigure extends Activity {
                 selectedDeviceCapability_on_off = isChecked;
             }
         });
+
+        Switch switch_safety = (Switch) findViewById(R.id.switch_safe_control);
+        switch_safety.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                selectedSafeControl = isChecked;
+            }
+        });
+
 
         Switch switch_temp = (Switch) findViewById(R.id.switch_device_capability_temperature);
         switch_temp.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -292,6 +302,10 @@ public class CozifyAppWidgetConfigure extends Activity {
         s_onoff.setChecked(on_off);
         s_onoff.setEnabled(on_off);
 
+        Switch s_safety = (Switch) findViewById(R.id.switch_safe_control);
+        s_safety.setChecked(on_off);
+        s_safety.setEnabled(on_off);
+
         boolean co2 = hasDeviceCapability(selectedDeviceName, "CO2");
         Switch s_co2 = (Switch) findViewById(R.id.switch_device_capability_co2);
         s_co2.setChecked(co2);
@@ -336,6 +350,10 @@ public class CozifyAppWidgetConfigure extends Activity {
 
         findViewById(R.id.switch_device_capability_watt).setSelected(false);
         findViewById(R.id.switch_device_capability_watt).setEnabled(false);
+
+        findViewById(R.id.switch_safe_control).setSelected(false);
+        findViewById(R.id.switch_safe_control).setEnabled(false);
+
     }
 
     JSONArray getSelectedCapabilities() {
@@ -546,17 +564,18 @@ public class CozifyAppWidgetConfigure extends Activity {
             settings.setTextSize(selectedTextSize);
             JSONArray selectedCaps = getSelectedCapabilities();
             settings.setSelectedCapabilities(selectedCaps);
+            settings.setSafeControl(selectedSafeControl);
             ControlState controlState = new ControlState(context, mAppWidgetId);
             controlState.setControlling(false);
 
             Bundle options = appWidgetManager.getAppWidgetOptions(mAppWidgetId);
-            updateAppWidget(context, appWidgetManager, mAppWidgetId, options);
-            updateAllWidgets();
             Intent resultValue = new Intent();
             resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
             setResult(RESULT_OK, resultValue);
             String hubName = CozifyCloudToken.parseHubNameFromToken(selectedHubKey);
             ShowMessage("Widget "+mAppWidgetId+" created for controlling "+selectedDeviceShortName +" of HUB "+hubName);
+            updateAppWidget(context, appWidgetManager, mAppWidgetId, options);
+            updateAllWidgets();
             finish();
         } else {
             disableCapabilities();
@@ -682,12 +701,12 @@ public class CozifyAppWidgetConfigure extends Activity {
                     } else {
                         setStatus("ERROR in requesting devices (no respons): " + status);
                     }
-                    if (status.contains("408")) {
-                        revertToLocalHubConnection();
-                    } else {
+//                    if (status.contains("408")) {
+//                        revertToLocalHubConnection();
+//                    } else {
                         cozifyAPI.connectRemotely();
                         enableSpinners(true);
-                    }
+//                    }
                 }
             }
         });
@@ -796,12 +815,12 @@ public class CozifyAppWidgetConfigure extends Activity {
 
                 } else {
                     setStatus("ERROR when fetching Scenes; " + status);
-                    if (status.contains("408")) {
-                        revertToLocalHubConnection();
-                    } else {
+//                    if (status.contains("408")) {
+//                        revertToLocalHubConnection();
+//                    } else {
                         cozifyAPI.connectRemotely();
                         enableSpinners(true);
-                    }
+//                    }
                 }
             }
         });

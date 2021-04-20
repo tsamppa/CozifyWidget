@@ -73,15 +73,19 @@ public class ControlActivity extends AppCompatActivity {
                 (controlState.isControlling() || controlState.isArming() || controlState.isUpdating())) {
             return true;
         } else {
-            if (isArmed()) {
-                if (toggleOnOff()) {
-                    return true;
-                } else {
-                    updateDeviceState("handleToggleClick()");
-                }
+            if (!widgetSettings.getSafeControl()) {
+                updateDeviceStateAndToggle();
             } else {
-                updateDeviceStateAndArm();
-                return true;
+                if (isArmed()) {
+                    if (toggleOnOff()) {
+                        return true;
+                    } else {
+                        updateDeviceState("handleToggleClick()");
+                    }
+                } else {
+                    updateDeviceStateAndArm();
+                    return true;
+                }
             }
         }
         return false;
@@ -514,6 +518,32 @@ public class ControlActivity extends AppCompatActivity {
         });
     }
 
+    private void updateDeviceStateAndToggle() {
+        if (widgetSettings.getDeviceId() == null) {
+            ShowMessage("Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
+            return;
+        }
+        controlState.setArming(true);
+        saveState();
+        displayDeviceState("updateDeviceStateAndToggle");
+        stateMgr.updateCurrentState(widgetSettings.getDeviceId(), true, new CozifyApiReal.CozifyCallback() {
+            @Override
+            public void result(boolean success, String status, JSONObject resultJson, JSONObject requestJson) {
+                if (success) {
+                    loadSavedSettings();
+                    CozifySceneOrDeviceState state = stateMgr.getCurrentState();
+                    controlState.setArmedForDesiredState(!state.isOn);
+                    saveState();
+                    toggleOnOff();
+                } else {
+                    stateMgr.setReachable(false);
+                    controlState.setArming(false);
+                    saveState();
+                    displayDeviceState("updateDeviceStateAndToggle().stateMgr.updateCurrentState");
+                }
+            }
+        });
+    }
 
     private boolean toggleOnOff() {
         startControl();

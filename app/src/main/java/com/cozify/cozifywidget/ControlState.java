@@ -160,8 +160,8 @@ public class ControlState {
     }
 
     public boolean shouldUpdate() {
-        long timeSinceLastUodate = System.currentTimeMillis() - lastUpdateSinceEpochMs;
-        return ((state == 0 && timeSinceLastUodate > 20000) ||
-                timeSinceLastUodate > 60000);
+        long timeSinceLastUpdate = System.currentTimeMillis() - lastUpdateSinceEpochMs;
+        return ((state == 0 && timeSinceLastUpdate > 20000) ||
+                timeSinceLastUpdate > 60000);
     }
 }

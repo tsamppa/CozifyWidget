@@ -43,4 +43,5 @@
     <string name="title_activity_troubleshooter_details">Vianmääritys tiedot</string>
     <string name="help_open_troubleshooter">Jos sinulla on engelmia Cozify sääntöjen kanssa, voit valita alta Hubin ja avata vianmäärityksen työkaluja.</string>
     <string name="logout_label">Kirjaudu ulos</string>
+    <string name="label_safe_control">Turvallinen ohjaus</string>
 </resources>
