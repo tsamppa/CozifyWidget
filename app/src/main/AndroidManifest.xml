@@ -57,6 +57,7 @@
             android:label="Cozify Big Size">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
                 <action android:name="ActionReceiverConfigButtonPressed" />
                 <action android:name="ActionReceiverRefreshButtonPressed" />
             </intent-filter>
@@ -71,6 +72,7 @@
             android:label="Cozify Small Size">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
             </intent-filter>
 
             <meta-data

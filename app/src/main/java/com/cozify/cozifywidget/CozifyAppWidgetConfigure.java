@@ -2,6 +2,7 @@ package com.cozify.cozifywidget;
 
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
@@ -75,6 +76,18 @@ public class CozifyAppWidgetConfigure extends Activity {
 
     public CozifyAppWidgetConfigure() {
         super();
+    }
+
+    private boolean canceled = true;
+    @Override
+    protected void onPause() {
+        if (canceled) {
+            AppWidgetHost host = new AppWidgetHost(CozifyAppWidgetConfigure.this, 1);
+            host.deleteAppWidgetId(mAppWidgetId);
+        } else {
+            updateAllWidgets();
+        }
+        super.onPause();
     }
 
     @Override
@@ -465,7 +478,7 @@ public class CozifyAppWidgetConfigure extends Activity {
     }
 
     static public void setupWidgetButton(final Context context, final AppWidgetManager appWidgetManager,
-                                  final int appWidgetId, final Bundle options, final WidgetSettings widgetSettings) {
+                                  final int appWidgetId, final Bundle options, final SettingsWidget settingsWidget) {
         int layout = R.layout.appwidget_button;
         AppWidgetProviderInfo pi = appWidgetManager.getAppWidgetInfo(appWidgetId);
         if (pi != null) {
@@ -480,7 +493,7 @@ public class CozifyAppWidgetConfigure extends Activity {
             int textSize = getTextSizeForWidth(width);
             if (Build.VERSION.SDK_INT < 25)
                 views.setFloat(R.id.control_button_measurement, "setTextSize", textSize);
-            if (textSize > 14 && widgetSettings.hasMeasurement()) {
+            if (textSize > 14 && settingsWidget.hasMeasurement()) {
                 views.setInt(R.id.widget_button_refresh, "setVisibility", View.VISIBLE);
                 views.setOnClickPendingIntent(R.id.widget_button_refresh, CozifyAppWidgetConfigure.createPendingIntentForWidgetClick(context, appWidgetId));
             } else {
@@ -497,37 +510,37 @@ public class CozifyAppWidgetConfigure extends Activity {
     static void updateAppWidget(final Context context, final AppWidgetManager appWidgetManager,
                                 final int appWidgetId, final Bundle options) {
 
-        final WidgetSettings widgetSettings = new WidgetSettings(context, appWidgetId);
-        if (widgetSettings.init && widgetSettings.getDeviceId() != null) {
+        final SettingsWidget settingsWidget = new SettingsWidget(context, appWidgetId);
+        if (settingsWidget.init && settingsWidget.getDeviceId() != null) {
 
-            CozifyAppWidgetConfigure.setupWidgetButton(context, appWidgetManager, appWidgetId, options, widgetSettings);
+            setupWidgetButton(context, appWidgetManager, appWidgetId, options, settingsWidget);
 
             final ControlState controlState = new ControlState(context, appWidgetId);
             if (controlState.init) {
                 final CozifySceneOrDeviceStateManager stateMgr = new CozifySceneOrDeviceStateManager(context, appWidgetId);
                 if (controlState.shouldUpdate()) {
                     controlState.setUpdating(true);
-                    updateIcon(context, appWidgetId, widgetSettings, controlState,
+                    updateIcon(context, appWidgetId, settingsWidget, controlState,
                             stateMgr, appWidgetManager);
-                    stateMgr.updateCurrentState(widgetSettings.getDeviceId(), false, new CozifyApiReal.CozifyCallback() {
+                    stateMgr.updateCurrentState(settingsWidget.getDeviceId(), false, new CozifyApiReal.CozifyCallback() {
                         @Override
                         public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                             controlState.setUpdating(false);
-                            updateIcon(context, appWidgetId, widgetSettings, controlState,
+                            updateIcon(context, appWidgetId, settingsWidget, controlState,
                                     stateMgr, appWidgetManager);
                         }
                     });
                 } else {
-                    updateIcon(context, appWidgetId, widgetSettings, controlState,
+                    updateIcon(context, appWidgetId, settingsWidget, controlState,
                             stateMgr, appWidgetManager);
                 }
             }
         }
     }
 
-    private static void updateIcon(Context context, int appWidgetId, WidgetSettings widgetSettings, ControlState controlState,
+    private static void updateIcon(Context context, int appWidgetId, SettingsWidget settingsWidget, ControlState controlState,
                                    CozifySceneOrDeviceStateManager stateMgr, AppWidgetManager appWidgetManager) {
-        int resourceForState = ControlActivity.updateDeviceState(widgetSettings, controlState,
+        int resourceForState = ControlActivity.updateDeviceState(settingsWidget, controlState,
                 stateMgr, appWidgetId, appWidgetManager, context.getPackageName());
         AppWidgetProviderInfo pi = appWidgetManager.getAppWidgetInfo(appWidgetId);
         int layout = R.layout.appwidget_button;
@@ -555,26 +568,27 @@ public class CozifyAppWidgetConfigure extends Activity {
             if (device_name.length() > 0) {
                 selectedDeviceShortName = device_name; // override name
             }
-
-            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
             // Save selected settingsHub
-            WidgetSettings settings = new WidgetSettings(context, mAppWidgetId);
-            settings.setDeviceId(selectedDeviceId);
-            settings.setDeviceName(selectedDeviceShortName);
-            settings.setTextSize(selectedTextSize);
+            SettingsWidget settingsWidget = new SettingsWidget(context, mAppWidgetId);
+            settingsWidget.setDeviceId(selectedDeviceId);
+            settingsWidget.setDeviceName(selectedDeviceShortName);
+            settingsWidget.setTextSize(selectedTextSize);
             JSONArray selectedCaps = getSelectedCapabilities();
-            settings.setSelectedCapabilities(selectedCaps);
-            settings.setSafeControl(selectedSafeControl);
+            settingsWidget.setSelectedCapabilities(selectedCaps);
+            settingsWidget.setSafeControl(selectedSafeControl);
             ControlState controlState = new ControlState(context, mAppWidgetId);
-            controlState.setControlling(false);
-
+            controlState.save();
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
             Bundle options = appWidgetManager.getAppWidgetOptions(mAppWidgetId);
+            setupWidgetButton(context, appWidgetManager, mAppWidgetId, options, settingsWidget);
+            updateAllWidgets();
+            canceled = false;
+
             Intent resultValue = new Intent();
             resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
             setResult(RESULT_OK, resultValue);
             String hubName = CozifyCloudToken.parseHubNameFromToken(selectedHubKey);
             ShowMessage("Widget "+mAppWidgetId+" created for controlling "+selectedDeviceShortName +" of HUB "+hubName);
-            updateAppWidget(context, appWidgetManager, mAppWidgetId, options);
             updateAllWidgets();
             finish();
         } else {

@@ -5,7 +5,7 @@ import android.content.Context;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class CozifyApiSettings {
+public class SettingsCozifyApi {
     public boolean init = false;
     private String apiver = null;
     private String hubName = null;
@@ -17,7 +17,7 @@ public class CozifyApiSettings {
     private long lastDeviceStateTimestampSinceEpochMs = 0;
     private JSONObject lastPollDataJson = null;
 
-    public CozifyApiSettings(Context context, int widgetId) {
+    public SettingsCozifyApi(Context context, int widgetId) {
         this.context = context.getApplicationContext();
         this.widgetId = widgetId;
         String json = PersistentStorage.getInstance(context).loadApiSettings(widgetId);

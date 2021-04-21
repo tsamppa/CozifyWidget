@@ -4,16 +4,16 @@ import android.content.Context;
 
 public class WidgetTemplateSettings {
     public boolean init = false;
-    private CozifyApiSettings cozifyApiSettings;
-    private WidgetSettings widgetSettings;
+    private SettingsCozifyApi settingsCozifyApi;
+    private SettingsWidget settingsWidget;
     private Context context;
     private String templateName;
 
     public WidgetTemplateSettings(Context context, int widgetId) {
         this.context = context.getApplicationContext();
-        widgetSettings = new WidgetSettings(context, widgetId);
-        cozifyApiSettings = new CozifyApiSettings(context, widgetId);
-        init = widgetSettings.init && cozifyApiSettings.init;
+        settingsWidget = new SettingsWidget(context, widgetId);
+        settingsCozifyApi = new SettingsCozifyApi(context, widgetId);
+        init = settingsWidget.init && settingsCozifyApi.init;
         if (init) {
             templateName = getDeviceName() + " in " + getHubName();
         }
@@ -26,32 +26,32 @@ public class WidgetTemplateSettings {
 
     public String getDeviceId() {
         if (!init) return null;
-        return widgetSettings.getDeviceId();
+        return settingsWidget.getDeviceId();
     }
 
     public String getDeviceName() {
         if (!init) return null;
-        return widgetSettings.getDeviceName();
+        return settingsWidget.getDeviceName();
     }
 
     public float getTextSize() {
-        return widgetSettings.getTextSize();
+        return settingsWidget.getTextSize();
     }
 
     public boolean getDoubleSize() {
-        return widgetSettings.getDoubleSize();
+        return settingsWidget.getDoubleSize();
     }
 
     public String getApiVer() {
-        return cozifyApiSettings.getApiVer();
+        return settingsCozifyApi.getApiVer();
     }
 
     public String getHubName() {
-        return cozifyApiSettings.getHubName();
+        return settingsCozifyApi.getHubName();
     }
 
     public String getHubLanIp() {
-        return cozifyApiSettings.getHubLanIp();
+        return settingsCozifyApi.getHubLanIp();
     }
 
 

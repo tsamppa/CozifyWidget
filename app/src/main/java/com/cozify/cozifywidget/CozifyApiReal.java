@@ -19,8 +19,8 @@ public class CozifyApiReal {
         private String localBaseUrl;
         private Context context = null;
 
-        private CozifyApiSettings settingsHub;
-        private CozifyCloudSettings settingsCloud;
+        private SettingsCozifyApi settingsHub;
+        private SettingsCozifyCloud settingsCloud;
 
         private boolean remoteConnection = true;
 
@@ -33,13 +33,13 @@ public class CozifyApiReal {
         }
 
         public void loadState(int widgetId) {
-            settingsHub = new CozifyApiSettings(context, widgetId);
+            settingsHub = new SettingsCozifyApi(context, widgetId);
 //            setHubLanIpIfIdMatches(settingsHub.getHubLanIp());
             loadCloudSettings();
         }
 
         public void loadCloudSettings() {
-            settingsCloud =  new CozifyCloudSettings(context);
+            settingsCloud =  new SettingsCozifyCloud(context);
             setHeaders();
         }
 

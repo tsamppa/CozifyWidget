@@ -22,7 +22,7 @@ public class ControlState {
         init = fromJsonString(json);
     }
 
-    private boolean save() {
+    public boolean save() {
         PersistentStorage.getInstance(context).saveControlState(widgetId, toJsonString());
         init = true;
         return init;
@@ -161,7 +161,8 @@ public class ControlState {
 
     public boolean shouldUpdate() {
         long timeSinceLastUpdate = System.currentTimeMillis() - lastUpdateSinceEpochMs;
-        return ((state == 0 && timeSinceLastUpdate > 20000) ||
-                timeSinceLastUpdate > 60000);
+        return ((lastUpdateSinceEpochMs == 0 ||
+                state == 0 && timeSinceLastUpdate > 10000) ||
+                timeSinceLastUpdate > 30000);
     }
 }

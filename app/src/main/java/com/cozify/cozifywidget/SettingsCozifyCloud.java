@@ -7,7 +7,7 @@ import org.json.JSONObject;
 
 import java.util.Iterator;
 
-public class CozifyCloudSettings {
+public class SettingsCozifyCloud {
     public boolean init = false;
     private String email = null;
     private String cloudToken = null;
@@ -15,7 +15,7 @@ public class CozifyCloudSettings {
     private JSONObject hubKeys = null;
 
 
-    public CozifyCloudSettings(Context context) {
+    public SettingsCozifyCloud(Context context) {
         this.context = context.getApplicationContext();
         String json = PersistentStorage.getInstance(context).loadCloudSettings();
         init = fromJsonString(json);
@@ -34,9 +34,8 @@ public class CozifyCloudSettings {
                 json.put("email", email);
             if (cloudToken != null)
                 json.put("cloudToken", cloudToken);
-            if (hubKeys != null) {
+            if (hubKeys != null)
                 json.put("hubKeys", hubKeys);
-            }
         } catch (JSONException e) {
             e.printStackTrace();
         }

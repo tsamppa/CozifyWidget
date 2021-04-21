@@ -6,7 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class WidgetSettings {
+public class SettingsWidget {
     public boolean init = false;
     private String deviceId = null;
     private String deviceName = null;
@@ -17,7 +17,7 @@ public class WidgetSettings {
     private JSONArray selectedCapabilities;
     private boolean safeControl = true;
 
-    public WidgetSettings(Context context, int widgetId) {
+    public SettingsWidget(Context context, int widgetId) {
         this.selectedCapabilities = new JSONArray();
         this.context = context.getApplicationContext();
         this.widgetId = widgetId;
