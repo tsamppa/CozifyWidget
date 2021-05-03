@@ -14,7 +14,6 @@ public class SettingsCozifyCloud {
     private Context context;
     private JSONObject hubKeys = null;
 
-
     public SettingsCozifyCloud(Context context) {
         this.context = context.getApplicationContext();
         String json = PersistentStorage.getInstance(context).loadCloudSettings();
@@ -36,6 +35,7 @@ public class SettingsCozifyCloud {
                 json.put("cloudToken", cloudToken);
             if (hubKeys != null)
                 json.put("hubKeys", hubKeys);
+
         } catch (JSONException e) {
             e.printStackTrace();
         }

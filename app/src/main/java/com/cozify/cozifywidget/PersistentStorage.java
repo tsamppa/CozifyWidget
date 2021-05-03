@@ -111,4 +111,17 @@ public class PersistentStorage {
             e.printStackTrace();
         }
     }
+
+    public String loadCachePollData(String hubId) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+        String cachedPollData = prefs.getString(PREF_PREFIX_KEY + "cachedPollData_" + hubId, null);
+        return cachedPollData;
+    }
+
+    public void saveCachePollData(String hubId, String cachedPollData) {
+        SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
+        prefs.putString(PREF_PREFIX_KEY + "cachedPollData_" + hubId, cachedPollData);
+        prefs.commit();
+    }
+
 }

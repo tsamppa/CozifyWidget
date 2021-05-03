@@ -13,9 +13,6 @@ public class SettingsCozifyApi {
     private String hubLanIp = null;
     private Context context;
     private int widgetId;
-    private long lastHubConnectionSinceEpochMs = 0;
-    private long lastDeviceStateTimestampSinceEpochMs = 0;
-    private JSONObject lastPollDataJson = null;
 
     public SettingsCozifyApi(Context context, int widgetId) {
         this.context = context.getApplicationContext();
@@ -41,11 +38,6 @@ public class SettingsCozifyApi {
                 json.put("hubLanIp", hubLanIp);
             if (hubId != null)
                 json.put("hubId", hubId);
-            if (lastPollDataJson != null)
-                json.put("lastPollDataJson", lastPollDataJson);
-            json.put("lastHubConnectionSinceEpochMs", lastHubConnectionSinceEpochMs);
-            json.put("lastDeviceStateTimestampSinceEpochMs", lastDeviceStateTimestampSinceEpochMs);
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -64,13 +56,6 @@ public class SettingsCozifyApi {
                 hubLanIp = json.getString("hubLanIp");
             if (json.has("hubId"))
                 hubId = json.getString("hubId");
-            if (json.has("lastPollDataJson"))
-                lastPollDataJson = json.getJSONObject("lastPollDataJson");
-            if (json.has("lastHubConnectionSinceEpochMs"))
-                lastHubConnectionSinceEpochMs = json.getLong("lastHubConnectionSinceEpochMs");
-            if (json.has("lastDeviceStateTimestampSinceEpochMs"))
-                lastDeviceStateTimestampSinceEpochMs = json.getLong("lastDeviceStateTimestampSinceEpochMs");
-
         } catch (JSONException e) {
             e.printStackTrace();
             return false;
@@ -94,16 +79,12 @@ public class SettingsCozifyApi {
         return hubId;
     }
 
-    public JSONObject getLastPollDataJson() { return lastPollDataJson; }
-
-    public long getHubConnectedTime() { return lastHubConnectionSinceEpochMs; }
-
-    public long getLastDeviceStateTimestamp() { return lastDeviceStateTimestampSinceEpochMs; }
 
     public boolean setApiVer(String apiVer) {
         this.apiver = apiVer;
         return save();
     }
+
 
     public boolean setHubName(String hubName) {
         this.hubName = hubName;
@@ -120,18 +101,4 @@ public class SettingsCozifyApi {
         return save();
     }
 
-    public boolean setLastPollDataJson(JSONObject lastPollDataJson) {
-        this.lastPollDataJson = lastPollDataJson;
-        return save();
-    }
-
-    public boolean setHubConnectedTime() {
-        lastHubConnectionSinceEpochMs = System.currentTimeMillis();
-        return save();
-    }
-
-    public boolean setLastDeviceStateTimestamp() {
-        lastDeviceStateTimestampSinceEpochMs = System.currentTimeMillis();
-        return save();
-    }
 }

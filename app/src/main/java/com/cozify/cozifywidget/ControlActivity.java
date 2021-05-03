@@ -22,7 +22,6 @@ import org.json.JSONObject;
 import java.util.Arrays;
 
 public class ControlActivity extends AppCompatActivity {
-    private int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     private TextView textViewStatus;
 
     private ControlState controlState;
@@ -36,54 +35,55 @@ public class ControlActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        int appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
 
         // Set the result to CANCELED.  This will cause the widget host to cancel
         // out of the widget placement if they press the back button.
         setResult(RESULT_CANCELED);
         setContentView(R.layout.activity_control);
         initViews();
-
-        if (!initWidgetId()) {
-            ShowMessage("WidgetId not found. Reinstall this widget.");
+        appWidgetId = initWidgetId();
+        if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+            ShowMessage(appWidgetId, "WidgetId not found. Reinstall this widget.");
             finish();
             return;
         }
-        Log.d("CLICK", "WidgetID:" + mAppWidgetId);
+        Log.d("CLICK", "WidgetID:" + appWidgetId);
         if (stateMgr == null) {
-            stateMgr = new CozifySceneOrDeviceStateManager(this, mAppWidgetId);
+            stateMgr = new CozifySceneOrDeviceStateManager(this, appWidgetId);
         }
 
         Intent resultValue = new Intent();
-        resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
+        resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         setResult(RESULT_CANCELED, resultValue);
 
-        if (!loadSavedSettings()) {
-            updateDeviceState("onCreate()");
+        if (!loadSavedSettings(appWidgetId)) {
+            updateDeviceState(appWidgetId, "onCreate()");
         } else {
-            if (handleClick()) {
+            if (handleClick(appWidgetId)) {
                 setResult(RESULT_OK, resultValue);
             }
         }
-        updateAllOtherWidgets();
+        updateAllOtherWidgets(appWidgetId);
         finish();
     }
 
-    private boolean handleToggleClick() {
+    private boolean handleToggleClick(int appWidgetId) {
         if (!controlState.shouldUpdate() &&
                 (controlState.isControlling() || controlState.isArming() || controlState.isUpdating())) {
             return true;
         } else {
             if (!settingsWidget.getSafeControl()) {
-                updateDeviceStateAndToggle();
+                updateDeviceStateAndToggle(appWidgetId);
             } else {
                 if (isArmed()) {
-                    if (toggleOnOff()) {
+                    if (toggleOnOff(appWidgetId)) {
                         return true;
                     } else {
-                        updateDeviceState("handleToggleClick()");
+                        updateDeviceState(appWidgetId, "handleToggleClick()");
                     }
                 } else {
-                    updateDeviceStateAndArm();
+                    updateDeviceStateAndArm(appWidgetId);
                     return true;
                 }
             }
@@ -91,25 +91,25 @@ public class ControlActivity extends AppCompatActivity {
         return false;
     }
 
-    private boolean handleMeasurementUpdate() {
-        updateDeviceState("handleMeasurementUpdate()");
+    private boolean handleMeasurementUpdate(int appWidgetId) {
+        updateDeviceState(appWidgetId, "handleMeasurementUpdate()");
         return true;
     }
 
-    private boolean handleClick() {
+    private boolean handleClick(int appWidgetId) {
         CozifySceneOrDeviceState state = stateMgr.getCurrentState();
         if (state != null) {
             if (!state.initialized) {
-                updateDeviceState("handleClick().!state.initialized");
+                updateDeviceState(appWidgetId, "handleClick().!state.initialized");
             }
             if (state.isOnOff()) {
-                return handleToggleClick();
+                return handleToggleClick(appWidgetId);
             }
             if (state.isSensor()) {
-                return handleMeasurementUpdate();
+                return handleMeasurementUpdate(appWidgetId);
             }
         } else {
-            updateDeviceState("handleClick().state==null");
+            updateDeviceState(appWidgetId, "handleClick().state==null");
         }
         return false;
     }
@@ -120,28 +120,28 @@ public class ControlActivity extends AppCompatActivity {
         return a;
     }
 
-    private void updateAllOtherWidgets() {
+    private void updateAllOtherWidgets(int appWidgetId) {
         Intent intent = new Intent(this, CozifyAppWidget.class);
         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
         int[] ids = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), CozifyAppWidget.class));
         int[] other_ids = new int[0];
         for (int id : ids) {
-            if (id != mAppWidgetId) {
+            if (id != appWidgetId) {
                 other_ids = addElement(other_ids, id);
             }
         }
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, other_ids);
         sendBroadcast(intent);
-        updateAllOtherWidgetsDouble();
+        updateAllOtherWidgetsDouble(appWidgetId);
     }
 
-    private void updateAllOtherWidgetsDouble() {
+    private void updateAllOtherWidgetsDouble(int appWidgetId) {
         Intent intent = new Intent(this, CozifyAppWidgetDouble.class);
         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
         int[] ids = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), CozifyAppWidgetDouble.class));
         int[] other_ids = new int[0];
         for (int id : ids) {
-            if (id != mAppWidgetId) {
+            if (id != appWidgetId) {
                 other_ids = addElement(other_ids, id);
             }
         }
@@ -150,35 +150,35 @@ public class ControlActivity extends AppCompatActivity {
     }
 
 
-    private void ShowMessage(String message) {
+    private void ShowMessage(int appWidgetId, String message) {
         setStatusMessage(message);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-        Log.i("Widget:" + mAppWidgetId, message);
+        Log.i("Widget:" + appWidgetId, message);
     }
 
-    private void ShowErrorMessage(String errorMessage, String details) {
-        ShowMessage(errorMessage);
-        Log.e("Widget: " + mAppWidgetId + " ERROR details:", details);
+    private void ShowErrorMessage(int appWidgetId, String errorMessage, String details) {
+        ShowMessage(appWidgetId, errorMessage);
+        Log.e("Widget: " + appWidgetId + " ERROR details:", details);
     }
 
     private boolean isArmed() {
         return controlState.isArmed();
     }
 
-    private void arm(boolean armForOnOff) {
+    private void arm(final int appWidgetId, boolean armForOnOff) {
         controlState.setArmed(true);
         controlState.setArmedForDesiredState(armForOnOff);
         saveState();
-        ShowMessage("Press again in 5s to control " + (controlState.getArmedForDesiredState() ? "ON" : "OFF"));
-        displayDeviceState("arm");
+        ShowMessage(appWidgetId, "Press again in 5s to control " + (controlState.getArmedForDesiredState() ? "ON" : "OFF"));
+        displayDeviceState(appWidgetId, "arm");
         delayedDisarm = new Runnable() {
             @Override
             public void run() {
-                loadSavedSettings();
+                loadSavedSettings(appWidgetId);
                 if (controlState.isArmed()) {
                     controlState.setArmed(false);
                     saveState();
-                    displayDeviceState("delayedDisarm");
+                    displayDeviceState(appWidgetId, "delayedDisarm");
                 }
             }
         };
@@ -189,7 +189,7 @@ public class ControlActivity extends AppCompatActivity {
         handler.removeCallbacksAndMessages(null);
     }
 
-    private void disarm() {
+    private void disarm(int appWidgetId) {
         cancelDelayedDisarm();
         if (delayedDisarm != null) {
             handler.removeCallbacks(delayedDisarm);
@@ -197,51 +197,51 @@ public class ControlActivity extends AppCompatActivity {
         }
         controlState.setArmed(false);
         saveState();
-        displayDeviceState("disarm");
+        displayDeviceState(appWidgetId, "disarm");
     }
 
     private void saveState() {
         stateMgr.saveState();
     }
 
-    private boolean loadSavedSettings() {
-        if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
-            ShowMessage("INVALID_APPWIDGET_ID : Loading settingsHub failed!");
+    private boolean loadSavedSettings(int appWidgetId) {
+        if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+            ShowMessage(appWidgetId, "INVALID_APPWIDGET_ID : Loading settingsHub failed!");
             return false;
         }
         final Context context = ControlActivity.this;
 
-        controlState = new ControlState(context, mAppWidgetId);
+        controlState = new ControlState(context, appWidgetId);
         if (!controlState.init) {
-            ShowErrorMessage("FAILED to load controlState", "PersistentStorage returned null.");
+            ShowErrorMessage(appWidgetId, "FAILED to load controlState", "PersistentStorage returned null.");
             return false;
         }
 
-        settingsWidget = new SettingsWidget(context, mAppWidgetId);
+        settingsWidget = new SettingsWidget(context, appWidgetId);
         if (!settingsWidget.init || settingsWidget.getDeviceId() == null) {
-            ShowErrorMessage("Configuration issue", "Stored device ID not found (null). Please remove and recreate the device widget");
+            ShowErrorMessage(appWidgetId, "Configuration issue", "Stored device ID not found (null). Please remove and recreate the device widget");
             return false;
         }
         return true;
     }
 
-    private boolean initWidgetId() {
-        mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
+    private int initWidgetId() {
+        int appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
         Intent intent = this.getIntent();
         Bundle extras = intent.getExtras();
         if (extras != null) {
-            mAppWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+            appWidgetId = extras.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         }
-        if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
-            mAppWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+        if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+            appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         }
 
-        if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
-            ShowMessage("ERROR: appWidgetId not found in extra (INVALID_APPWIDGET_ID)");
+        if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+            ShowMessage(appWidgetId, "ERROR: appWidgetId not found in extra (INVALID_APPWIDGET_ID)");
             finish();
-            return false;
+            return AppWidgetManager.INVALID_APPWIDGET_ID;
         }
-        return true;
+        return appWidgetId;
     }
 
     private void initViews() {
@@ -331,14 +331,14 @@ public class ControlActivity extends AppCompatActivity {
         return resourceForState;
     }
 
-    private void displayDeviceState(String why) {
+    private void displayDeviceState(int appWidgetId, String why) {
         final Context context = ControlActivity.this;
         AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(this);
         int resourceForState = updateDeviceState(settingsWidget,
                 controlState,
-                stateMgr, mAppWidgetId, appWidgetManager, this.getPackageName());
+                stateMgr, appWidgetId, appWidgetManager, this.getPackageName());
         int layout = R.layout.appwidget_button;
-        AppWidgetProviderInfo pi = appWidgetManager.getAppWidgetInfo(mAppWidgetId);
+        AppWidgetProviderInfo pi = appWidgetManager.getAppWidgetInfo(appWidgetId);
         if (pi != null) {
             layout = pi.initialLayout;
         }
@@ -349,7 +349,7 @@ public class ControlActivity extends AppCompatActivity {
             bid = R.id.control_button_double;
         }
         views.setContentDescription(bid, context.getResources().getResourceEntryName(resourceForState));
-        appWidgetManager.updateAppWidget(mAppWidgetId, views);
+        appWidgetManager.updateAppWidget(appWidgetId, views);
         Log.d("ResourceForState", String.format("%s : %s (%d)", why, getResources().getResourceEntryName(resourceForState), resourceForState));
     }
 
@@ -373,7 +373,7 @@ public class ControlActivity extends AppCompatActivity {
         String device_name = settingsWidget.getDeviceName();
         JSONArray capabilities = settingsWidget.getSelectedCapabilities();
         String measurement = stateMgr.getMeasurementString(capabilities);
-        String age = stateMgr.getMeasurementAge();
+        String measurementTimeStr = stateMgr.getMeasurementTimeStr();
         CozifySceneOrDeviceState s = stateMgr.getCurrentState();
         boolean isSensor = false;
         boolean isControllable = false;
@@ -393,7 +393,7 @@ public class ControlActivity extends AppCompatActivity {
 
         RemoteViews views = new RemoteViews(packageName, layout);
         if (layout == R.layout.appwidget_button_double) {
-            UpdateLayoutDouble(views, isControllable, resourceForState, device_name, measurement, age, controlState, settingsWidget);
+            UpdateLayoutDouble(views, isControllable, resourceForState, device_name, measurement, measurementTimeStr, controlState, settingsWidget);
         } else {
             UpdateLayout(views, isControllable,resourceForState, device_name, measurement, controlState, settingsWidget);
         }
@@ -443,47 +443,47 @@ public class ControlActivity extends AppCompatActivity {
         }
     }
 
-    private void startControl() {
+    private void startControl(int appWidgetId) {
         controlState.setControlling(true);
         saveState();
-        displayDeviceState("startControl");
-        ShowMessage(String.format("Controlling %s to %s", settingsWidget.getDeviceName(),
+        displayDeviceState(appWidgetId, "startControl");
+        ShowMessage(appWidgetId, String.format("Controlling %s to %s", settingsWidget.getDeviceName(),
                 controlState.getArmedForDesiredState()? "ON" : "OFF"));
     }
 
-    private void endControl(boolean success, String reason) {
+    private void endControl(final int appWidgetId, boolean success, String reason) {
         controlState.setControlling(false);
         saveState();
-        displayDeviceState("endControl");
+        displayDeviceState(appWidgetId, "endControl");
         if (success) {
-            ShowMessage(String.format("Control %s OK", settingsWidget.getDeviceName()));
+            ShowMessage(appWidgetId, String.format("Control %s OK", settingsWidget.getDeviceName()));
         } else {
-            ShowErrorMessage(String.format("FAILED to control %s", settingsWidget.getDeviceName()), reason);
+            ShowErrorMessage(appWidgetId, String.format("FAILED to control %s", settingsWidget.getDeviceName()), reason);
         }
     }
 
-    private void endControl(boolean success, String reason, String details) {
+    private void endControl(int appWidgetId, boolean success, String reason, String details) {
         if (details != null)
             Log.e("WidgetEndControl", details);
-        endControl(success, reason);
+        endControl(appWidgetId, success, reason);
     }
 
-    private void updateDeviceState(String why) {
+    private void updateDeviceState(final int appWidgetId, String why) {
         if (controlState.isUpdating()) return;
         controlState.setUpdating(true);
         saveState();
-        displayDeviceState(why + ".updateDeviceState()");
+        displayDeviceState(appWidgetId, why + ".updateDeviceState()");
         if (settingsWidget.getDeviceId() == null) {
-            ShowMessage("Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
+            ShowMessage(appWidgetId, "Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
             return;
         }
 
-        stateMgr.updateCurrentState(settingsWidget.getDeviceId(), true, new CozifyApiReal.CozifyCallback() {
+        stateMgr.updateCurrentState(settingsWidget.getDeviceId(), false, new CozifyApiReal.CozifyCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson, JSONObject requestJson) {
                 controlState.setUpdating(false);
                 saveState();
-                displayDeviceState("updateDeviceState().stateMgr.updateCurrentState");
+                displayDeviceState(appWidgetId, "updateDeviceState().stateMgr.updateCurrentState");
             }
         });
     }
@@ -493,74 +493,74 @@ public class ControlActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private void updateDeviceStateAndArm() {
+    private void updateDeviceStateAndArm(final int appWidgetId) {
         if (settingsWidget.getDeviceId() == null) {
-            ShowMessage("Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
+            ShowMessage(appWidgetId, "Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
             return;
         }
         controlState.setArming(true);
         saveState();
-        displayDeviceState("updateDeviceStateAndArm");
+        displayDeviceState(appWidgetId, "updateDeviceStateAndArm");
         stateMgr.updateCurrentState(settingsWidget.getDeviceId(), true, new CozifyApiReal.CozifyCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson, JSONObject requestJson) {
                 if (success) {
-                    loadSavedSettings();
+                    loadSavedSettings(appWidgetId);
                     CozifySceneOrDeviceState state = stateMgr.getCurrentState();
-                    arm(!state.isOn);
+                    arm(appWidgetId, !state.isOn);
                 } else {
                     stateMgr.setReachable(false);
                     controlState.setArming(false);
                     saveState();
-                    displayDeviceState("updateDeviceStateAndArm().stateMgr.updateCurrentState");
+                    displayDeviceState(appWidgetId, "updateDeviceStateAndArm().stateMgr.updateCurrentState");
                 }
             }
         });
     }
 
-    private void updateDeviceStateAndToggle() {
+    private void updateDeviceStateAndToggle(final int appWidgetId) {
         if (settingsWidget.getDeviceId() == null) {
-            ShowMessage("Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
+            ShowMessage(appWidgetId, "Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
             return;
         }
         controlState.setArming(true);
         saveState();
-        displayDeviceState("updateDeviceStateAndToggle");
+        displayDeviceState(appWidgetId, "updateDeviceStateAndToggle");
         stateMgr.updateCurrentState(settingsWidget.getDeviceId(), true, new CozifyApiReal.CozifyCallback() {
             @Override
             public void result(boolean success, String status, JSONObject resultJson, JSONObject requestJson) {
                 if (success) {
-                    loadSavedSettings();
+                    loadSavedSettings(appWidgetId);
                     CozifySceneOrDeviceState state = stateMgr.getCurrentState();
                     controlState.setArmedForDesiredState(!state.isOn);
                     saveState();
-                    toggleOnOff();
+                    toggleOnOff(appWidgetId);
                 } else {
                     stateMgr.setReachable(false);
                     controlState.setArming(false);
                     saveState();
-                    displayDeviceState("updateDeviceStateAndToggle().stateMgr.updateCurrentState");
+                    displayDeviceState(appWidgetId, "updateDeviceStateAndToggle().stateMgr.updateCurrentState");
                 }
             }
         });
     }
 
-    private boolean toggleOnOff() {
-        startControl();
+    private boolean toggleOnOff(int appWidgetId) {
+        startControl(appWidgetId);
         if (settingsWidget.getDeviceId() == null) {
-            endControl(false, "Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
+            endControl(appWidgetId, false, "Configuration issue. Stored device not found (null). Please remove and recreate the device widget");
             return false;
         }
-        controlToggle();
+        controlToggle(appWidgetId);
         return true;
     }
 
-    void controlToggle() {
+    void controlToggle(final int appWidgetId) {
         stateMgr.controlStateToDesired(settingsWidget.getDeviceId(), controlState.getArmedForDesiredState(), new CozifyApiReal.CozifyCallback() {
             @Override
             public void result(boolean success, String status, JSONObject jsonResponse, JSONObject jsonRequest) {
                 if (success) {
-                    endControl(true, status);
+                    endControl(appWidgetId, true, status);
                 } else {
                     stateMgr.setReachable(false);
                     String details = "Details:";
@@ -568,7 +568,7 @@ public class ControlActivity extends AppCompatActivity {
                         details += " jsonResponse: "+jsonResponse.toString();
                     if (jsonRequest != null)
                         details += " jsonRequest: "+jsonRequest.toString();
-                    endControl(false, status, details);
+                    endControl(appWidgetId, false, status, details);
                 }
             }
         });

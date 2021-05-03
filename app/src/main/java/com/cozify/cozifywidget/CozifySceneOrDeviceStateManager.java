@@ -2,6 +2,7 @@ package com.cozify.cozifywidget;
 
 import android.content.Context;
 import android.os.Handler;
+import android.text.format.DateFormat;
 import android.util.Base64;
 import android.util.Log;
 
@@ -15,8 +16,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 public class CozifySceneOrDeviceStateManager implements Runnable {
     private CozifySceneOrDeviceState currentState = null;
@@ -269,14 +272,17 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
                             if (jsonResponse.has("errorCode")) {
                                 errorCode = jsonResponse.getInt("errorCode");
                             }
-                            Log.e("StateManager", String.format("Error: %s STATUS: %s (jsonRequest: '%s' jsonResponse: '%s'",
-                                    message, status, jsonRequest.toString(), jsonResponse.toString()));
                             if (message.startsWith("Authentication failed")
                                     || message.startsWith("Authorization failed")
                                     || message.startsWith("Connection refused")
                                     || errorCode == 401) {
                                 refreshHubKey();
                             }
+                            Log.e("StateManager", String.format("Error: %s STATUS: %s (jsonRequest: '%s' jsonResponse: '%s'",
+                                    message, status, jsonRequest.toString(), jsonResponse.toString()));
+                        } else {
+                            Log.e("StateManager", String.format("Error STATUS: %s (jsonRequest: '%s'",
+                                    status, jsonRequest.toString()));
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -409,6 +415,18 @@ public class CozifySceneOrDeviceStateManager implements Runnable {
             return String.format("%d hours ago", secs/60/60);
         }
         return String.format("%d days ago", secs/60/60/24);
+    }
+
+    public String getMeasurementTimeStr() {
+        if (currentState == null) return "";
+        Calendar cal = Calendar.getInstance(Locale.ENGLISH);
+        cal.setTimeInMillis(currentState.timestamp);
+        Calendar now = Calendar.getInstance(Locale.ENGLISH);
+        String dateStr = DateFormat.format("MM/dd HH:mm", cal).toString();
+        if (now.get(Calendar.DATE) == cal.get(Calendar.DATE)) {
+            dateStr = DateFormat.format("HH:mm", cal).toString();
+        }
+        return String.format("%s  (%d)",  dateStr, mAppWidgetId);
     }
 
     public String getMeasurementString(JSONArray selectedCapabilities) {
