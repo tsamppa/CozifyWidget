@@ -581,6 +581,7 @@ public class CozifyAppWidgetConfigure extends Activity {
             SettingsWidget settingsWidget = new SettingsWidget(context, appWidgetId);
             settingsWidget.setDeviceId(selectedDeviceId);
             settingsWidget.setDeviceName(selectedDeviceShortName);
+            settingsWidget.setOriginalDeviceName(selectedDeviceName);
             settingsWidget.setTextSize(selectedTextSize);
             JSONArray selectedCaps = getSelectedCapabilities();
             settingsWidget.setSelectedCapabilities(selectedCaps);
@@ -789,6 +790,7 @@ public class CozifyAppWidgetConfigure extends Activity {
                     setSpinnerItems(items, hubs);
                     resetDevicesSpinner();
                     setStatus(getString(R.string.tip_select_device_first));
+                    // Preselect hub if reconfiguring existing widget
                     SettingsCozifyApi s = new SettingsCozifyApi(CozifyAppWidgetConfigure.this, mAppWidgetId);
                     if (s.init) {
                         items.setSelection(((ArrayAdapter) items.getAdapter()).getPosition(s.getHubName()));
@@ -837,9 +839,19 @@ public class CozifyAppWidgetConfigure extends Activity {
                     Spinner items = findViewById(R.id.spinner_devices);
                     setSpinnerItems(items, devicesList);
                     setStatus(getString(R.string.tip_select_device_first));
+                    // Preselect device if reconfiguring widget
                     SettingsWidget s = new SettingsWidget(CozifyAppWidgetConfigure.this, mAppWidgetId);
                     if (s.init) {
-                        items.setSelection(((ArrayAdapter) items.getAdapter()).getPosition(s.getDeviceName()));
+                        String originalDeviceName = s.getOriginalDeviceName();
+                        String deviceName = s.getDeviceName();
+                        if (originalDeviceName != null) {
+                            items.setSelection(((ArrayAdapter) items.getAdapter()).getPosition(originalDeviceName));
+                        } else {
+                            items.setSelection(((ArrayAdapter) items.getAdapter()).getPosition(deviceName));
+                        }
+                        if (!deviceName.equals(originalDeviceName)) {
+                            editTextDeviceName.setText(deviceName);
+                        }
                     }
                     enableTestButtons(true);
                     enableSpinners(true);

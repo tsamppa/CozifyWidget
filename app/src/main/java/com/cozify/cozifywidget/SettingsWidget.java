@@ -10,6 +10,7 @@ public class SettingsWidget {
     public boolean init = false;
     private String deviceId = null;
     private String deviceName = null;
+    private String originalDeviceName = null;
     private float textSize = 14;
     private boolean doubleSize = false;
     private Context context;
@@ -39,6 +40,8 @@ public class SettingsWidget {
                 json.put("deviceId", this.deviceId);
             if (this.deviceName != null)
                 json.put("deviceName", this.deviceName);
+            if (this.originalDeviceName != null)
+                json.put("originalDeviceName", this.originalDeviceName);
             if (this.textSize != 0)
                 json.put("selectedTextSize", this.textSize);
             json.put("doubleSize", this.doubleSize);
@@ -58,6 +61,8 @@ public class SettingsWidget {
                 this.deviceId = json.getString("deviceId");
             if (json.has("deviceName"))
                 this.deviceName = json.getString("deviceName");
+            if (json.has("originalDeviceName"))
+                this.deviceName = json.getString("originalDeviceName");
             if (json.has("selectedTextSize"))
                 this.textSize = (float)json.getDouble("selectedTextSize");
             if (json.has("doubleSize"))
@@ -78,7 +83,6 @@ public class SettingsWidget {
         if (!init) return null;
         return this.deviceId;
     }
-
     public boolean setDeviceId(String deviceId) {
         this.deviceId = deviceId;
         return save();
@@ -88,53 +92,58 @@ public class SettingsWidget {
         if (!init) return null;
         return this.deviceName;
     }
-
     public boolean setDeviceName(String deviceName) {
         this.deviceName = deviceName;
+        return save();
+    }
+
+    public String getOriginalDeviceName() {
+        if (!init) return null;
+        return this.originalDeviceName;
+    }
+    public boolean setOriginalDeviceName(String originalDeviceName) {
+        this.originalDeviceName = originalDeviceName;
         return save();
     }
 
     public float getTextSize() {
         return textSize;
     }
-
     public boolean setTextSize(float textSize) {
         this.textSize = textSize;
-        return save();
-    }
-
-    public boolean setDoubleSize(boolean doubleSize) {
-        this.doubleSize = doubleSize;
         return save();
     }
 
     public boolean getDoubleSize() {
         return this.doubleSize;
     }
-
-    public boolean setSelectedCapabilities(JSONArray caps) {
-        this.selectedCapabilities = caps;
+    public boolean setDoubleSize(boolean doubleSize) {
+        this.doubleSize = doubleSize;
         return save();
     }
 
     public JSONArray getSelectedCapabilities() {
         return this.selectedCapabilities;
     }
+    public boolean setSelectedCapabilities(JSONArray caps) {
+        this.selectedCapabilities = caps;
+        return save();
+    }
 
     public boolean hasMeasurement() {
         boolean hasMeasurement = this.selectedCapabilities.toString().contains("\"CO2\"") ||
                 this.selectedCapabilities.toString().contains("\"TEMPERATURE\"") ||
                 this.selectedCapabilities.toString().contains("\"LUX\"") ||
+                this.selectedCapabilities.toString().contains("\"WATT\"") ||
                 this.selectedCapabilities.toString().contains("\"HUMIDITY\"");
         return hasMeasurement;
     }
 
+    public boolean getSafeControl() {
+        return this.safeControl;
+    }
     public boolean setSafeControl(boolean safe) {
         this.safeControl = safe;
         return save();
-    }
-
-    public boolean getSafeControl() {
-        return this.safeControl;
     }
 }
